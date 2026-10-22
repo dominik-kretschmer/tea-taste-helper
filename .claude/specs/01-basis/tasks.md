@@ -34,7 +34,7 @@ Reihenfolge:
     - Nach `docker compose restart` ist das Modell noch da.
     - `docker compose -f compose.yaml -f compose.cpu.yaml config` enthält für `ollama` keinen `deploy`-Block.
 
-- [ ] 4. Werkzeuge: Abhängigkeiten, Lint, Typecheck, Vitest
+- [x] 4. Werkzeuge: Abhängigkeiten, Lint, Typecheck, Vitest
   - Dateien: `package.json` (Pakete, Scripts `lint`, `typecheck`, `test`), `eslint.config.mjs`, `nuxt.config.ts` (`@nuxt/eslint`), `vitest.config.ts` (zunächst nur Projekt `unit`)
   - Erfüllt: AK-8.1 (Grundlage), AK-9.2
   - Prüfung: `npm install` fehlerfrei. `npm run lint`, `npm run typecheck` und `npm test` laufen mit Exit-Code 0 durch, ein Platzhalter-Test darf dabei laufen.
