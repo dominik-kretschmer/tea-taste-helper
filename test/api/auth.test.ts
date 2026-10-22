@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto'
-import { setup } from '@nuxt/test-utils/e2e'
+import { setup, startServer } from '@nuxt/test-utils/e2e'
 import { describe, expect, it } from 'vitest'
 import { createClient, db, findCookie, loginAs, PASSWORD, registerUser, rootDir, SESSION_COOKIE, testServerEnv, uniqueEmail } from './helpers'
 
+const ADMIN_EMAIL = 'chef@test.local'
+
 describe('Auth-API', async () => {
-  await setup({ rootDir, server: true, env: testServerEnv })
+  await setup({ rootDir, server: true, env: { ...testServerEnv, ADMIN_EMAIL } })
 
   describe('Registrierung', () => {
     it('legt ein Konto mit Rolle user an und meldet sofort an (AK-1.1)', async () => {
@@ -159,6 +161,27 @@ describe('Auth-API', async () => {
       expect(serialized).not.toContain(PASSWORD)
       expect(serialized).not.toContain('ganz-neues-passwort')
       expect(serialized).not.toContain(client.cookies.get(SESSION_COOKIE) ?? '---')
+    })
+  })
+  describe('Erster Admin über ADMIN_EMAIL', () => {
+    it('macht eine Registrierung mit ADMIN_EMAIL zum Admin, unabhängig von Groß-/Kleinschreibung (AK-4.1)', async () => {
+      const { user } = await registerUser({ email: 'Chef@Test.LOCAL' })
+      expect(user.role).toBe('admin')
+      const events = (await db('SELECT event, details FROM "AuditLog" WHERE "targetId" = $1 ORDER BY id', [user.id]))
+      expect(events.map(r => r.event)).toEqual(['USER_REGISTERED', 'ADMIN_BOOTSTRAPPED'])
+      expect(events[1].details).toEqual({ via: 'registration' })
+    })
+
+    it('befördert ein bestehendes Konto beim Serverstart (AK-4.2)', async () => {
+      const { email, user } = await registerUser()
+      expect(user.role).toBe('user')
+
+      await startServer({ env: { ...testServerEnv, ADMIN_EMAIL: email } })
+
+      const { client } = await loginAs(email)
+      expect((await client.get('/api/auth/me')).body.user.role).toBe('admin')
+      const [entry] = await db('SELECT details FROM "AuditLog" WHERE "targetId" = $1 AND event = \'ADMIN_BOOTSTRAPPED\'', [user.id])
+      expect(entry.details).toEqual({ via: 'startup', from: 'user' })
     })
   })
 })
