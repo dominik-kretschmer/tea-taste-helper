@@ -39,7 +39,7 @@ Reihenfolge:
     - Ein Einmal-Passwort hat ≥ 16 Zeichen und keine verwechselbaren Zeichen.
     - `verifyDummy` braucht ungefähr so lange wie `verify` (±50 %).
 
-- [ ] 5. Rate-Limiter und Client-IP
+- [x] 5. Rate-Limiter und Client-IP
   - Dateien: `server/utils/rate-limit.ts`, `server/utils/client-ip.ts`, `test/unit/rate-limit.test.ts`
   - Erfüllt: AK-8.1–AK-8.3 (Baustein)
   - Prüfung:
