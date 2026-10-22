@@ -46,7 +46,7 @@ Reihenfolge:
     - Unit-Tests mit Fake-Timern: Limit erreicht → `ok: false` mit korrektem `retryAfterSec`, neues Fenster → wieder `ok`, `reset` setzt zurück.
     - Die IP berücksichtigt `X-Forwarded-For` nur bei `TRUST_PROXY=true`.
 
-- [ ] 6. Audit-Log
+- [x] 6. Audit-Log
   - Dateien: `server/utils/audit.ts`, `test/unit/audit.test.ts`
   - Erfüllt: AK-11.1 (Baustein), AK-11.2
   - Prüfung: Ein Unit-Test zeigt, dass `details` keine Schlüssel wie `password`, `token`, `hash` oder `session` durchlässt. Ein Schreibfehler wird geloggt und bricht die Aktion nicht ab.
