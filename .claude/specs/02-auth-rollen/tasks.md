@@ -30,7 +30,7 @@ Reihenfolge:
   - Erfüllt: AK-1.3, AK-1.4 (Regeln), AK-1.5 (Grundlage)
   - Prüfung: Unit-Tests für die Grenzwerte: Passwort 9/10/128/129 Zeichen, Name 1/2/40/41 Zeichen und nach dem Trimmen. Die E-Mail wird kleingeschrieben. Die Schemas sind in `app/` und `server/` auto-importierbar (Typecheck).
 
-- [ ] 4. Passwörter
+- [x] 4. Passwörter
   - Dateien: `server/utils/password.ts`, `test/unit/password.test.ts`
   - Erfüllt: AK-1.4, AK-6.1 (Einmal-Passwort)
   - Prüfung:
