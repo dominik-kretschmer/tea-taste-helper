@@ -109,7 +109,7 @@ Reihenfolge:
     - Unit-Test: `de.json` und `en.json` haben dieselben Schlüssel.
     - Im Template gibt es keine fest eingetragenen UI-Texte.
 
-- [ ] 13. CI und Dependabot
+- [x] 13. CI und Dependabot
   - Dateien: `.github/workflows/ci.yml`, `.github/dependabot.yml`
   - Erfüllt: AK-9.1, AK-9.3
   - Prüfung: Beide YAML-Dateien sind gültig, z.B. mit `npx --yes yaml-lint` oder `actionlint`, falls vorhanden. Die Schritte in `ci.yml` entsprechen den lokalen Scripts. Der echte Lauf wird in Aufgabe 15 geprüft.

@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, Typecheck, Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17
+        env:
+          POSTGRES_USER: tea
+          POSTGRES_PASSWORD: tea
+          POSTGRES_DB: tea
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tea -d tea"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://tea:tea@localhost:5432/tea
+      TEST_DATABASE_URL: postgresql://tea:tea@localhost:5432/tea_test
+      LOG_LEVEL: warn
+      PRISMA_HIDE_UPDATE_MESSAGE: '1'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # postinstall erzeugt Prisma-Client und .nuxt (für ESLint und Typecheck)
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Lokal legt docker/postgres/init die Test-DB an; Service-Container haben keine Init-Skripte.
+      - name: Test-Datenbank anlegen
+        run: psql "$DATABASE_URL" -c 'CREATE DATABASE tea_test'
+
+      - name: Tests
+        run: npm test
