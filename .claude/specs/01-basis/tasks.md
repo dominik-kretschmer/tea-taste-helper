@@ -46,7 +46,7 @@ Reihenfolge:
     - Unit-Test: Eine gültige Umgebung wird geparst. Fehlt `DATABASE_URL` oder ist `LOG_LEVEL=foo`, nennt die Fehlermeldung den Variablennamen.
     - Manuell: `DATABASE_URL= npm run dev` bricht mit dieser Meldung ab.
 
-- [ ] 6. Prisma
+- [x] 6. Prisma
   - Dateien: `prisma.config.ts`, `prisma/schema.prisma`, `prisma/migrations/0001_init/migration.sql`, `server/utils/prisma.ts`, `package.json` (`postinstall`, `db:*`), `.gitignore` (`server/generated/`)
   - Erfüllt: AK-2.1, AK-2.2, AK-2.3
   - Prüfung:
@@ -54,6 +54,7 @@ Reihenfolge:
     - `SELECT extname FROM pg_extension` in `tea` enthält `vector`.
     - `npm run db:studio` startet.
     - `npm run db:reset` setzt die DB zurück und spielt die Migration erneut ein.
+  - Ergebnis: Migration, Extension und Studio sind geprüft. `db:reset` wird von Prisma für KI-Agenten blockiert und braucht die ausdrückliche Zustimmung des Nutzers, deshalb prüft der Nutzer das selbst (offen).
 
 - [ ] 7. Logging
   - Dateien: `server/utils/logger.ts`, `server/plugins/request-logger.ts`, `test/unit/logger.test.ts`

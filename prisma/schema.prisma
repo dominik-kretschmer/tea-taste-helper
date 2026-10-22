@@ -1,0 +1,11 @@
+// Prisma-Schema für tea-taste-helper. Verbindung: prisma.config.ts (DATABASE_URL).
+// Vektor-Spalten später als Unsupported("vector(768)"), Suche per $queryRaw (Overview §10).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
