@@ -3,7 +3,9 @@ import type { AuditEventType, Role } from '../types/auth'
 export const ROLES = ['user', 'moderator', 'admin'] as const satisfies readonly Role[]
 
 /** Rollen sind hierarchisch: admin ⊇ moderator ⊇ user (AK-7.2). */
-export const ROLE_RANK: Record<Role, number> = { user: 0, moderator: 1, admin: 2 }
+// `satisfies` statt Typannotation: Mit `ROLE_RANK: Record<Role, number> = …` übersieht der
+// Auto-Import-Scanner (unimport) das folgende `hasRole`.
+export const ROLE_RANK = { user: 0, moderator: 1, admin: 2 } satisfies Record<Role, number>
 
 export function hasRole(user: { role: Role } | null | undefined, required: Role): boolean {
   return !!user && ROLE_RANK[user.role] >= ROLE_RANK[required]

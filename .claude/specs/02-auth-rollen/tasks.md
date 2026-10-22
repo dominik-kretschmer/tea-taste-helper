@@ -51,7 +51,7 @@ Reihenfolge:
   - Erfüllt: AK-11.1 (Baustein), AK-11.2
   - Prüfung: Ein Unit-Test zeigt, dass `details` keine Schlüssel wie `password`, `token`, `hash` oder `session` durchlässt. Ein Schreibfehler wird geloggt und bricht die Aktion nicht ab.
 
-- [ ] 7. Sessions, Auth-Middleware und Rechte
+- [x] 7. Sessions, Auth-Middleware und Rechte
   - Dateien: `server/utils/session.ts`, `server/middleware/auth.ts`, `server/utils/authz.ts`, `test/unit/authz.test.ts`
   - Erfüllt: AK-2.3–AK-2.7, AK-6.2 (Server), AK-7.1, AK-7.2
   - Prüfung:
