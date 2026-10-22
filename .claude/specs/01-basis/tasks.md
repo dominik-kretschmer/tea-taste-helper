@@ -64,7 +64,7 @@ Reihenfolge:
     - Manuell: Ein `curl` auf eine `/api`-Route erzeugt eine Logzeile mit Methode, Pfad, Status, Dauer und Request-ID.
     - Mit `LOG_LEVEL=warn` fehlen die `info`-Zeilen.
 
-- [ ] 8. Fehlerbehandlung
+- [x] 8. Fehlerbehandlung
   - Dateien: `server/utils/errors.ts`, `server/error.ts`, `server/api/[...].ts`, `nuxt.config.ts` (`nitro.errorHandler`), `test/unit/errors.test.ts`
   - Erfüllt: AK-5.1, AK-5.2, AK-5.3, AK-5.4
   - Prüfung:
@@ -73,6 +73,7 @@ Reihenfolge:
       - `AppError` → eigener Status und Code
       - unbekannter Fehler → 500 `INTERNAL_ERROR` ohne Stack
     - Manuell: `curl -i localhost:3000/api/gibt-es-nicht` → 404 im Fehlerformat. Eine unbekannte Seite außerhalb von `/api` zeigt weiterhin die Nuxt-Fehlerseite.
+  - Ergebnis: Die 404 ist geprüft, der 500er-Weg mit einer temporären Route ebenfalls (Antwort ohne Details, Stacktrace im Log). Die Nuxt-Fehlerseite für Nicht-API-Pfade wird in Aufgabe 11 geprüft, weil es erst dann Seiten-Routing gibt.
 
 - [ ] 9. Health-Endpunkt
   - Dateien: `server/utils/health.ts`, `server/api/health.get.ts`, `test/unit/health.test.ts`
@@ -97,6 +98,7 @@ Reihenfolge:
     - `localhost:3000` zeigt die App-Bar mit Titel und den Inhaltsbereich statt `NuxtWelcome`.
     - Keine Hydration-Warnungen in der Browser-Konsole.
     - Bei 360 px Breite gibt es keinen horizontalen Scrollbalken.
+    - `/gibt-es-nicht` zeigt die Nuxt-Fehlerseite (HTML, 404), nicht das API-Fehlerformat (aus Aufgabe 8).
 
 - [ ] 12. Mehrsprachigkeit
   - Dateien: `nuxt.config.ts` (`@nuxtjs/i18n`), `i18n/locales/de.json`, `i18n/locales/en.json`, `app/components/LanguageSwitcher.vue`, Texte in Layout und Startseite, `test/unit/i18n.test.ts`
