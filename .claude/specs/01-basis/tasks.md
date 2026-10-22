@@ -56,7 +56,7 @@ Reihenfolge:
     - `npm run db:reset` setzt die DB zurück und spielt die Migration erneut ein.
   - Ergebnis: Migration, Extension und Studio sind geprüft. `db:reset` wird von Prisma für KI-Agenten blockiert und braucht die ausdrückliche Zustimmung des Nutzers, deshalb prüft der Nutzer das selbst (offen).
 
-- [ ] 7. Logging
+- [x] 7. Logging
   - Dateien: `server/utils/logger.ts`, `server/plugins/request-logger.ts`, `test/unit/logger.test.ts`
   - Erfüllt: AK-4.1, AK-4.3, AK-4.4 (AK-4.2 per API-Test in Aufgabe 10)
   - Prüfung:
