@@ -1,6 +1,6 @@
 ---
 name: spec-driven
-description: Spec-Driven Development für "tea-taste-helper". Verwenden, wenn ein neues Feature oder eine größere Änderung geplant und umgesetzt werden soll – zuerst Anforderungen, dann Design, dann Aufgaben, erst danach Code. Auch verwenden, wenn eine bestehende Spec in `specs/` fortgesetzt, geändert oder abgearbeitet werden soll.
+description: Spec-Driven Development für "tea-taste-helper". Verwenden, wenn ein neues Feature oder eine größere Änderung geplant und umgesetzt werden soll – zuerst Anforderungen, dann Design, dann Aufgaben, erst danach Code. Auch verwenden, wenn eine bestehende Spec in `.claude/specs/` fortgesetzt, geändert oder abgearbeitet werden soll.
 ---
 
 # Spec-Driven Development
@@ -10,14 +10,15 @@ Jedes Feature entsteht in drei Dokumenten, bevor Code geschrieben wird. Jede Pha
 ## Ablage
 
 ```
-specs/
-  <feature-name>/          # kebab-case, z.B. tee-bewertung
+.claude/specs/
+  00 – Overview: tea-taste-helper.md   # Gesamt-Spec, gilt für alle Feature-Specs
+  <nr>-<name>/             # z.B. 01-basis, Nummer laut Umsetzungsreihenfolge in der Overview
     requirements.md        # Phase 1: WAS und WARUM
     design.md              # Phase 2: WIE
     tasks.md               # Phase 3: Umsetzungsschritte
 ```
 
-Vor dem Anlegen in `specs/` nachsehen, ob es zum Thema schon eine Spec gibt. Wenn ja, diese fortsetzen statt eine neue anzulegen.
+Vor dem Anlegen die Overview lesen und in `.claude/specs/` nachsehen, ob es zum Thema schon eine Spec gibt. Wenn ja, diese fortsetzen statt eine neue anzulegen. Widerspricht eine Feature-Spec der Overview, wird zuerst die Overview angepasst.
 
 ## Phase 1 – Anforderungen (`requirements.md`)
 
