@@ -1,7 +1,7 @@
 # 02 – Auth & Rollen
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 02 (§3 Nutzer & Rollen, §11 Authentifizierung, §12 Sicherheit, §13 Audit-Log). Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-22)**
+> Status: **freigegeben (2026-10-22)**, AK-1.2 angepasst mit dem Design (2026-10-22): Bei Sofort-Anmeldung lässt sich nicht verbergen, dass eine Adresse vergeben ist.
 
 ## Ziel
 
@@ -25,7 +25,7 @@ Besucher können ein Konto anlegen und sich anmelden. Jedes Konto hat eine Rolle
 
 ### US-1 – Registrierung
 - **AK-1.1:** WENN ein Besucher E-Mail, Anzeigename (2–40 Zeichen) und Passwort (10–128 Zeichen) eingibt, DANN wird ein Konto mit Rolle `user` angelegt und er ist sofort angemeldet.
-- **AK-1.2:** WENN die E-Mail (ohne Beachtung von Groß-/Kleinschreibung) schon vergeben ist, DANN wird kein Konto angelegt und eine allgemeine Meldung erscheint. Die Antwort verrät nicht, ob die Adresse existiert; Status und Antwortzeit unterscheiden sich nicht messbar von einer erfolgreichen Registrierung.
+- **AK-1.2:** WENN die E-Mail (ohne Beachtung von Groß-/Kleinschreibung) schon vergeben ist, DANN wird kein Konto angelegt, und es erscheint die allgemeine Meldung „Registrierung mit diesen Daten nicht möglich“ (409 `REGISTRATION_FAILED`). Das Rate-Limit (AK-8.2) begrenzt das Durchprobieren von Adressen. Ein vollständiges Verbergen kommt mit der E-Mail-Bestätigung (Overview §16).
 - **AK-1.3:** Anzeigenamen müssen nicht eindeutig sein. Führende und folgende Leerzeichen werden entfernt.
 - **AK-1.4:** Passwörter werden ausschließlich als Argon2id-Hash gespeichert. Es gibt keine Kompositionsregeln (Sonderzeichen o.ä.), nur die Länge zählt.
 - **AK-1.5:** WENN eine Eingabe ungültig ist, DANN antwortet die API mit 400 `VALIDATION_ERROR`, und das Formular zeigt die Meldung am betroffenen Feld in der aktuellen Sprache.
