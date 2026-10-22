@@ -116,7 +116,7 @@ Das bestehende Postgres-Volume wurde mit der DB `n8n` initialisiert, Init-Skript
 2. `docker volume rm tea-taste-helper_postgres_data tea-taste-helper_n8n_data` löscht die beiden Volumes. `tea-taste-helper_ollama_data` bleibt erhalten.
 3. `docker compose up -d` legt Postgres neu an, das Init-Skript erzeugt `tea_test`.
 
-Schritt 2 löscht Daten und wird bei der Umsetzung erst nach erneuter Bestätigung ausgeführt.
+Schritt 2 löscht Daten; das ist vom Nutzer freigegeben und läuft ohne erneute Rückfrage (2026-10-22).
 
 ## Konfiguration
 
