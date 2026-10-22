@@ -1,7 +1,7 @@
 # 01 – Basis
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 01. Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-22)**
+> Status: **freigegeben (2026-10-22)**, angepasst am 2026-10-22: bestehende `compose.yaml` berücksichtigt (Dienstname `postgres`, `adminer` und `ollama-pull` bleiben, n8n entfällt)
 
 ## Ziel
 
@@ -23,10 +23,10 @@ Das Projekt ist noch der leere Nuxt-Starter. Diese Spec legt das technische Fund
 ## Akzeptanzkriterien
 
 ### US-1 – Docker Compose & lokale Entwicklung
-- **AK-1.1:** WENN `docker compose up -d` im Projektordner ausgeführt wird, DANN starten die Dienste `db` (Postgres mit pgvector) und `ollama`; Postgres ist auf `localhost:5432`, Ollama auf `localhost:11434` erreichbar.
+- **AK-1.1:** WENN `docker compose up -d` im Projektordner ausgeführt wird, DANN starten die Dienste `postgres` (pgvector, Datenbanken `tea` und `tea_test`), `ollama`, `ollama-pull` und `adminer`, aber kein `n8n`. Postgres ist auf `localhost:5432`, Ollama auf `localhost:11434` und Adminer auf `localhost:8080` erreichbar.
 - **AK-1.2:** WENN die Container neu gestartet werden, DANN bleiben Datenbankinhalte und geladene Ollama-Modelle erhalten (benannte Volumes).
 - **AK-1.3:** WENN `npm run dev` unter WSL läuft und eine Datei unter `app/` oder `server/` geändert wird, DANN übernimmt der Dev-Server die Änderung ohne Neustart (Hot Reload), und `http://localhost:3000` liefert die Startseite aus.
-- **AK-1.4:** WENN `docker compose ps` ausgeführt wird, nachdem `db` hochgefahren ist, DANN steht `db` auf `healthy` (Healthcheck per `pg_isready`).
+- **AK-1.4:** WENN `docker compose ps` ausgeführt wird, nachdem `postgres` hochgefahren ist, DANN steht `postgres` auf `healthy` (Healthcheck per `pg_isready`).
 - **AK-1.5:** Die README beschreibt den Start in dieser Reihenfolge: `docker compose up -d` → `npm install` → `npm run db:migrate` → `npm run dev`.
 
 ### US-2 – Prisma
@@ -82,14 +82,15 @@ Das Projekt ist noch der leere Nuxt-Starter. Diese Spec legt das technische Fund
 
 - Authentifizierung, Rollen, Sessions, CSRF, Rate-Limiting, Security-Header (CSP u.a.) → Slice 02
 - Fachliche Datenmodelle (Zutaten, Tees, …) – das Prisma-Schema enthält in 01 nur die pgvector-Extension
-- LLM-Provider-Schnittstelle, Embeddings, Herunterladen von Ollama-Modellen → Slices 09/10
+- LLM-Provider-Schnittstelle, Embeddings, Herunterladen weiterer Ollama-Modelle (über das bestehende `nomic-embed-text` hinaus) → Slices 09/10
 - Audit-Log in der DB → mit den ersten auditpflichtigen Aktionen (Slice 02)
 - Nuxt im Docker-Container (Dev und Production-Image), Hosting, Deploy-Schritt in der CI
 - Übersetzungstabellen für Katalog-Einträge → Slice 03
 
 ## Entscheidungen
 
-- Nuxt läuft in der Entwicklung direkt unter WSL (`npm run dev`); Docker Compose enthält nur `db` und `ollama`.
+- Nuxt läuft in der Entwicklung direkt unter WSL (`npm run dev`); Docker Compose enthält `postgres`, `ollama`, `ollama-pull` und `adminer`.
+- Die bestehende `compose.yaml` wird angepasst; n8n entfällt, das Postgres-Volume wird neu angelegt.
 - Ollama nutzt die GPU; das Einrichten bereitet 01 vor (Anleitung + Prüfskript), die Installation führt der Entwickler selbst aus.
 - Security-Header kommen zusammen mit CSRF in Slice 02.
 - CI läuft auf `main` im GitHub-Repo `dominik-kretschmer/tea-taste-helper`.
