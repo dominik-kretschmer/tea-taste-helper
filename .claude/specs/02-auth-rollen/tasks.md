@@ -20,7 +20,7 @@ Reihenfolge:
     - Im Browser gibt es auf der Startseite keine CSP-Verstöße, und der Sprachumschalter funktioniert.
     - Test, ob `style-src` ohne `'unsafe-inline'` auskommt; das Ergebnis wird im Design vermerkt.
 
-- [ ] 2. Datenmodell und Migration
+- [x] 2. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma`, `prisma/migrations/0002_auth/`, `test/setup/global-api.ts` (Tabellen vor dem Lauf leeren)
   - Erfüllt: Grundlage für AK-1–AK-11
   - Prüfung: `npm run db:migrate` legt `User`, `Session` und `AuditLog` samt Enums und Indizes an. Die Migration läuft auch auf `tea_test`. Die API-Tests aus 01 bleiben grün.

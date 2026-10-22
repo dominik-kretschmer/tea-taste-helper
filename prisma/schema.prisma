@@ -9,3 +9,75 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ---------------------------------------------------------------------------
+// 02 – Auth & Rollen
+// ---------------------------------------------------------------------------
+
+enum Role {
+  user
+  moderator
+  admin
+}
+
+model User {
+  id                 String     @id @default(uuid(7)) @db.Uuid
+  /// immer kleingeschrieben gespeichert
+  email              String     @unique
+  displayName        String     @db.VarChar(40)
+  passwordHash       String
+  role               Role       @default(user)
+  mustChangePassword Boolean    @default(false)
+  /// wird in Slice 05 (Moderation) gesetzt
+  blockedAt          DateTime?
+  createdAt          DateTime   @default(now())
+  lastLoginAt        DateTime?
+  sessions           Session[]
+  auditAsActor       AuditLog[] @relation("AuditActor")
+  auditAsTarget      AuditLog[] @relation("AuditTarget")
+
+  @@index([displayName])
+}
+
+model Session {
+  /// SHA-256 (hex) des Tokens – nie das Token selbst
+  id         String   @id
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  remember   Boolean
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum AuditEvent {
+  USER_REGISTERED
+  LOGIN_SUCCEEDED
+  LOGIN_FAILED
+  LOGOUT
+  PASSWORD_CHANGED
+  PASSWORD_RESET_BY_ADMIN
+  ROLE_CHANGED
+  ADMIN_BOOTSTRAPPED
+}
+
+model AuditLog {
+  id        BigInt     @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  event     AuditEvent
+  actorId   String?    @db.Uuid
+  actor     User?      @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  targetId  String?    @db.Uuid
+  target    User?      @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  ip        String?
+  requestId String?
+  /// z.B. { from: "user", to: "admin" } oder { email } bei LOGIN_FAILED – nie Geheimnisse
+  details   Json?
+
+  @@index([createdAt])
+  @@index([event, createdAt])
+  @@index([targetId, createdAt])
+}
