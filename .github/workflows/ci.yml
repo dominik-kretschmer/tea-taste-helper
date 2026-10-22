@@ -39,6 +39,8 @@ jobs:
       TEST_DATABASE_URL: postgresql://tea:tea@localhost:5432/tea_test
       LOG_LEVEL: warn
       PRISMA_HIDE_UPDATE_MESSAGE: '1'
+      # Die API-Tests laufen gegen einen Production-Build, dort ist der CSRF-Schlüssel Pflicht (nur für CI)
+      NUXT_CSURF_ENCRYPT_SECRET: ci-only-csrf-secret-32-chars-xyz
 
     steps:
       - uses: actions/checkout@v7

@@ -58,7 +58,7 @@ Reihenfolge:
     - Unit-Tests: Rollenhierarchie; `requireUser`/`requireRole` → 401/403.
     - Die Session-Logik prüfen die API-Tests in Aufgabe 8.
 
-- [ ] 8. Auth-API: register, login, logout, me, password
+- [x] 8. Auth-API: register, login, logout, me, password
   - Dateien: `server/api/auth/*.ts`, `test/api/helpers.ts`, `test/api/auth.test.ts`, `test/api/security.test.ts`
   - Erfüllt: AK-1.1, AK-1.2, AK-1.5, AK-2.1–AK-2.7, AK-3.1, AK-3.2, AK-8.1–AK-8.3, AK-9.1, AK-11.1 (Auth-Ereignisse)
   - Prüfung (API-Tests):

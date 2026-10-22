@@ -277,10 +277,10 @@ Alle schreibenden Routen brauchen ein CSRF-Token. Fehler kommen im Format aus 01
 | Methode | Route | Rolle | Request | Response | Fehler |
 |---|---|---|---|---|---|
 | POST | `/api/auth/register` | – | `{ email, displayName, password, remember? }` | `201 { user: PublicUser }` + Cookie | 400, 409 `REGISTRATION_FAILED`, 429 |
-| POST | `/api/auth/login` | – | `{ email, password, remember? }` | `200 { user }` + Cookie | 400, 401 `INVALID_CREDENTIALS`, 429 |
+| POST | `/api/auth/login` | – | `{ email, password, remember? }` | `200 { user }` + Cookie | 400, 401 `INVALID_CREDENTIALS`, 403 `ACCOUNT_BLOCKED`, 429 |
 | POST | `/api/auth/logout` | user | – | `204`, Cookie gelöscht | 401 |
 | GET | `/api/auth/me` | – | – | `200 { user: PublicUser \| null }` | – |
-| POST | `/api/auth/password` | user | `{ currentPassword, newPassword }` | `204` | 400, 401, 403 `INVALID_CREDENTIALS` |
+| POST | `/api/auth/password` | user | `{ currentPassword, newPassword }` | `204` | 400, 401, 403 `INVALID_CREDENTIALS`, 429 (5 / 15 min pro Nutzer) |
 | GET | `/api/admin/users` | admin | `?q&page` | `200 { items: AdminUser[], total, page, pageSize: 25 }` | 401, 403 |
 | PATCH | `/api/admin/users/:id/role` | admin | `{ role }` | `200 { user: AdminUser }` | 400, 401, 403, 404, 409 `LAST_ADMIN` / `SELF_ROLE_CHANGE` |
 | POST | `/api/admin/users/:id/password-reset` | admin | – | `200 { temporaryPassword }` + `Cache-Control: no-store` | 401, 403, 404 |
@@ -351,6 +351,11 @@ NUXT_CSURF_ENCRYPT_SECRET=
 - `test/api/helpers.ts`: `createClient()` ruft `/` mit `Accept: text/html` auf, liest Cookie und `<meta name="csrf-token">` und hält die Cookies über mehrere Anfragen.
 - `test/setup/global-api.ts`: Vor jedem Lauf werden die Tabellen in `tea_test` geleert (`TRUNCATE ... CASCADE`).
 - Für Session-Ablauf und Rate-Limit-Fenster setzen die Tests Zeitstempel direkt in der Test-DB bzw. nutzen Fake-Timer, statt zu warten.
+- **Ergänzt in Aufgabe 8:**
+  - Die API-Tests laufen gegen einen Production-Build. Nitro setzt `NODE_ENV` dort beim Build fest auf `production`. Die Tests prüfen deshalb das Cookie `__Host-session` mit `Secure`. In der CI ist `NUXT_CSURF_ENCRYPT_SECRET` gesetzt.
+  - Der Testserver läuft mit `TRUST_PROXY=true`. Jeder Test-Client schickt eine eigene `X-Forwarded-For`-IP, damit sich die IP-Limits nicht über Tests hinweg summieren.
+  - Das `api`-Projekt läuft mit höchstens 2 Workern, weil mehr parallele Builds 8 GB RAM sprengen.
+  - Der Login beendet eine bereits bestehende Session des Browsers, bevor er eine neue anlegt.
 
 ## Entscheidungen
 
