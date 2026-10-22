@@ -39,7 +39,7 @@ Reihenfolge:
   - Erfüllt: AK-8.1 (Grundlage), AK-9.2
   - Prüfung: `npm install` fehlerfrei. `npm run lint`, `npm run typecheck` und `npm test` laufen mit Exit-Code 0 durch, ein Platzhalter-Test darf dabei laufen.
 
-- [ ] 5. Env-Validierung
+- [x] 5. Env-Validierung
   - Dateien: `server/utils/env.ts`, `server/plugins/00.env.ts`, `test/unit/env.test.ts`
   - Erfüllt: AK-3.2
   - Prüfung:
