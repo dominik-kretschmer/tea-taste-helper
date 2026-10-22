@@ -41,6 +41,8 @@ export default defineNuxtConfig({
     // Deutsch ohne Präfix (/), Englisch unter /en
     strategy: 'prefix_except_default',
     defaultLocale: 'de',
+    // Öffentliche Adresse für SEO-Links; in Production per NUXT_PUBLIC_I18N_BASE_URL setzen
+    baseUrl: 'http://localhost:3000',
     locales: [
       { code: 'de', language: 'de-DE', file: 'de.json' },
       { code: 'en', language: 'en-US', file: 'en.json' },

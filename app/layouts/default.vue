@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-// Nur für das lang-Attribut; SEO-Links (hreflang) bräuchten eine feste baseUrl
-const localeHead = useLocaleHead({ seo: false })
+const localeHead = useLocaleHead()
 
 useHead(() => ({
   htmlAttrs: { lang: localeHead.value.htmlAttrs.lang },
