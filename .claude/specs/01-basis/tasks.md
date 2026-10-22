@@ -114,7 +114,7 @@ Reihenfolge:
   - Erfüllt: AK-9.1, AK-9.3
   - Prüfung: Beide YAML-Dateien sind gültig, z.B. mit `npx --yes yaml-lint` oder `actionlint`, falls vorhanden. Die Schritte in `ci.yml` entsprechen den lokalen Scripts. Der echte Lauf wird in Aufgabe 15 geprüft.
 
-- [ ] 14. Dokumentation
+- [x] 14. Dokumentation
   - Dateien: `README.md`, `.claude/skills/nuxt-dev/SKILL.md`
   - Erfüllt: AK-1.5
   - Prüfung:
