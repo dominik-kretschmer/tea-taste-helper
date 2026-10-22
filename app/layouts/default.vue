@@ -14,6 +14,7 @@ useHead(() => ({
       <v-app-bar-title>{{ t('app.name') }}</v-app-bar-title>
       <template #append>
         <LanguageSwitcher />
+        <UserMenu />
       </template>
     </v-app-bar>
 

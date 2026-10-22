@@ -4,7 +4,13 @@
     "tagline": "Tees nach Geschmack und Stimmung finden"
   },
   "nav": {
-    "language": "Sprache wählen"
+    "language": "Sprache wählen",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "changePassword": "Passwort ändern",
+    "admin": "Verwaltung",
+    "account": "Konto von {name}"
   },
   "home": {
     "title": "Willkommen",

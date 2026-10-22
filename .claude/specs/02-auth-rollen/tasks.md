@@ -92,7 +92,7 @@ Reihenfolge:
     - Audit-Einträge für alle Ereignistypen, ohne Geheimnisse; Filter funktionieren.
   - Ergebnis: Die Audit-Tests stehen in `admin.test.ts` (keine eigene Datei, spart einen Build). `LAST_ADMIN` ist nicht per API-Test auslösbar (siehe Design).
 
-- [ ] 11. Frontend-Grundlage: $api, Auth-Zustand, Middleware, Nutzermenü
+- [x] 11. Frontend-Grundlage: $api, Auth-Zustand, Middleware, Nutzermenü
   - Dateien: `app/plugins/api.ts`, `app/plugins/auth.ts`, `app/composables/useAuth.ts`, `app/middleware/{auth,guest,admin}.ts`, `app/middleware/password-change.global.ts`, `app/components/UserMenu.vue`, `app/layouts/default.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-2.8, AK-5.4 (UI), AK-6.2 (UI), AK-9.2
   - Prüfung:
@@ -100,6 +100,7 @@ Reihenfolge:
     - SSR mit gültigem Cookie zeigt den Anzeigenamen ohne Flackern.
     - Ein Gast auf `/admin` landet auf `/login`, ein Nutzer auf `/admin` auf `/`.
     - Bei 360 px ist das Menü bedienbar.
+  - Ergebnis: Nutzermenü (Gast breit/schmal, SSR ohne Flackern, Abmelden) im Browser geprüft. Die Weiterleitungen der Middleware werden in Aufgabe 12/13 geprüft, weil die Zielseiten erst dort entstehen. Der Auth-Plugin heißt `auth.server.ts`, weil er nur beim SSR lädt.
 
 - [ ] 12. Seiten: Anmelden, Registrieren, Passwort ändern
   - Dateien: `app/pages/login.vue`, `app/pages/register.vue`, `app/pages/account/password.vue`, `app/composables/useFormErrors.ts`, `i18n/locales/*.json`, `test/unit/i18n.test.ts` (bleibt grün)

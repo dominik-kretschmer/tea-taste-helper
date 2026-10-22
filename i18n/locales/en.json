@@ -4,7 +4,13 @@
     "tagline": "Find teas by taste and mood"
   },
   "nav": {
-    "language": "Choose language"
+    "language": "Choose language",
+    "login": "Sign in",
+    "register": "Sign up",
+    "logout": "Sign out",
+    "changePassword": "Change password",
+    "admin": "Administration",
+    "account": "Account of {name}"
   },
   "home": {
     "title": "Welcome",
