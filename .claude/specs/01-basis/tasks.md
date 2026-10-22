@@ -82,7 +82,7 @@ Reihenfolge:
     - Unit-Test: alles ok → 200; DB-Fehler bzw. Ollama-Fehler oder Timeout → 503 mit `"error"` beim betroffenen Dienst.
     - Manuell: `curl localhost:3000/api/health` → 200. Nach `docker compose stop ollama` → 503 mit `ollama: "error"`. Danach Ollama wieder starten.
 
-- [ ] 10. API-Tests gegen Test-DB
+- [x] 10. API-Tests gegen Test-DB
   - Dateien: `vitest.config.ts` (Projekt `api`), `test/setup/env.ts`, `test/setup/global-api.ts` (Migration auf `tea_test`, Ollama-Stub), `test/api/health.test.ts`, `test/api/errors.test.ts`
   - Erfüllt: AK-4.2, AK-8.1, AK-8.2, AK-8.3
   - Prüfung:
