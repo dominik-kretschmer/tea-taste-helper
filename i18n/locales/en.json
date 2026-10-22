@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "Tea Taste Helper",
+    "tagline": "Find teas by taste and mood"
+  },
+  "nav": {
+    "language": "Choose language"
+  },
+  "home": {
+    "title": "Welcome",
+    "intro": "Find teas that match your mood and create your own blends from what you have at home."
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

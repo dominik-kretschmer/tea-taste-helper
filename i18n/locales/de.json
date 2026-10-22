@@ -1,0 +1,17 @@
+{
+  "app": {
+    "name": "Tea Taste Helper",
+    "tagline": "Tees nach Geschmack und Stimmung finden"
+  },
+  "nav": {
+    "language": "Sprache wählen"
+  },
+  "home": {
+    "title": "Willkommen",
+    "intro": "Finde Tees, die zu deiner Stimmung passen, und stelle eigene Mischungen aus deinem Vorrat zusammen."
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

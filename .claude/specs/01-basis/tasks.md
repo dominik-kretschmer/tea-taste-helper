@@ -100,7 +100,7 @@ Reihenfolge:
     - Bei 360 px Breite gibt es keinen horizontalen Scrollbalken.
     - `/gibt-es-nicht` zeigt die Nuxt-Fehlerseite (HTML, 404), nicht das API-Fehlerformat (aus Aufgabe 8).
 
-- [ ] 12. Mehrsprachigkeit
+- [x] 12. Mehrsprachigkeit
   - Dateien: `nuxt.config.ts` (`@nuxtjs/i18n`), `i18n/locales/de.json`, `i18n/locales/en.json`, `app/components/LanguageSwitcher.vue`, Texte in Layout und Startseite, `test/unit/i18n.test.ts`
   - Erfüllt: AK-7.2, AK-7.3, AK-7.4
   - Prüfung:

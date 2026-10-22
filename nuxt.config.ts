@@ -5,7 +5,21 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+  i18n: {
+    // Deutsch ohne Präfix (/), Englisch unter /en
+    strategy: 'prefix_except_default',
+    defaultLocale: 'de',
+    locales: [
+      { code: 'de', language: 'de-DE', file: 'de.json' },
+      { code: 'en', language: 'en-US', file: 'en.json' },
+    ],
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+    },
+  },
   build: {
     transpile: ['vuetify'],
   },

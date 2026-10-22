@@ -1,7 +1,20 @@
+<script setup lang="ts">
+const { t } = useI18n()
+const localeHead = useLocaleHead()
+
+useHead(() => ({
+  htmlAttrs: { lang: localeHead.value.htmlAttrs.lang },
+  title: t('app.name'),
+}))
+</script>
+
 <template>
   <v-app>
     <v-app-bar color="primary" density="comfortable">
-      <v-app-bar-title>Tea Taste Helper</v-app-bar-title>
+      <v-app-bar-title>{{ t('app.name') }}</v-app-bar-title>
+      <template #append>
+        <LanguageSwitcher />
+      </template>
     </v-app-bar>
 
     <v-main>
