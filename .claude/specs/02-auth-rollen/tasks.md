@@ -1,6 +1,6 @@
 # Aufgaben: 02 – Auth & Rollen
 
-> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-22)**, Push/CI offen
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-22)**, CI auf `main` grün
 
 Reihenfolge:
 - Sicherheitsrahmen → Datenmodell → Server-Bausteine → API → UI → Endabnahme.
@@ -158,4 +158,4 @@ Reihenfolge:
     | 11.1–11.3 | ✅ | API-Tests (alle Ereignistypen, ohne Geheimnisse, Filter, keine Änderungsrouten); Browser: Audit-Seite mit Filtern |
     | 12.1–12.3 | ✅ | Unit-Test Sprachdateien; Browser de/en, 360 px ohne Überlauf; 124 Tests |
 
-  - **Offen:** Push und CI-Lauf, zusammen mit 01, nur nach Rücksprache.
+  - Push durch den Nutzer; CI-Lauf für `0d69acb` auf `main` erfolgreich (2026-10-22).
