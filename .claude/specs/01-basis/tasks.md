@@ -14,7 +14,7 @@ Reihenfolge:
   - Erfüllt: AK-10.1, AK-10.2
   - Prüfung: `bash scripts/check-gpu.sh` meldet je Schritt `OK`/`FEHLT`. Fehlt etwas, arbeitet der Entwickler die Anleitung ab und startet das Skript erneut, bis alle Schritte `OK` melden. Erst dann folgt Aufgabe 3.
 
-- [ ] 2. Konfiguration
+- [x] 2. Konfiguration
   - Dateien: `.env.example` (neu), `.env` (`N8N_ENCRYPTION_KEY` raus, `POSTGRES_DB`, `DATABASE_URL`, `TEST_DATABASE_URL`, `OLLAMA_URL`, `LOG_LEVEL` rein, vorhandene Zugangsdaten bleiben), `.gitignore`
   - Erfüllt: AK-3.1, AK-3.3
   - Prüfung: `.env.example` enthält alle Variablen aus dem Design und keine echten Secrets. `git status` zeigt `.env` nicht.

@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Generierter Prisma-Client
+server/generated
