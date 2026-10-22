@@ -356,6 +356,11 @@ NUXT_CSURF_ENCRYPT_SECRET=
   - Der Testserver läuft mit `TRUST_PROXY=true`. Jeder Test-Client schickt eine eigene `X-Forwarded-For`-IP, damit sich die IP-Limits nicht über Tests hinweg summieren.
   - Das `api`-Projekt läuft mit höchstens 2 Workern, weil mehr parallele Builds 8 GB RAM sprengen.
   - Der Login beendet eine bereits bestehende Session des Browsers, bevor er eine neue anlegt.
+- **Ergänzt in Aufgabe 10:**
+  - Die Audit-Tests stehen in `admin.test.ts` statt in einer eigenen Datei, weil jede API-Testdatei einen eigenen App-Build braucht.
+  - `LAST_ADMIN` ist über die API praktisch nicht auslösbar: Nur Admins ändern Rollen, und die eigene Rolle ist gesperrt. Die Zählung in einer `Serializable`-Transaktion schützt vor gleichzeitigen Änderungen.
+  - `/api/health` bleibt während des Pflicht-Passwortwechsels erreichbar (Monitoring).
+  - Hilfsfunktionen `toAdminUser` und `getUserIdParam` liegen in `server/utils/users.ts`. Eine ungültige ID ergibt 404.
 
 ## Entscheidungen
 

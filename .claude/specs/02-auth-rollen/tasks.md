@@ -80,7 +80,7 @@ Reihenfolge:
     - Manuell: Ein bestehender Nutzer mit dieser E-Mail wird nach einem Serverneustart Admin.
   - Ergebnis: Beides ist per API-Test abgedeckt; der Neustart läuft über `startServer({ env })` aus `@nuxt/test-utils`.
 
-- [ ] 10. Admin-API: Nutzer, Rollen, Passwort-Reset, Audit
+- [x] 10. Admin-API: Nutzer, Rollen, Passwort-Reset, Audit
   - Dateien: `server/api/admin/users/index.get.ts`, `server/api/admin/users/[id]/role.patch.ts`, `server/api/admin/users/[id]/password-reset.post.ts`, `server/api/admin/audit.get.ts`, `test/api/admin.test.ts`, `test/api/audit.test.ts`
   - Erfüllt: AK-5.1–AK-5.3, AK-5.4 (API), AK-6.1–AK-6.3, AK-7.3, AK-11.1, AK-11.3 (API)
   - Prüfung (API-Tests):
@@ -90,6 +90,7 @@ Reihenfolge:
     - Eigene Rolle bzw. letzter Admin → 409.
     - Reset: Antwort mit `Cache-Control: no-store`; altes Passwort ungültig; alle Sessions beendet; mit dem Einmal-Passwort → 403 `PASSWORD_CHANGE_REQUIRED` bis zum Wechsel.
     - Audit-Einträge für alle Ereignistypen, ohne Geheimnisse; Filter funktionieren.
+  - Ergebnis: Die Audit-Tests stehen in `admin.test.ts` (keine eigene Datei, spart einen Build). `LAST_ADMIN` ist nicht per API-Test auslösbar (siehe Design).
 
 - [ ] 11. Frontend-Grundlage: $api, Auth-Zustand, Middleware, Nutzermenü
   - Dateien: `app/plugins/api.ts`, `app/plugins/auth.ts`, `app/composables/useAuth.ts`, `app/middleware/{auth,guest,admin}.ts`, `app/middleware/password-change.global.ts`, `app/components/UserMenu.vue`, `app/layouts/default.vue`, `i18n/locales/*.json`
