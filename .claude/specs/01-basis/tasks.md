@@ -91,7 +91,7 @@ Reihenfolge:
     - Ohne `TEST_DATABASE_URL` brechen die API-Tests mit einer klaren Meldung ab.
     - Die Entwicklungsdatenbank `tea` bleibt unverändert.
 
-- [ ] 11. Vuetify-Grundlayout
+- [x] 11. Vuetify-Grundlayout
   - Dateien: `app/plugins/vuetify.ts`, `app/layouts/default.vue`, `app/pages/index.vue`, `app/app.vue`, `nuxt.config.ts`
   - Erfüllt: AK-7.1, AK-7.5
   - Prüfung:
