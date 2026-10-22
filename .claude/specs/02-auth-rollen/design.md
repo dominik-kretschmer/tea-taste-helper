@@ -42,7 +42,8 @@ Beim Login (AK-2.2) ist ein vollständiges Verbergen möglich: Für unbekannte E
 | `prisma/schema.prisma` | geändert | `Role`, `User`, `Session`, `AuditEvent`, `AuditLog` |
 | `prisma/migrations/0002_auth/` | neu | Migration |
 | `shared/schemas/auth.ts` | neu | zod-Schemas für Client und Server (Registrierung, Login, Passwort, Rolle) |
-| `shared/types/auth.ts` | neu | `Role`, `PublicUser`, `ROLE_RANK` |
+| `shared/types/auth.ts` | neu | `Role`, `PublicUser`, `AdminUser`, `AuditEntry`, `Page<T>` |
+| `shared/utils/roles.ts` | neu | `ROLES`, `ROLE_RANK`, `hasRole`, `AUDIT_EVENTS` (auto-importiert in App und Server) |
 | `server/utils/env.ts` | geändert | neue Variablen |
 | `server/utils/errors.ts` | geändert | CSRF-Fehler → `CSRF_INVALID`, 429 → `RATE_LIMITED` |
 | `server/utils/password.ts` | neu | `hashPassword`, `verifyPassword`, `verifyDummy`, `generateTemporaryPassword` |
@@ -358,7 +359,8 @@ NUXT_CSURF_ENCRYPT_SECRET=
 - **Eigener Rate-Limiter:** `nuxt-security` zählt nur pro IP und Route, gebraucht wird auch „pro E-Mail, nur Fehlversuche“. In-Memory reicht für eine Instanz. Verworfen: Redis, weil es einen zusätzlichen Dienst ohne Nutzen im MVP bedeutet.
 - **`nuxt-security` + `nuxt-csurf`:** Etablierte Lösung, CSP-Nonce für SSR inklusive. Verworfen: Header von Hand, weil die Nonce-Verwaltung bei SSR fehleranfällig ist.
 - **`@node-rs/argon2` statt `argon2`:** Keine nativen Build-Tools nötig, läuft auch in der CI ohne Zusatzpakete.
-- **Gemeinsame zod-Schemas in `shared/`:** Client und Server prüfen identisch. Nuxt 4 importiert `shared/` automatisch auf beiden Seiten.
+- **Gemeinsame zod-Schemas in `shared/`:** Client und Server prüfen identisch. Nuxt 4 importiert nur `shared/utils/` und `shared/types/` automatisch; die Schemas werden explizit über `#shared/schemas/auth` importiert (Aufgabe 3).
+- **`db:migrate` = `prisma migrate dev && prisma generate`:** Prisma 7 erzeugt den Client nach einer Migration nicht mehr automatisch (Aufgabe 3).
 - **UUIDv7 als Nutzer-ID:** Nicht erratbar und zeitlich sortierbar. Verworfen: Integer-ID, weil sie die Nutzerzahl verrät und sich aufzählen lässt.
 - **`SameSite=Lax` statt `Strict`:** Mit `Strict` wäre man nach einem Klick auf einen externen Link zur App scheinbar abgemeldet. CSRF deckt das Token ab.
 

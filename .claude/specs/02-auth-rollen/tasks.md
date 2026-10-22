@@ -25,7 +25,7 @@ Reihenfolge:
   - Erfüllt: Grundlage für AK-1–AK-11
   - Prüfung: `npm run db:migrate` legt `User`, `Session` und `AuditLog` samt Enums und Indizes an. Die Migration läuft auch auf `tea_test`. Die API-Tests aus 01 bleiben grün.
 
-- [ ] 3. Gemeinsame Typen und Schemas
+- [x] 3. Gemeinsame Typen und Schemas
   - Dateien: `shared/types/auth.ts`, `shared/schemas/auth.ts`, `test/unit/auth-schemas.test.ts`
   - Erfüllt: AK-1.3, AK-1.4 (Regeln), AK-1.5 (Grundlage)
   - Prüfung: Unit-Tests für die Grenzwerte: Passwort 9/10/128/129 Zeichen, Name 1/2/40/41 Zeichen und nach dem Trimmen. Die E-Mail wird kleingeschrieben. Die Schemas sind in `app/` und `server/` auto-importierbar (Typecheck).
