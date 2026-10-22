@@ -114,7 +114,7 @@ Reihenfolge:
     - 360 px ohne horizontales Scrollen
   - Ergebnis: Alle Abläufe sind per Playwright auf Deutsch und Englisch geprüft, ebenso die Middleware-Weiterleitungen `guest` und `auth` sowie `password-change`. Dabei aufgefallen und behoben: Vuetify-Texte waren unübersetzt (jetzt an i18n gekoppelt).
 
-- [ ] 13. Admin-Seiten
+- [x] 13. Admin-Seiten
   - Dateien: `app/pages/admin/index.vue`, `app/pages/admin/users.vue`, `app/pages/admin/audit.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-5.1–AK-5.3 (UI), AK-6.1 (UI), AK-11.3 (UI), AK-12.1, AK-12.2
   - Prüfung im Browser:
@@ -122,7 +122,8 @@ Reihenfolge:
     - Die Rolle lässt sich ändern; Fehler wie „letzter Admin“ erscheinen verständlich.
     - Der Reset-Dialog zeigt das Einmal-Passwort einmal und kopiert es.
     - Die Audit-Liste lässt sich filtern.
-    - 360 px ohne horizontales Scrollen; Tabellen scrollen dabei innerhalb ihres Containers.
+    - 360 px ohne horizontales Scrollen; Tabellen werden dabei als gestapelte Karten dargestellt (statt in ihrem Container zu scrollen).
+  - Ergebnis: Alles per Playwright geprüft, auch der Zugriffsschutz für Gast und Nutzer. Dabei gefunden und behoben: falscher `X-Forwarded-For`-Eintrag (Sicherheit), IP `unknown` im Dev-Modus, fehlender zugänglicher Name des Rollenfelds, veraltetes `dense`.
 
 - [ ] 14. Dokumentation
   - Dateien: `README.md` (`ADMIN_EMAIL`, `CSRF_SECRET`, Admin-Bereich), `.claude/skills/nuxt-dev/SKILL.md` (CSRF in curl-Prüfungen)

@@ -55,8 +55,10 @@ describe('pickClientIp', () => {
     expect(pickClientIp('9.9.9.9', '1.2.3.4', false)).toBe('1.2.3.4')
   })
 
-  it('nimmt mit TRUST_PROXY den ersten Eintrag aus X-Forwarded-For', () => {
-    expect(pickClientIp(' 9.9.9.9 , 10.0.0.1', '1.2.3.4', true)).toBe('9.9.9.9')
+  it('nimmt mit TRUST_PROXY den letzten Eintrag aus X-Forwarded-For (vom Proxy angehängt)', () => {
+    expect(pickClientIp('9.9.9.9', '1.2.3.4', true)).toBe('9.9.9.9')
+    // Der Client schickt selbst „6.6.6.6“ mit, der Proxy hängt die echte Adresse an
+    expect(pickClientIp('6.6.6.6, 9.9.9.9 ', '1.2.3.4', true)).toBe('9.9.9.9')
   })
 
   it('fällt ohne Header bzw. Socket-Adresse zurück', () => {

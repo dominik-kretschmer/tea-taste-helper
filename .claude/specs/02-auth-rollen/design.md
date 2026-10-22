@@ -220,7 +220,7 @@ export function reset(key: string): void
 | `login:email:<email>` | 5 / 15 min | nur Fehlversuche; bei Erfolg `reset` | 8.1, 8.3 |
 | `register:ip:<ip>` | 5 / 60 min | jede Registrierung | 8.2 |
 
-Bei Überschreitung gibt es `AppError(429, 'RATE_LIMITED')` und den Header `Retry-After`. Die IP liefert `getClientIp(event)`: `X-Forwarded-For` wird nur ausgewertet, wenn `TRUST_PROXY=true` ist, sonst gilt die Socket-Adresse.
+Bei Überschreitung gibt es `AppError(429, 'RATE_LIMITED')` und den Header `Retry-After`. Die IP liefert `getClientIp(event)`: `X-Forwarded-For` wird nur ausgewertet, wenn `TRUST_PROXY=true` ist, und dann nur der **letzte** Eintrag (den hängt der Proxy an, alles davor kann der Client fälschen). Sonst gilt `getRequestIP` (Socket-Adresse). Lokal mit `nuxt dev` gilt `TRUST_PROXY=true`, weil der Dev-Server selbst als Proxy vorgeschaltet ist (geändert in Aufgabe 13).
 
 ## CSRF
 
@@ -365,6 +365,12 @@ NUXT_CSURF_ENCRYPT_SECRET=
   - Vuetify bekommt die Sprachen `de` und `en` und folgt der i18n-Sprache, damit auch die eingebauten Texte (Tabellen, Paginierung, Labels) übersetzt sind.
   - Die Komponente `PasswordField` hat einen Sichtbarkeits-Button mit übersetztem `aria-label`.
   - `safeRedirect` lässt nach dem Login nur interne Pfade zu, das verhindert Open Redirects über `?redirect=//…`.
+- **Ergänzt in Aufgabe 13:**
+  - **Sicherheitskorrektur:** Bei `TRUST_PROXY` zählt der letzte `X-Forwarded-For`-Eintrag statt des ersten. Der erste ist vom Client frei wählbar und hätte das Rate-Limit umgehbar gemacht.
+  - Datumsangaben werden mit fester Zeitzone `Europe/Berlin` formatiert (`app/utils/format.ts`), damit Server und Browser gleich rendern.
+  - Tabellen nutzen unterhalb von `md` die gestapelte Mobilansicht von Vuetify.
+  - Das Rollen-Auswahlfeld hat ein sichtbares `label`, weil ein `aria-label` am internen `<input>` statt an der Combobox landet.
+  - Das Audit-Log lässt sich aus der Nutzerliste direkt nach einem Nutzer gefiltert öffnen.
 
 ## Entscheidungen
 

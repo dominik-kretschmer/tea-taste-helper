@@ -1,0 +1,113 @@
+<script setup lang="ts">
+definePageMeta({ middleware: 'admin' })
+
+const { t, locale } = useI18n()
+const route = useRoute()
+
+useHead({ title: () => `${t('admin.tabs.audit')} – ${t('admin.title')}` })
+
+const query = reactive({
+  event: undefined as AuditEventType | undefined,
+  userId: typeof route.query.userId === 'string' ? route.query.userId : undefined,
+  page: 1,
+})
+watch(() => [query.event, query.userId], () => {
+  query.page = 1
+})
+
+const { data, pending } = await useFetch<Page<AuditEntry>>('/api/admin/audit', { query })
+
+// Nutzerfilter: Suche über die Nutzer-API; ein per Link übergebener Nutzer bleibt auswählbar
+const userSearch = ref('')
+const { data: userOptions } = await useFetch<Page<AdminUser>>('/api/admin/users', {
+  query: computed(() => ({ q: userSearch.value || undefined })),
+})
+const userItems = computed(() => {
+  const items = (userOptions.value?.items ?? []).map(user => ({ value: user.id, title: `${user.displayName} (${user.email})` }))
+  const preset = data.value?.items.flatMap(entry => [entry.actor, entry.target]).find(person => person?.id === query.userId)
+  if (query.userId && preset && !items.some(item => item.value === query.userId)) {
+    items.unshift({ value: preset.id, title: preset.displayName })
+  }
+  return items
+})
+
+const eventItems = computed(() => AUDIT_EVENTS.map(event => ({ value: event, title: t(`audit.events.${event}`) })))
+
+const headers = computed(() => [
+  { title: t('audit.headers.createdAt'), key: 'createdAt', sortable: false },
+  { title: t('audit.headers.event'), key: 'event', sortable: false },
+  { title: t('audit.headers.actor'), key: 'actor', sortable: false },
+  { title: t('audit.headers.target'), key: 'target', sortable: false },
+  { title: t('audit.headers.details'), key: 'details', sortable: false },
+  { title: t('audit.headers.ip'), key: 'ip', sortable: false },
+])
+
+function describe(entry: AuditEntry): string {
+  const details = entry.details ?? {}
+  if (entry.event === 'ROLE_CHANGED') {
+    return `${t(`roles.${details.from}`)} → ${t(`roles.${details.to}`)}`
+  }
+  if (entry.event === 'ADMIN_BOOTSTRAPPED') return t(`audit.via.${details.via}`)
+  if (entry.event === 'LOGIN_FAILED') {
+    return [details.email, details.reason === 'blocked' ? t('audit.blocked') : null].filter(Boolean).join(' · ')
+  }
+  return ''
+}
+</script>
+
+<template>
+  <div>
+    <AdminNav />
+
+    <v-row density="compact" class="mb-2">
+      <v-col cols="12" md="5">
+        <v-select
+          v-model="query.event"
+          :items="eventItems"
+          :label="t('audit.filters.event')"
+          clearable
+          hide-details
+        />
+      </v-col>
+      <v-col cols="12" md="7">
+        <v-autocomplete
+          v-model="query.userId"
+          v-model:search="userSearch"
+          :items="userItems"
+          :label="t('audit.filters.user')"
+          no-filter
+          clearable
+          hide-details
+        />
+      </v-col>
+    </v-row>
+
+    <v-data-table-server
+      v-model:page="query.page"
+      :headers="headers"
+      :items="data?.items ?? []"
+      :items-length="data?.total ?? 0"
+      :items-per-page="50"
+      :items-per-page-options="[{ value: 50, title: '50' }]"
+      :loading="pending"
+      mobile-breakpoint="md"
+      item-value="id"
+    >
+      <template #[`item.createdAt`]="{ item }">
+        <span class="text-no-wrap">{{ formatDateTime(item.createdAt, locale) }}</span>
+      </template>
+      <template #[`item.event`]="{ item }">
+        {{ t(`audit.events.${item.event}`) }}
+      </template>
+      <template #[`item.actor`]="{ item }">
+        {{ item.actor?.displayName ?? '–' }}
+      </template>
+      <template #[`item.target`]="{ item }">
+        {{ item.target?.displayName ?? '–' }}
+      </template>
+      <template #[`item.details`]="{ item }">
+        {{ describe(item) }}
+      </template>
+    </v-data-table-server>
+  </div>
+</template>

@@ -72,5 +72,69 @@
     "LAST_ADMIN": "The last admin cannot be demoted.",
     "PASSWORD_CHANGE_REQUIRED": "Please choose a new password first.",
     "UNKNOWN": "Something went wrong. Please try again."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "roles": {
+    "user": "User",
+    "moderator": "Moderator",
+    "admin": "Admin"
+  },
+  "admin": {
+    "title": "Administration",
+    "tabs": {
+      "users": "Users",
+      "audit": "Audit log"
+    },
+    "users": {
+      "search": "Search by name or email",
+      "role": "Role",
+      "createdAt": "Registered",
+      "lastLoginAt": "Last sign-in",
+      "actionsFor": "Actions for {name}",
+      "showAudit": "Show audit log",
+      "roleChanged": "{name} is now {role}."
+    },
+    "reset": {
+      "action": "Reset password",
+      "confirmTitle": "Reset password?",
+      "confirmText": "A one-time password will be generated for {name} ({email}). All sessions end, and a new password must be set at the next sign-in.",
+      "confirm": "Reset",
+      "resultTitle": "One-time password",
+      "resultText": "Pass this password on to {name} securely. It is only shown now.",
+      "copy": "Copy password",
+      "copied": "Copied to clipboard."
+    }
+  },
+  "audit": {
+    "filters": {
+      "event": "Event",
+      "user": "User"
+    },
+    "headers": {
+      "createdAt": "Time",
+      "event": "Event",
+      "actor": "Performed by",
+      "target": "Affected",
+      "details": "Details",
+      "ip": "IP"
+    },
+    "events": {
+      "USER_REGISTERED": "Registration",
+      "LOGIN_SUCCEEDED": "Sign-in",
+      "LOGIN_FAILED": "Failed sign-in",
+      "LOGOUT": "Sign-out",
+      "PASSWORD_CHANGED": "Password changed",
+      "PASSWORD_RESET_BY_ADMIN": "Password reset",
+      "ROLE_CHANGED": "Role changed",
+      "ADMIN_BOOTSTRAPPED": "Admin via ADMIN_EMAIL"
+    },
+    "via": {
+      "registration": "at registration",
+      "startup": "at server start"
+    },
+    "blocked": "blocked"
   }
 }

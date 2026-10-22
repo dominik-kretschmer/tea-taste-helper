@@ -72,5 +72,69 @@
     "LAST_ADMIN": "Der letzte Admin kann nicht herabgestuft werden.",
     "PASSWORD_CHANGE_REQUIRED": "Bitte lege zuerst ein neues Passwort fest.",
     "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "close": "Schließen"
+  },
+  "roles": {
+    "user": "Nutzer",
+    "moderator": "Moderator",
+    "admin": "Admin"
+  },
+  "admin": {
+    "title": "Verwaltung",
+    "tabs": {
+      "users": "Nutzer",
+      "audit": "Audit-Log"
+    },
+    "users": {
+      "search": "Nach Name oder E-Mail suchen",
+      "role": "Rolle",
+      "createdAt": "Registriert",
+      "lastLoginAt": "Letzte Anmeldung",
+      "actionsFor": "Aktionen für {name}",
+      "showAudit": "Audit-Log anzeigen",
+      "roleChanged": "{name} ist jetzt {role}."
+    },
+    "reset": {
+      "action": "Passwort zurücksetzen",
+      "confirmTitle": "Passwort zurücksetzen?",
+      "confirmText": "Für {name} ({email}) wird ein Einmal-Passwort erzeugt. Alle Sitzungen werden beendet, beim nächsten Anmelden muss ein neues Passwort gesetzt werden.",
+      "confirm": "Zurücksetzen",
+      "resultTitle": "Einmal-Passwort",
+      "resultText": "Gib dieses Passwort sicher an {name} weiter. Es wird nur jetzt angezeigt.",
+      "copy": "Passwort kopieren",
+      "copied": "In die Zwischenablage kopiert."
+    }
+  },
+  "audit": {
+    "filters": {
+      "event": "Ereignis",
+      "user": "Nutzer"
+    },
+    "headers": {
+      "createdAt": "Zeitpunkt",
+      "event": "Ereignis",
+      "actor": "Ausgeführt von",
+      "target": "Betroffen",
+      "details": "Details",
+      "ip": "IP"
+    },
+    "events": {
+      "USER_REGISTERED": "Registrierung",
+      "LOGIN_SUCCEEDED": "Anmeldung",
+      "LOGIN_FAILED": "Anmeldung fehlgeschlagen",
+      "LOGOUT": "Abmeldung",
+      "PASSWORD_CHANGED": "Passwort geändert",
+      "PASSWORD_RESET_BY_ADMIN": "Passwort zurückgesetzt",
+      "ROLE_CHANGED": "Rolle geändert",
+      "ADMIN_BOOTSTRAPPED": "Admin über ADMIN_EMAIL"
+    },
+    "via": {
+      "registration": "bei Registrierung",
+      "startup": "beim Serverstart"
+    },
+    "blocked": "gesperrt"
   }
 }
