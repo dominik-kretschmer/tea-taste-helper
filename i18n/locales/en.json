@@ -19,5 +19,58 @@
   "language": {
     "de": "Deutsch",
     "en": "English"
+  },
+  "form": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "fields": {
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "remember": "Keep me signed in"
+  },
+  "login": {
+    "title": "Sign in",
+    "submit": "Sign in",
+    "noAccount": "No account yet?"
+  },
+  "register": {
+    "title": "Sign up",
+    "submit": "Create account",
+    "haveAccount": "Already registered?",
+    "displayNameHint": "Shown publicly, e.g. next to your contributions.",
+    "passwordHint": "{min} to {max} characters – a long sentence is safer than special characters."
+  },
+  "password": {
+    "title": "Change password",
+    "current": "Current password",
+    "temporary": "One-time password",
+    "new": "New password",
+    "submit": "Change password",
+    "done": "Your password has been changed. Other devices were signed out.",
+    "required": "An admin has reset your password. Please choose a new one now."
+  },
+  "validation": {
+    "required": "Required",
+    "tooShort": "At least {min} characters",
+    "tooLong": "At most {max} characters",
+    "email": "Please enter a valid email address",
+    "invalid": "Invalid input"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "Email or password is incorrect.",
+    "REGISTRATION_FAILED": "Registration is not possible with these details.",
+    "RATE_LIMITED": "Too many attempts. Please wait a few minutes.",
+    "ACCOUNT_BLOCKED": "This account is blocked.",
+    "CSRF_INVALID": "Your session has expired. Please reload the page.",
+    "VALIDATION_ERROR": "Please check your input.",
+    "UNAUTHENTICATED": "Please sign in.",
+    "FORBIDDEN": "You are not allowed to do this.",
+    "NOT_FOUND": "Not found.",
+    "SELF_ROLE_CHANGE": "You cannot change your own role.",
+    "LAST_ADMIN": "The last admin cannot be demoted.",
+    "PASSWORD_CHANGE_REQUIRED": "Please choose a new password first.",
+    "UNKNOWN": "Something went wrong. Please try again."
   }
 }

@@ -19,5 +19,58 @@
   "language": {
     "de": "Deutsch",
     "en": "English"
+  },
+  "form": {
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
+  },
+  "fields": {
+    "email": "E-Mail",
+    "password": "Passwort",
+    "displayName": "Anzeigename",
+    "remember": "Angemeldet bleiben"
+  },
+  "login": {
+    "title": "Anmelden",
+    "submit": "Anmelden",
+    "noAccount": "Noch kein Konto?"
+  },
+  "register": {
+    "title": "Registrieren",
+    "submit": "Konto anlegen",
+    "haveAccount": "Schon registriert?",
+    "displayNameHint": "Wird öffentlich angezeigt, z.B. bei deinen Beiträgen.",
+    "passwordHint": "{min} bis {max} Zeichen – ein langer Satz ist sicherer als Sonderzeichen."
+  },
+  "password": {
+    "title": "Passwort ändern",
+    "current": "Aktuelles Passwort",
+    "temporary": "Einmal-Passwort",
+    "new": "Neues Passwort",
+    "submit": "Passwort ändern",
+    "done": "Dein Passwort wurde geändert. Andere Geräte wurden abgemeldet.",
+    "required": "Dein Passwort wurde von einem Admin zurückgesetzt. Bitte lege jetzt ein neues fest."
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "tooShort": "Mindestens {min} Zeichen",
+    "tooLong": "Höchstens {max} Zeichen",
+    "email": "Bitte eine gültige E-Mail-Adresse eingeben",
+    "invalid": "Ungültige Eingabe"
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
+    "REGISTRATION_FAILED": "Registrierung mit diesen Daten nicht möglich.",
+    "RATE_LIMITED": "Zu viele Versuche. Bitte warte ein paar Minuten.",
+    "ACCOUNT_BLOCKED": "Dieses Konto ist gesperrt.",
+    "CSRF_INVALID": "Die Sitzung ist abgelaufen. Bitte lade die Seite neu.",
+    "VALIDATION_ERROR": "Bitte prüfe deine Eingaben.",
+    "UNAUTHENTICATED": "Bitte melde dich an.",
+    "FORBIDDEN": "Dafür fehlen dir die Rechte.",
+    "NOT_FOUND": "Nicht gefunden.",
+    "SELF_ROLE_CHANGE": "Du kannst deine eigene Rolle nicht ändern.",
+    "LAST_ADMIN": "Der letzte Admin kann nicht herabgestuft werden.",
+    "PASSWORD_CHANGE_REQUIRED": "Bitte lege zuerst ein neues Passwort fest.",
+    "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
   }
 }

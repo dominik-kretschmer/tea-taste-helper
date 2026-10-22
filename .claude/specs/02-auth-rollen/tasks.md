@@ -102,7 +102,7 @@ Reihenfolge:
     - Bei 360 px ist das Menü bedienbar.
   - Ergebnis: Nutzermenü (Gast breit/schmal, SSR ohne Flackern, Abmelden) im Browser geprüft. Die Weiterleitungen der Middleware werden in Aufgabe 12/13 geprüft, weil die Zielseiten erst dort entstehen. Der Auth-Plugin heißt `auth.server.ts`, weil er nur beim SSR lädt.
 
-- [ ] 12. Seiten: Anmelden, Registrieren, Passwort ändern
+- [x] 12. Seiten: Anmelden, Registrieren, Passwort ändern
   - Dateien: `app/pages/login.vue`, `app/pages/register.vue`, `app/pages/account/password.vue`, `app/composables/useFormErrors.ts`, `i18n/locales/*.json`, `test/unit/i18n.test.ts` (bleibt grün)
   - Erfüllt: AK-1.1, AK-1.5 (UI), AK-2.1–AK-2.4 (UI), AK-3.1, AK-3.2 (UI), AK-6.2 (UI), AK-12.1, AK-12.2
   - Prüfung im Browser, auf Deutsch und Englisch:
@@ -112,6 +112,7 @@ Reihenfolge:
     - Passwort ändern
     - Pflichtwechsel nach Admin-Reset leitet auf `/account/password`
     - 360 px ohne horizontales Scrollen
+  - Ergebnis: Alle Abläufe sind per Playwright auf Deutsch und Englisch geprüft, ebenso die Middleware-Weiterleitungen `guest` und `auth` sowie `password-change`. Dabei aufgefallen und behoben: Vuetify-Texte waren unübersetzt (jetzt an i18n gekoppelt).
 
 - [ ] 13. Admin-Seiten
   - Dateien: `app/pages/admin/index.vue`, `app/pages/admin/users.vue`, `app/pages/admin/audit.vue`, `i18n/locales/*.json`

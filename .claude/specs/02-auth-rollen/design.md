@@ -361,6 +361,10 @@ NUXT_CSURF_ENCRYPT_SECRET=
   - `LAST_ADMIN` ist über die API praktisch nicht auslösbar: Nur Admins ändern Rollen, und die eigene Rolle ist gesperrt. Die Zählung in einer `Serializable`-Transaktion schützt vor gleichzeitigen Änderungen.
   - `/api/health` bleibt während des Pflicht-Passwortwechsels erreichbar (Monitoring).
   - Hilfsfunktionen `toAdminUser` und `getUserIdParam` liegen in `server/utils/users.ts`. Eine ungültige ID ergibt 404.
+- **Ergänzt in Aufgabe 12:**
+  - Vuetify bekommt die Sprachen `de` und `en` und folgt der i18n-Sprache, damit auch die eingebauten Texte (Tabellen, Paginierung, Labels) übersetzt sind.
+  - Die Komponente `PasswordField` hat einen Sichtbarkeits-Button mit übersetztem `aria-label`.
+  - `safeRedirect` lässt nach dem Login nur interne Pfade zu, das verhindert Open Redirects über `?redirect=//…`.
 
 ## Entscheidungen
 
