@@ -1,6 +1,6 @@
 # Design: 02 – Auth & Rollen
 
-> Phase 2 zu [requirements.md](requirements.md). Status: **freigegeben (2026-10-22)**
+> Phase 2 zu [requirements.md](requirements.md). Status: **umgesetzt (2026-10-22)**, Push/CI offen
 
 ## Überblick
 

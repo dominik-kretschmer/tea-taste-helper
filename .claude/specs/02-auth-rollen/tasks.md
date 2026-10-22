@@ -1,6 +1,6 @@
 # Aufgaben: 02 – Auth & Rollen
 
-> Phase 3 zu [design.md](design.md). Status: **freigegeben (2026-10-22)**
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-22)**, Push/CI offen
 
 Reihenfolge:
 - Sicherheitsrahmen → Datenmodell → Server-Bausteine → API → UI → Endabnahme.
@@ -130,7 +130,7 @@ Reihenfolge:
   - Erfüllt: AK-4.3
   - Prüfung: Die README erklärt, wie man der erste Admin wird, und warnt vor dem offenen `ADMIN_EMAIL`.
 
-- [ ] 15. Abschluss
+- [x] 15. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
   - Ablauf:
     1. `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei.
@@ -138,3 +138,24 @@ Reihenfolge:
     3. Jedes AK einzeln prüfen und als Tabelle (AK | Ergebnis | Nachweis) melden.
     4. Status von `requirements.md`, `design.md` und `tasks.md` auf „umgesetzt“ setzen.
     5. Push nur nach Rücksprache (zusammen mit dem offenen Push aus 01).
+  - Endabnahme (2026-10-22): `lint`, `typecheck`, 124 Tests und `build` sind grün. Keine CSP-Verstöße in Dev und Production über alle neuen Seiten.
+
+    | AK | Ergebnis | Nachweis |
+    |---|---|---|
+    | 1.1–1.5 | ✅ | API-Tests `auth.test.ts`; Browser: Registrierung, übersetzte Feldfehler (de/en) |
+    | 2.1–2.7 | ✅ | API-Tests (Cookie-Attribute, `Max-Age`, Hash in DB, Logout mit Cookie-Kopie, Ablauf, gleitend, gesperrt); Production: `__Host-session` + `Secure` |
+    | 2.8 | ✅ | Browser: Gast-Buttons bzw. Menü bei 360 px, SSR mit Namen ohne Flackern, „Verwaltung“ nur für Admins |
+    | 3.1, 3.2 | ✅ | API-Tests; Browser: Passwort ändern |
+    | 4.1, 4.2 | ✅ | API-Tests (Registrierung, Neustart mit `startServer`) |
+    | 4.3 | ✅ | README „Erster Admin“, `.env.example` |
+    | 5.1–5.3 | ✅ | API-Tests `admin.test.ts`; Browser: Suche, Seiten, Rolle ändern, eigene Rolle gesperrt |
+    | 5.4 | ✅ | Browser: Gast → `/login`, Nutzer → `/`; API 401/403 |
+    | 6.1–6.3 | ✅ | API-Tests (`no-store`, Sessions beendet, `PASSWORD_CHANGE_REQUIRED`, nicht im Audit); Browser: Dialog, Kopieren, Pflichtwechsel |
+    | 7.1–7.3 | ✅ | Unit `authz.test.ts`; API: jede Admin-Route Gast 401, Nutzer/Moderator 403, Admin 2xx |
+    | 8.1–8.3 | ✅ | API `security.test.ts`; im Dev-Server ausgelöst (429 nach 5 Registrierungen) |
+    | 9.1, 9.2 | ✅ | API: POST/PUT/PATCH/DELETE ohne/falsches/fremdes Token → 403; Browser: alle Formulare über `$api` |
+    | 10.1, 10.2 | ✅ | API-Header-Test; Production: HSTS; Browser Dev + Production ohne CSP-Verstöße; `'unsafe-inline'` nur `style-src` (nachweislich nötig) |
+    | 11.1–11.3 | ✅ | API-Tests (alle Ereignistypen, ohne Geheimnisse, Filter, keine Änderungsrouten); Browser: Audit-Seite mit Filtern |
+    | 12.1–12.3 | ✅ | Unit-Test Sprachdateien; Browser de/en, 360 px ohne Überlauf; 124 Tests |
+
+  - **Offen:** Push und CI-Lauf, zusammen mit 01, nur nach Rücksprache.

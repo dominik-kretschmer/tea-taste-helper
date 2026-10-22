@@ -1,7 +1,7 @@
 # 02 – Auth & Rollen
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 02 (§3 Nutzer & Rollen, §11 Authentifizierung, §12 Sicherheit, §13 Audit-Log). Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-22)**, AK-1.2 angepasst mit dem Design (2026-10-22): Bei Sofort-Anmeldung lässt sich nicht verbergen, dass eine Adresse vergeben ist.
+> Status: **umgesetzt (2026-10-22)**, Push/CI offen. Freigegeben am 2026-10-22, AK-1.2 angepasst mit dem Design (2026-10-22): Bei Sofort-Anmeldung lässt sich nicht verbergen, dass eine Adresse vergeben ist.
 
 ## Ziel
 
