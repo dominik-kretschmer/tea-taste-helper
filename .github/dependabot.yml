@@ -8,6 +8,10 @@ updates:
       # Prisma-Pakete müssen dieselbe Version haben
       prisma:
         patterns: ['prisma', '@prisma/*']
+    ignore:
+      # Typen müssen zur Node-Version passen (Node 22, siehe CI und README)
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
