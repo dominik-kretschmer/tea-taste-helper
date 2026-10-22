@@ -19,7 +19,7 @@ Reihenfolge:
   - Erfüllt: AK-3.1, AK-3.3
   - Prüfung: `.env.example` enthält alle Variablen aus dem Design und keine echten Secrets. `git status` zeigt `.env` nicht.
 
-- [ ] 3. Docker Compose umstellen
+- [x] 3. Docker Compose umstellen
   - Dateien: `compose.yaml`, `compose.cpu.yaml` (neu), `docker/postgres/init/01-test-db.sql` (neu), `init/` (entfernen)
   - Erfüllt: AK-1.1, AK-1.2, AK-1.4, AK-10.3, AK-10.4
   - Ablauf:
