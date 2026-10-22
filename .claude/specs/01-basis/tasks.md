@@ -9,7 +9,7 @@ Reihenfolge:
 - Gepusht wird erst in Aufgabe 15, nach Rücksprache.
 - Das Löschen der Volumes in Aufgabe 3 ist freigegeben und läuft ohne erneute Rückfrage.
 
-- [ ] 1. GPU-Prüfung und Anleitung
+- [x] 1. GPU-Prüfung und Anleitung
   - Dateien: `scripts/check-gpu.sh`, `docs/gpu-setup.md`
   - Erfüllt: AK-10.1, AK-10.2
   - Prüfung: `bash scripts/check-gpu.sh` meldet je Schritt `OK`/`FEHLT`. Fehlt etwas, arbeitet der Entwickler die Anleitung ab und startet das Skript erneut, bis alle Schritte `OK` melden. Erst dann folgt Aufgabe 3.

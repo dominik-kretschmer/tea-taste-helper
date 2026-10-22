@@ -73,8 +73,8 @@ Das Projekt ist noch der leere Nuxt-Starter. Diese Spec legt das technische Fund
 - **AK-9.3:** Dependabot ist für npm-Pakete und GitHub Actions konfiguriert (wöchentlich).
 
 ### US-10 – GPU für Ollama
-- **AK-10.1:** WENN `scripts/check-gpu.sh` ausgeführt wird, DANN prüft es nacheinander Treiber in WSL (`nvidia-smi`), NVIDIA Container Toolkit, Docker-Runtime `nvidia` und GPU-Zugriff aus einem Container, und meldet je Schritt `OK` oder `FEHLT` mit dem passenden Abschnitt der Anleitung.
-- **AK-10.2:** Es gibt eine Anleitung `docs/gpu-setup.md` mit den Installationsschritten für das NVIDIA Container Toolkit unter WSL2 (Ubuntu), die sich Schritt für Schritt abarbeiten lässt. Ausgeführt werden die Befehle vom Entwickler selbst (sie brauchen `sudo`).
+- **AK-10.1:** WENN `scripts/check-gpu.sh` ausgeführt wird, DANN prüft es nacheinander Treiber in WSL (`nvidia-smi`), NVIDIA Container Toolkit, Docker-Runtime `nvidia` und GPU-Zugriff aus einem Container, und meldet je Schritt `OK` oder `FEHLT` mit dem passenden Abschnitt der Anleitung. Bei Docker Desktop wird der Toolkit-Schritt als „nicht nötig“ übersprungen, weil Docker Desktop den GPU-Support mitbringt.
+- **AK-10.2:** Es gibt eine Anleitung `docs/gpu-setup.md` mit den Einrichtungsschritten für Docker Desktop und für eine Docker Engine mit NVIDIA Container Toolkit unter WSL2 (Ubuntu), die sich Schritt für Schritt abarbeiten lässt. Ausgeführt werden die Befehle vom Entwickler selbst (sie brauchen `sudo`).
 - **AK-10.3:** WENN die GPU eingerichtet ist und `docker compose up -d` läuft, DANN zeigt `docker compose exec ollama nvidia-smi` die RTX 5050.
 - **AK-10.4:** WENN keine GPU verfügbar ist, DANN lässt sich Ollama trotzdem starten (CPU-Betrieb über eine Compose-Override-Datei oder ein Profil), damit z.B. die CI nicht von einer GPU abhängt.
 

@@ -257,7 +257,7 @@ Beide Prüfungen laufen parallel mit 2 s Timeout.
 `scripts/check-gpu.sh` (bash, `set -u`, ohne `sudo`, ändert nichts am System) prüft nacheinander:
 
 1. `nvidia-smi` in WSL → Windows-Treiber vorhanden
-2. `nvidia-ctk --version` → Container Toolkit installiert
+2. `nvidia-ctk --version` → Container Toolkit installiert (nur Docker Engine; bei `docker info` = „Docker Desktop“ übersprungen)
 3. `docker info` enthält Runtime `nvidia` → Docker konfiguriert
 4. `docker run --rm --gpus all ubuntu nvidia-smi -L` → GPU im Container sichtbar
 
@@ -270,7 +270,7 @@ Jeder Schritt meldet `OK` oder `FEHLT → docs/gpu-setup.md#<abschnitt>`. Der Ex
 - Prüfung
 - Häufige Fehler
 
-Stand 2026-10-22 auf dem Entwicklungsrechner: Schritt 1 und 3 sind erfüllt, 2 und 4 noch ungeprüft.
+Stand 2026-10-22 auf dem Entwicklungsrechner (Docker Desktop): Schritte 1, 3 und 4 OK, Schritt 2 nicht nötig.
 
 ## Entscheidungen
 
