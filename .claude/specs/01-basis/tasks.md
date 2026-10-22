@@ -123,6 +123,7 @@ Reihenfolge:
 
 - [ ] 15. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
+  - Stand 2026-10-22: Schritte 1–3 erledigt, alle AKs außer 9.1 erfüllt. **Offen:** Push und CI-Lauf (AK-9.1), `db:reset` durch den Nutzer (AK-2.3), Status „umgesetzt“. Der Nutzer hat entschieden, vorher mit 02 zu beginnen.
   - Ablauf:
     1. `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei.
     2. Hot Reload prüfen (AK-1.3): Text in `app/pages/index.vue` ändern, die Seite aktualisiert sich ohne Neustart.
