@@ -75,7 +75,7 @@ Reihenfolge:
     - Manuell: `curl -i localhost:3000/api/gibt-es-nicht` → 404 im Fehlerformat. Eine unbekannte Seite außerhalb von `/api` zeigt weiterhin die Nuxt-Fehlerseite.
   - Ergebnis: Die 404 ist geprüft, der 500er-Weg mit einer temporären Route ebenfalls (Antwort ohne Details, Stacktrace im Log). Die Nuxt-Fehlerseite für Nicht-API-Pfade wird in Aufgabe 11 geprüft, weil es erst dann Seiten-Routing gibt.
 
-- [ ] 9. Health-Endpunkt
+- [x] 9. Health-Endpunkt
   - Dateien: `server/utils/health.ts`, `server/api/health.get.ts`, `test/unit/health.test.ts`
   - Erfüllt: AK-6.1, AK-6.2
   - Prüfung:
