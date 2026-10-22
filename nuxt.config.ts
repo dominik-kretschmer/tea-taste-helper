@@ -5,7 +5,38 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint', '@nuxtjs/i18n'],
+  modules: ['@nuxt/eslint', '@nuxtjs/i18n', 'nuxt-security'],
+  security: {
+    nonce: true,
+    headers: {
+      contentSecurityPolicy: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", 'data:'],
+        'font-src': ["'self'"],
+        'connect-src': ["'self'", ...(process.env.NODE_ENV === 'production' ? [] : ['ws:'])],
+        'frame-ancestors': ["'none'"],
+        'form-action': ["'self'"],
+        'base-uri': ["'none'"],
+        'object-src': ["'none'"],
+        'script-src-attr': ["'none'"],
+        'upgrade-insecure-requests': process.env.NODE_ENV === 'production',
+      },
+      xFrameOptions: 'DENY',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      strictTransportSecurity: process.env.NODE_ENV === 'production'
+        ? { maxAge: 31536000, includeSubdomains: true }
+        : false,
+    },
+    // Eigener Rate-Limiter (pro IP und pro E-Mail), siehe server/utils/rate-limit.ts
+    rateLimiter: false,
+    // Würde legitime Eingaben blockieren; Eingaben prüft zod, Vue escapt bei der Ausgabe
+    xssValidator: false,
+    csrf: {
+      methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    },
+  },
   i18n: {
     // Deutsch ohne Präfix (/), Englisch unter /en
     strategy: 'prefix_except_default',

@@ -9,7 +9,7 @@ Reihenfolge:
 - Gepusht wird nur nach Rücksprache.
 - Zum Abschluss jeder Aufgabe laufen `npm run lint`, `npm run typecheck` und `npm test` grün.
 
-- [ ] 1. Sicherheitsrahmen: nuxt-security, CSRF, Konfiguration
+- [x] 1. Sicherheitsrahmen: nuxt-security, CSRF, Konfiguration
   - Dateien: `package.json` (`nuxt-security`, `nuxt-csurf`, `@node-rs/argon2`), `nuxt.config.ts` (`security`), `server/utils/env.ts` (`ADMIN_EMAIL`, `TRUST_PROXY`, `CSRF_SECRET`), `.env.example`, `.env`, `server/utils/errors.ts` (`CSRF_INVALID`, `RATE_LIMITED`), `test/unit/env.test.ts`, `test/unit/errors.test.ts`
   - Erfüllt: AK-9.1, AK-10.1 (Grundlage)
   - Prüfung:

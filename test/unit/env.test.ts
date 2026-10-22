@@ -10,7 +10,25 @@ const valid = {
 
 describe('parseEnv', () => {
   it('akzeptiert eine gültige Umgebung', () => {
-    expect(parseEnv(valid)).toEqual(valid)
+    expect(parseEnv(valid)).toEqual({ ...valid, TRUST_PROXY: false })
+  })
+
+  it('normalisiert ADMIN_EMAIL und TRUST_PROXY', () => {
+    const env = parseEnv({ ...valid, ADMIN_EMAIL: 'Chef@Example.ORG', TRUST_PROXY: 'true' })
+    expect(env.ADMIN_EMAIL).toBe('chef@example.org')
+    expect(env.TRUST_PROXY).toBe(true)
+  })
+
+  it('nennt ADMIN_EMAIL und TRUST_PROXY bei ungültigen Werten', () => {
+    expect(() => parseEnv({ ...valid, ADMIN_EMAIL: 'kein-mail' })).toThrow(/ADMIN_EMAIL/)
+    expect(() => parseEnv({ ...valid, TRUST_PROXY: 'ja' })).toThrow(/TRUST_PROXY/)
+  })
+
+  it('verlangt in Production einen CSRF-Schlüssel mit 32 Zeichen', () => {
+    const production = { ...valid, NODE_ENV: 'production' }
+    expect(() => parseEnv(production)).toThrow(/NUXT_CSURF_ENCRYPT_SECRET/)
+    expect(() => parseEnv({ ...production, NUXT_CSURF_ENCRYPT_SECRET: 'zu-kurz' })).toThrow(/32 Zeichen/)
+    expect(parseEnv({ ...production, NUXT_CSURF_ENCRYPT_SECRET: 'a'.repeat(32) }).NUXT_CSURF_ENCRYPT_SECRET).toHaveLength(32)
   })
 
   it('setzt Standardwerte für optionale Variablen', () => {

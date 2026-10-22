@@ -43,6 +43,15 @@ describe('toErrorResponse', () => {
       .toMatchObject({ status: 405, body: { error: { code: 'HTTP_405', message: 'Method Not Allowed' } } })
   })
 
+  it('CSRF-Fehler von nuxt-csurf → 403 CSRF_INVALID', () => {
+    const csrf = createError({ statusCode: 403, statusMessage: 'CSRF Token Mismatch', message: 'CSRF Token not found' })
+    expect(toErrorResponse(csrf, requestId)).toMatchObject({ status: 403, body: { error: { code: 'CSRF_INVALID' } } })
+  })
+
+  it('H3-429 → RATE_LIMITED', () => {
+    expect(toErrorResponse(createError({ statusCode: 429 }), requestId).body.error.code).toBe('RATE_LIMITED')
+  })
+
   it('unbekannter Fehler → 500 INTERNAL_ERROR ohne interne Details', () => {
     const { status, body } = toErrorResponse(new Error('DB-Passwort falsch: geheim'), requestId)
     expect(status).toBe(500)

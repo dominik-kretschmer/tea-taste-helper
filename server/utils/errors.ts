@@ -45,9 +45,12 @@ export function toErrorResponse(error: unknown, requestId: string): { status: nu
   }
   if (isError(inner) && inner.statusCode < 500) {
     const message = inner.statusMessage || inner.message
-    return inner.statusCode === 404
-      ? build(404, 'NOT_FOUND', message || 'Not found')
-      : build(inner.statusCode, `HTTP_${inner.statusCode}`, message)
+    // nuxt-csurf wirft einen H3-Fehler mit genau dieser statusMessage
+    if (inner.statusCode === 403 && inner.statusMessage === 'CSRF Token Mismatch') {
+      return build(403, 'CSRF_INVALID', 'Invalid or missing CSRF token')
+    }
+    const known: Record<number, string> = { 404: 'NOT_FOUND', 429: 'RATE_LIMITED' }
+    return build(inner.statusCode, known[inner.statusCode] ?? `HTTP_${inner.statusCode}`, message || 'Error')
   }
   return build(500, 'INTERNAL_ERROR', 'Internal server error')
 }

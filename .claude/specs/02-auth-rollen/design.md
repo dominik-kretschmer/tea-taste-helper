@@ -38,7 +38,7 @@ Beim Login (AK-2.2) ist ein vollständiges Verbergen möglich: Für unbekannte E
 |---|---|---|
 | `package.json` | geändert | `@node-rs/argon2`, `nuxt-security`, `nuxt-csurf` |
 | `nuxt.config.ts` | geändert | Module `nuxt-security` (inkl. CSRF), Konfiguration |
-| `.env.example`, `.env` | geändert | `ADMIN_EMAIL`, `TRUST_PROXY`, `CSRF_SECRET` |
+| `.env.example`, `.env` | geändert | `ADMIN_EMAIL`, `TRUST_PROXY`, `NUXT_CSURF_ENCRYPT_SECRET` |
 | `prisma/schema.prisma` | geändert | `Role`, `User`, `Session`, `AuditEvent`, `AuditLog` |
 | `prisma/migrations/0002_auth/` | neu | Migration |
 | `shared/schemas/auth.ts` | neu | zod-Schemas für Client und Server (Registrierung, Login, Passwort, Rolle) |
@@ -223,7 +223,7 @@ Bei Überschreitung gibt es `AppError(429, 'RATE_LIMITED')` und den Header `Retr
 
 ## CSRF
 
-- `nuxt-security` mit `csrf: { methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'], encryptSecret: CSRF_SECRET }`.
+- `nuxt-security` mit `csrf: { methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'] }`; der Schlüssel kommt aus `NUXT_CSURF_ENCRYPT_SECRET`.
 - Das Token kommt per `<meta name="csrf-token">` ins HTML. Das Plugin `app/plugins/api.ts` stellt `$api` bereit: `$fetch.create` mit dem Header `csrf-token` aus `useCsrf()`. Alle Formulare und Composables verwenden `$api` (AK-9.2).
 - `toErrorResponse` bildet den Fehler von `nuxt-csurf` (H3-Fehler 403 mit `statusMessage: 'CSRF Token Mismatch'`) auf `CSRF_INVALID` ab.
 
@@ -254,7 +254,7 @@ security: {
 }
 ```
 
-`'unsafe-inline'` steht nur bei `style-src`. Ob Vuetify es wirklich braucht, prüft Aufgabe 2 (AK-10.1). Geht es ohne, fällt es weg.
+`'unsafe-inline'` steht nur bei `style-src`. Aufgabe 1 hat geprüft, dass Vuetify es braucht: Ohne gibt es über 80 Verstöße, und Theme-Farben fehlen (2026-10-22).
 
 ## Audit-Log
 
@@ -324,11 +324,13 @@ Unter `/en/...` gibt es jeweils die englische Variante (`prefix_except_default`)
 ADMIN_EMAIL=
 # Nur hinter einem Reverse Proxy auf true setzen (wertet X-Forwarded-For aus)
 TRUST_PROXY=false
-# Schlüssel für CSRF-Tokens (32 Byte, base64): openssl rand -base64 32
-CSRF_SECRET=
+# Schlüssel für CSRF-Tokens, genau 32 Zeichen, in Production Pflicht: openssl rand -base64 24
+NUXT_CSURF_ENCRYPT_SECRET=
 ```
 
-`envSchema` bekommt die Felder `ADMIN_EMAIL` (optionale E-Mail, kleingeschrieben), `TRUST_PROXY` (Boolean, Standard `false`) und `CSRF_SECRET` (Pflicht in Production; im Dev und in Tests wird ohne Angabe ein zufälliger Wert erzeugt und eine Warnung geloggt).
+`envSchema` bekommt die Felder `ADMIN_EMAIL` (optionale E-Mail, kleingeschrieben), `TRUST_PROXY` (Boolean, Standard `false`) und `NUXT_CSURF_ENCRYPT_SECRET`.
+
+**Geändert in Aufgabe 1:** Die Variable heißt `NUXT_CSURF_ENCRYPT_SECRET` statt `CSRF_SECRET`. `nuxt-csurf` liest den Schlüssel aus `runtimeConfig.csurf.encryptSecret`. Ohne Vorgabe erzeugt es ihn beim Build und schreibt ihn in die Build-Artefakte. Über den Nuxt-Mechanismus `NUXT_…` wird er zur Laufzeit gesetzt. Er muss genau 32 Zeichen haben (AES-256) und ist in Production Pflicht.
 
 ## Tests
 

@@ -9,6 +9,17 @@ export const envSchema = z.object({
   OLLAMA_URL: optional(z.url().default('http://localhost:11434')),
   LOG_LEVEL: optional(z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')),
   NODE_ENV: optional(z.enum(['development', 'production', 'test']).default('development')),
+  // Wird bei Registrierung bzw. Serverstart automatisch Admin (02, AK-4.1/4.2)
+  ADMIN_EMAIL: optional(z.email().transform(email => email.toLowerCase()).optional()),
+  // X-Forwarded-For nur hinter einem vertrauenswürdigen Reverse Proxy auswerten
+  TRUST_PROXY: optional(z.enum(['true', 'false']).default('false').transform(value => value === 'true')),
+  // AES-256-Schlüssel für CSRF-Tokens (nuxt-csurf liest ihn als runtimeConfig.csurf.encryptSecret)
+  NUXT_CSURF_ENCRYPT_SECRET: optional(z.string().length(32, 'muss genau 32 Zeichen lang sein (openssl rand -base64 24)').optional()),
+}).superRefine((env, ctx) => {
+  // Ohne festen Schlüssel erzeugt nuxt-csurf ihn beim Build und schreibt ihn in die Build-Artefakte.
+  if (env.NODE_ENV === 'production' && !env.NUXT_CSURF_ENCRYPT_SECRET) {
+    ctx.addIssue({ code: 'custom', path: ['NUXT_CSURF_ENCRYPT_SECRET'], message: 'ist in Production Pflicht' })
+  }
 })
 
 export type Env = z.infer<typeof envSchema>
