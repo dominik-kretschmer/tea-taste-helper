@@ -85,6 +85,10 @@ In der Verwaltung lassen sich Rollen vergeben (`user`, `moderator`, `admin`). Oh
 
 Den Zutatenkatalog (`/zutaten`, englisch `/en/ingredients`) lesen alle; Anlegen, Bearbeiten und Übersetzen brauchen ein Konto. Jedes Speichern legt eine neue Version an, die Historie mit Vergleich steht unter `/zutaten/<id>/historie`. Die sprachabhängigen Pfade stehen zentral in `nuxt.config.ts` (`i18n.pages`); Links entstehen über `localePath({ name: 'ingredients-id', params: { id } })`.
 
+## Tees
+
+Tees (`/tees`, englisch `/en/teas`) bestehen aus Zutaten des Katalogs, optional mit Anteilen in Prozent; der nicht angegebene Rest wird als „unbekannt“ angezeigt. Neue Tees sind **privat**: Nur der Ersteller sieht und bearbeitet sie, für alle anderen (auch Admins) gibt es sie nicht (404, nicht in Listen). Der Ersteller kann einen privaten Tee löschen oder veröffentlichen; veröffentlichte Tees bearbeiten alle Angemeldeten wie Zutaten (Versionen, Historie, Übersetzungen), zurück auf privat geht nicht. Gleich benannte öffentliche Tees sind nur mit unterschiedlicher Marke erlaubt. Eigene Tees stehen unter „Meine“ (`/tees?mine=1`).
+
 ## Migrationen
 
 Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie nicht abbilden kann:
@@ -93,8 +97,9 @@ Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie n
 |---|---|---|
 | Erweiterung `pg_trgm` | `0003_ingredients` | Ähnliche Namen und schnelle Teilwortsuche |
 | `IngredientVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0003_ingredients` | Genau eine aktuelle Version pro Zutat |
+| `TeaVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0004_teas` | Genau eine aktuelle Version pro Tee |
 
-Der GIN-Index `IngredientVersionTranslation_name_trgm` steht zusätzlich im Schema (`type: Gin`), damit Prisma ihn nicht als Abweichung sieht.
+Die GIN-Indizes `IngredientVersionTranslation_name_trgm` und `TeaVersionTranslation_name_trgm` stehen zusätzlich im Schema (`type: Gin`), damit Prisma sie nicht als Abweichung sieht.
 
 Neue Migrationen deshalb immer in zwei Schritten erzeugen:
 
@@ -113,7 +118,7 @@ app/                 Frontend (Seiten, Layouts, Komponenten, Plugins)
 i18n/locales/        UI-Texte (de.json, en.json – gleiche Schlüssel)
 server/api/          API-Routen (Nitro)
 server/middleware/   Session auflösen, Pflicht-Passwortwechsel
-server/utils/        Env, Logger, Prisma, Fehler, Health, Sessions, Rechte, Rate-Limit, Audit, Zutaten-Abfragen
+server/utils/        Env, Logger, Prisma, Fehler, Health, Sessions, Rechte, Rate-Limit, Audit, Katalog-, Zutaten- und Tee-Abfragen
 server/plugins/      Env-Prüfung, Request-Logging, ADMIN_EMAIL, Session-Aufräumen
 shared/              Typen, Rollen und zod-Schemas für Client und Server
 prisma/              Schema und Migrationen
@@ -130,7 +135,7 @@ Alle Fehler unter `/api/` haben dieses Format; jede Antwort trägt den Header `X
 { "error": { "code": "VALIDATION_ERROR", "message": "Invalid input", "requestId": "…", "details": { } } }
 ```
 
-Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `DUPLICATE_NAME` (409, mit `ingredientId`), `EDIT_CONFLICT` (409, mit `currentVersion`), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
+Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `INGREDIENT_NOT_FOUND` (400, mit `index`), `ALREADY_PUBLIC` (400), `DUPLICATE_NAME` (409, mit `ingredientId` bzw. `teaId`), `EDIT_CONFLICT` (409, mit `currentVersion`), `TEA_PUBLIC` (409), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
 
 ## Sicherheit
 

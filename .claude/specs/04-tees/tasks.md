@@ -189,10 +189,11 @@ Reihenfolge:
     - `CatalogRevisionDiff` formatiert dafür auch Art, Marke und Sichtbarkeit.
     - Suite 284 Tests grün (unter der gemeinsamen Test-Sperre).
 
-- [ ] 16. Dokumentation
+- [x] 16. Dokumentation
   - Dateien: `README.md` (Tees, SQL-Objekt `TeaVersion_current_key`, neue Fehlercodes), `.claude/skills/nuxt-dev/SKILL.md`
   - Erfüllt: Design („SQL-Objekte“)
   - Prüfung: README listet alle SQL-Objekte aus 0003 und 0004 und beschreibt Tees und Sichtbarkeit kurz.
+  - Ergebnis: README hat den Abschnitt „Tees“ (Sichtbarkeit, Veröffentlichen, Duplikatregel, „Meine“), `TeaVersion_current_key` in der Migrations-Tabelle, beide GIN-Indizes und die neuen Fehlercodes. Der Skill nennt beide partiellen Indizes und die Regel, Tees nur über `server/utils/teas.ts` abzufragen.
 
 - [ ] 17. Abschluss
   - Erfüllt: alle AKs (Endabnahme)

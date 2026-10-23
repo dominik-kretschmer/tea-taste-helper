@@ -54,7 +54,8 @@ Das Projekt ist eine Nuxt-4-App (Vue 3, Vuetify 4, @nuxtjs/i18n) mit Prisma 7 au
 - Geheimnisse gehören in `.env` (in `.gitignore`); Vorlage ist `.env.example`.
 - Logs schreibt pino; im Dev-Modus über `pino-pretty` asynchron – beim Auslesen kurz warten.
 - `npm run db:reset` wird von Prisma für KI-Agenten blockiert und braucht die ausdrückliche Zustimmung des Nutzers.
-- Migrationen enthalten SQL, das Prisma nicht kennt: `pg_trgm` und den partiellen Unique-Index `IngredientVersion_current_key` (siehe README „Migrationen“). Neue Migrationen deshalb immer mit `--create-only` erzeugen und vor dem Anwenden prüfen, dass sie nichts davon löschen. Angewendete Migrationen nicht mehr ändern, auch keine Kommentare – sonst stimmt die Prüfsumme nicht und `migrate dev` verlangt ein Zurücksetzen.
+- Migrationen enthalten SQL, das Prisma nicht kennt: `pg_trgm` und die partiellen Unique-Indizes `IngredientVersion_current_key` (0003) und `TeaVersion_current_key` (0004), siehe README „Migrationen“. Neue Migrationen deshalb immer mit `--create-only` erzeugen und vor dem Anwenden prüfen, dass sie nichts davon löschen. Angewendete Migrationen nicht mehr ändern, auch keine Kommentare – sonst stimmt die Prüfsumme nicht und `migrate dev` verlangt ein Zurücksetzen.
+- Sichtbarkeit von Tees: Fremde private Tees gelten überall als nicht vorhanden (404, nicht in Listen). Abfragen auf Tees deshalb nur über `server/utils/teas.ts` (`loadCurrentTea`, `listTeas`), nie direkt über Prisma.
 - Komponenten in Unterordnern bekommen den Ordner als Präfix: `components/catalog/RevisionDiff.vue` heißt `<CatalogRevisionDiff>`. Ein falscher Name fällt nicht im Typecheck auf, nur als Vue-Warnung im Dev-Log.
 - Läuft bereits ein Dev-Server des Nutzers, keinen zweiten starten (beide schreiben in `.nuxt/`); stattdessen dessen Port nutzen.
 - Neue Dateien unter `app/pages/` übernimmt ein laufender Dev-Server nicht immer zuverlässig. Bei 404 auf eine neue Seite den Dev-Server neu starten.
