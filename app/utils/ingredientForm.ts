@@ -11,15 +11,16 @@ export interface IngredientFormState {
   note: string
 }
 
-const emptyTranslations = () =>
+/** Leere Texte für alle Inhaltssprachen (auch für Tees). */
+export const emptyFormTranslations = () =>
   Object.fromEntries(CONTENT_LOCALES.map(code => [code, { name: '', description: '' }])) as IngredientFormState['translations']
 
 export function emptyFormState(locale: ContentLocale): IngredientFormState {
-  return { locale, translations: emptyTranslations(), caffeine: 'unknown', brewTempC: '', brewTime: '', note: '' }
+  return { locale, translations: emptyFormTranslations(), caffeine: 'unknown', brewTempC: '', brewTime: '', note: '' }
 }
 
 export function formStateFromDetail(detail: IngredientDetail, tab: ContentLocale): IngredientFormState {
-  const translations = emptyTranslations()
+  const translations = emptyFormTranslations()
   for (const code of CONTENT_LOCALES) {
     const text = detail.translations[code]
     if (text) translations[code] = { name: text.name, description: text.description ?? '' }
@@ -37,13 +38,14 @@ export function formStateFromDetail(detail: IngredientDetail, tab: ContentLocale
 /** Leer → null; sonst Zahl (unlesbar → NaN, das meldet das Schema). */
 const toNumber = (value: string) => (value.trim() === '' ? null : Number(value))
 
-function facts(state: IngredientFormState) {
+/** Koffein, Temperatur und Ziehzeit aus dem Formular (auch für Tees). */
+export function formFacts(state: Pick<IngredientFormState, 'caffeine' | 'brewTempC' | 'brewTime'>) {
   return { caffeine: state.caffeine, brewTempC: toNumber(String(state.brewTempC ?? '')), brewSeconds: parseDuration(state.brewTime) }
 }
 
 export function toCreateInput(state: IngredientFormState): CreateIngredientInput {
   const text = state.translations[state.locale]
-  return { locale: state.locale, ...text, ...facts(state), note: state.note }
+  return { locale: state.locale, ...text, ...formFacts(state), note: state.note }
 }
 
 /** Nur Sprachen mit Namen oder vorhandener Übersetzung; ein geleerter Name fällt so in der Prüfung auf. */
@@ -53,5 +55,5 @@ export function toUpdateInput(state: IngredientFormState, version: number, exist
       .filter(code => existing.includes(code) || state.translations[code].name.trim() || state.translations[code].description.trim())
       .map(code => [code, state.translations[code]]),
   )
-  return { version, ...facts(state), translations, note: state.note }
+  return { version, ...formFacts(state), translations, note: state.note }
 }

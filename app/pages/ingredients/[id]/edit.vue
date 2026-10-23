@@ -87,7 +87,7 @@ async function reloadCurrent() {
       </h1>
       <v-form @submit.prevent="submit">
         <v-alert v-if="conflict" type="warning" variant="tonal" class="mb-4">
-          {{ conflict.version ? t('catalog.editPage.conflict', { version: conflict.version }) : t('errors.EDIT_CONFLICT') }}
+          {{ conflict.version ? t('ingredients.editPage.conflict', { version: conflict.version }) : t('errors.EDIT_CONFLICT') }}
           <template #append>
             <v-btn variant="text" @click="confirmReload = true">
               {{ t('catalog.editPage.reload') }}

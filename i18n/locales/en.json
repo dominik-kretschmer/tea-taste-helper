@@ -219,7 +219,6 @@
     "editPage": {
       "save": "Save",
       "noChanges": "No changes – no new version was created.",
-      "conflict": "Someone else has changed this ingredient in the meantime (now version {version}). Load the current version and enter your change again.",
       "reload": "Load current version",
       "reloadConfirm": "Your input will be lost. Continue?"
     },
@@ -246,7 +245,8 @@
       "title": "Add ingredient"
     },
     "editPage": {
-      "title": "Edit {name}"
+      "title": "Edit {name}",
+      "conflict": "Someone else has changed this ingredient in the meantime (now version {version}). Load the current version and enter your change again."
     },
     "duplicateLink": "Go to the existing ingredient",
     "historyPage": {
@@ -312,7 +312,9 @@
       "text": "The tea and all of its versions will be deleted permanently."
     },
     "editPage": {
-      "title": "Edit {name}"
+      "title": "Edit {name}",
+      "conflict": "Someone else has changed this tea in the meantime (now version {version}). Load the current version and enter your change again.",
+      "conflictUnknown": "Someone else has changed this tea in the meantime."
     },
     "duplicateLink": "Go to the existing tea",
     "historyPage": {
@@ -329,6 +331,9 @@
       "title": "Contained in",
       "empty": "Not part of any public tea yet.",
       "all": "Show all {total}"
+    },
+    "errors": {
+      "duplicate": "A public tea with this name and brand already exists."
     }
   }
 }

@@ -5,6 +5,7 @@ definePageMeta({ middleware: 'auth' })
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
+const route = useRoute()
 const { $api } = useNuxtApp()
 const { fieldErrors, formError, validate, handleError } = useFormErrors()
 
@@ -44,7 +45,10 @@ async function submit() {
   loading.value = true
   try {
     const response = await $api<{ ingredient: IngredientDetail }>('/api/ingredients', { method: 'POST', body: input })
-    await navigateTo(localePath({ name: 'ingredients-id', params: { id: response.ingredient.id } }))
+    // Aus dem Tee-Formular gekommen („Zutat fehlt“): zurück dorthin, die neue Zutat wird angehängt (04, AK-2.2)
+    const back = safeRedirect(route.query.return, '')
+    if (back) await navigateTo({ path: back, query: { addIngredient: response.ingredient.id } })
+    else await navigateTo(localePath({ name: 'ingredients-id', params: { id: response.ingredient.id } }))
   }
   catch (error) {
     const { code, details } = handleError(error)

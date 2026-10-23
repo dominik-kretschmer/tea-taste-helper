@@ -219,7 +219,6 @@
     "editPage": {
       "save": "Speichern",
       "noChanges": "Keine Änderungen – es wurde keine neue Version angelegt.",
-      "conflict": "Jemand anderes hat die Zutat inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein.",
       "reload": "Aktuelle Fassung laden",
       "reloadConfirm": "Deine Eingaben gehen dabei verloren. Fortfahren?"
     },
@@ -246,7 +245,8 @@
       "title": "Zutat anlegen"
     },
     "editPage": {
-      "title": "{name} bearbeiten"
+      "title": "{name} bearbeiten",
+      "conflict": "Jemand anderes hat die Zutat inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein."
     },
     "duplicateLink": "Zur bestehenden Zutat",
     "historyPage": {
@@ -312,7 +312,9 @@
       "text": "Der Tee und alle seine Versionen werden endgültig gelöscht."
     },
     "editPage": {
-      "title": "{name} bearbeiten"
+      "title": "{name} bearbeiten",
+      "conflict": "Jemand anderes hat den Tee inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein.",
+      "conflictUnknown": "Jemand anderes hat den Tee inzwischen geändert."
     },
     "duplicateLink": "Zum bestehenden Tee",
     "historyPage": {
@@ -329,6 +331,9 @@
       "title": "Enthalten in",
       "empty": "Noch in keinem öffentlichen Tee.",
       "all": "Alle {total} anzeigen"
+    },
+    "errors": {
+      "duplicate": "Es gibt schon einen öffentlichen Tee mit diesem Namen und dieser Marke."
     }
   }
 }

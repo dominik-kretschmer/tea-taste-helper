@@ -41,7 +41,10 @@ async function publish() {
   }
   catch (err) {
     const { code, details } = handleError(err)
-    if (code === 'DUPLICATE_NAME') duplicateId.value = (details as { teaId: string }).teaId
+    if (code === 'DUPLICATE_NAME') {
+      formError.value = t('teas.errors.duplicate')
+      duplicateId.value = (details as { teaId: string }).teaId
+    }
     // Inzwischen geändert: aktuelle Fassung laden, der Nutzer kann es erneut versuchen
     if (code === 'EDIT_CONFLICT') await refresh()
   }

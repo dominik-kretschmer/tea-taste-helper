@@ -152,7 +152,7 @@ Reihenfolge:
     - Keine CSP- oder Konsolenmeldungen außer dem bekannten zod-Eval.
     - Allgemeine Seitentexte („nicht übersetzt“, „Zuletzt geändert“, Konflikt, Historie) liegen jetzt unter `catalog.*` und werden von Zutaten und Tees gemeinsam genutzt. `useCatalogText` ersetzt `useIngredientText`, der alte Name bleibt als Alias.
 
-- [ ] 14. Formular: Anlegen und Bearbeiten
+- [x] 14. Formular: Anlegen und Bearbeiten
   - Dateien: `app/components/tea/TeaIngredientsField.vue`, `app/components/tea/TeaForm.vue`, `app/utils/teaForm.ts`, `app/pages/teas/new.vue`, `app/pages/teas/[id]/edit.vue`, `app/pages/ingredients/new.vue` (`?return=`)
   - Erfüllt: AK-2.1–AK-2.5 (UI), AK-3.1, AK-3.3 (UI), AK-5.1 (UI), AK-10.1
   - Prüfung im Browser, auf Deutsch und Englisch:
@@ -165,6 +165,14 @@ Reihenfolge:
     - Bearbeiten mit Tabs, Konflikt mit zwei Tabs, „Keine Änderungen“.
     - Gast → Login.
     - 360 px ohne Überlauf, Tastaturbedienung der Hoch/Runter-Buttons.
+  - Ergebnis: Per Playwright geprüft (de/en, 360 px).
+    - Marke nur bei „gekauft“; Zutatensuche mit ausgegrauter bereits gewählter Zutat; „nach oben“ per Tastatur (Enter); Summe 110 % → Feldfehler; leerer Name → „Mindestens 2 Zeichen“.
+    - „Zutat fehlt“ → `/zutaten/neu?return=/tees/neu` → nach dem Anlegen zurück mit Name, Marke, Anteilen und angehängter neuer Zutat.
+    - Ähnliche öffentliche Tees nur bei „öffentlich“; Duplikat mit Link.
+    - Bearbeiten: Tabs mit „Original“, `?lang=en`, kein Sichtbarkeitsschalter, „Keine Änderungen“, Konflikt mit zwei Tabs und „Aktuelle Fassung laden“.
+    - Gast → `/login?redirect=/tees/neu`; keine Konsolen- oder CSP-Meldungen.
+    - Gefunden und behoben: Duplikat- und Konflikttext sprachen von „Zutat“; Tees haben jetzt eigene Texte (`teas.errors.duplicate`, `teas.editPage.conflict`), der Zutaten-Konflikttext liegt wieder unter `ingredients.*`.
+    - Suite 278 Tests grün.
 
 - [ ] 15. Historie, Zutatenseite, Audit-Anzeige
   - Dateien: `app/pages/teas/[id]/history.vue`, `app/components/tea/TeaRevisionDiff.vue`, `app/pages/ingredients/[id]/index.vue` („Enthalten in“), `app/pages/admin/audit.vue`
