@@ -18,6 +18,9 @@ logs
 .fleet
 .idea
 
+# Lokale Compose-Anpassungen (z.B. Ports im Netz freigeben, siehe README)
+compose.override.yaml
+
 # Local env files
 .env
 .env.*

@@ -30,6 +30,18 @@ Ohne GPU: `docker compose -f compose.yaml -f compose.cpu.yaml up -d`
 | Ollama | http://localhost:11434 (Embedding-Modell `nomic-embed-text` wird beim Start geladen) |
 | Adminer | http://localhost:8080 |
 
+Postgres, Ollama und Adminer sind **nur vom eigenen Rechner** erreichbar (`compose.yaml` bindet die Ports an `127.0.0.1`). Wer einen Dienst bewusst im Netz braucht, legt eine eigene `compose.override.yaml` an (nicht einchecken, steht in `.gitignore`); Docker Compose liest sie automatisch:
+
+```yaml
+# compose.override.yaml
+services:
+  ollama:
+    ports: !override
+      - "0.0.0.0:11434:11434"
+```
+
+> **Achtung:** Ollama hat keine Authentifizierung. Jeder im selben Netz könnte Modelle laden, löschen und die GPU nutzen. Nur in vertrauenswürdigen Netzen freigeben.
+
 Die Datenbank `tea_test` legt das Init-Skript in `docker/postgres/init/` nur bei einem **leeren** Postgres-Volume an. Fehlt sie, das Volume neu anlegen (löscht alle lokalen DB-Daten):
 
 ```bash

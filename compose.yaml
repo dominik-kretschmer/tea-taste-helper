@@ -11,7 +11,8 @@ services:
       # läuft nur beim ersten Start mit leerem Volume (legt tea_test an)
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
-      - "5432:5432"
+      # nur vom eigenen Rechner erreichbar; Freigabe im Netz siehe README
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -22,7 +23,8 @@ services:
     image: ollama/ollama:0.40.8
     restart: unless-stopped
     ports:
-      - "11434:11434"
+      # Ollama hat keine Authentifizierung – nur lokal
+      - "127.0.0.1:11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     # NVIDIA-GPU; Einrichtung: docs/gpu-setup.md, ohne GPU: compose.cpu.yaml
@@ -47,7 +49,7 @@ services:
     image: adminer:6.1.2
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       ADMINER_DEFAULT_SERVER: postgres
     depends_on:
