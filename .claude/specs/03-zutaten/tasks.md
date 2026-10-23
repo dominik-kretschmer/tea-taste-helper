@@ -35,7 +35,7 @@ Reihenfolge:
   - Prüfung: Unit-Test für `escapeLike` (`%`, `_`, `\`). Die Abfragen prüfen die API-Tests ab Aufgabe 4.
   - Ergebnis: Unit-Test grün. Die SQL-Abfragen für Liste und ähnliche Namen (`listIngredients`, `findSimilar`) liegen mit in `server/utils/ingredients.ts`. Ähnlichkeit nutzt den Operator `%` (Schwelle 0,3 wie im Design) statt `similarity() > 0.3`, damit der GIN-Index greift.
 
-- [ ] 4. API: Anlegen, Detail, ähnliche Namen
+- [x] 4. API: Anlegen, Detail, ähnliche Namen
   - Dateien: `server/api/ingredients/index.post.ts`, `server/api/ingredients/[id]/index.get.ts`, `server/api/ingredients/similar.get.ts`, `test/api/ingredients.test.ts`
   - Erfüllt: AK-1.4 (API), AK-1.5 (API), AK-2.1–AK-2.4 (API), AK-3.5 (Anlegen), AK-6.1 (Anlegen), AK-7.2 (API)
   - Prüfung (API-Tests):
@@ -46,6 +46,7 @@ Reihenfolge:
     - Detail: unbekannte UUID → 404, ungültige ID → 404; `updatedBy` ohne E-Mail.
     - Ähnliche Namen: Tippfehler („Pfeferminze“) findet „Pfefferminze“, höchstens 5 Treffer.
     - `<script>` im Namen kommt unverändert als Text zurück.
+  - Ergebnis: 9 API-Tests grün, Suite 177 Tests. Zusätzlich geprüft: Feldfehler für Name und Temperatur (AK-7.1). Der Audit-Eintrag hat keinen `targetId`, weil dieser auf `User` verweist; die Zutat steht in `details`.
 
 - [ ] 5. API: Liste und Suche
   - Dateien: `server/api/ingredients/index.get.ts`, `test/api/ingredients.test.ts`
