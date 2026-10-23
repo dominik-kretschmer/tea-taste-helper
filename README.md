@@ -61,6 +61,7 @@ docker compose down && docker volume rm tea-taste-helper_postgres_data && docker
 | `npm run db:deploy` | Migrationen anwenden (ohne neue zu erstellen) |
 | `npm run db:reset` | Datenbank zurücksetzen und Migrationen neu einspielen |
 | `npm run db:studio` | Prisma Studio |
+| `npm run db:erd` | Datenmodell-Diagramm `docs/datenmodell.md` aus dem Schema neu erzeugen |
 
 ## Gebauten Server starten
 
@@ -100,6 +101,10 @@ Den Zutatenkatalog (`/zutaten`, englisch `/en/ingredients`) lesen alle; Anlegen,
 ## Tees
 
 Tees (`/tees`, englisch `/en/teas`) bestehen aus Zutaten des Katalogs, optional mit Anteilen in Prozent; der nicht angegebene Rest wird als „unbekannt“ angezeigt. Neue Tees sind **privat**: Nur der Ersteller sieht und bearbeitet sie, für alle anderen (auch Admins) gibt es sie nicht (404, nicht in Listen). Der Ersteller kann einen privaten Tee löschen oder veröffentlichen; veröffentlichte Tees bearbeiten alle Angemeldeten wie Zutaten (Versionen, Historie, Übersetzungen), zurück auf privat geht nicht. Gleich benannte öffentliche Tees sind nur mit unterschiedlicher Marke erlaubt. Eigene Tees stehen unter „Meine“ (`/tees?mine=1`).
+
+## Datenmodell
+
+Alle Tabellen, Spalten, Beziehungen und Enums als Diagramm: [docs/datenmodell.md](docs/datenmodell.md). Die Datei wird aus dem Prisma-Schema erzeugt (`npm run db:erd`) und muss nach jeder Schema-Änderung neu erzeugt werden; ein Unit-Test prüft, dass sie aktuell ist.
 
 ## Migrationen
 

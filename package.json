@@ -14,7 +14,8 @@
     "db:migrate": "prisma migrate dev && prisma generate",
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:erd": "node scripts/datenmodell.mjs"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
