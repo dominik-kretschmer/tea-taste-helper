@@ -90,7 +90,7 @@ Reihenfolge:
     - Bestehende Seiten (Login, Admin) funktionieren weiter.
   - Ergebnis: Per Playwright geprüft (Dev-Server): App-Bar-Link → `/zutaten`, Sprachumschalter → `/en/ingredients`, `/login` unverändert; bei 360 px nur das Menü-Icon, der Drawer navigiert und schließt, kein horizontales Scrollen, keine Konsolenfehler. Gefunden und behoben: `d-flex` in `AppNav` hob `d-none` auf. Die Schlüssel in `i18n.pages` sind Routennamen. Alle UI-Texte für 03 sind schon in den Sprachdateien.
 
-- [ ] 9. Seiten: Liste und Detail
+- [x] 9. Seiten: Liste und Detail
   - Dateien: `app/pages/ingredients/index.vue`, `app/pages/ingredients/[id]/index.vue`, `app/components/ingredient/IngredientFacts.vue`, `app/composables/useIngredientText.ts`, `i18n/locales/*.json`
   - Erfüllt: AK-1.1–AK-1.5 (UI), AK-2.4 (UI), AK-7.2, AK-7.3
   - Prüfung im Browser, auf Deutsch und Englisch:
@@ -100,6 +100,7 @@ Reihenfolge:
     - Detail: Beschreibung mit `<b>` erscheint wörtlich, Zeilenumbrüche bleiben; „Zuletzt geändert … von …“.
     - Unbekannte ID → Nuxt-Fehlerseite 404.
     - 360 px ohne horizontales Scrollen, keine CSP-Verstöße.
+  - Ergebnis: Alles per Playwright geprüft (Dev-Server, Testdaten mit Kennung `pw03`). Sortierung „Äpfel, Birne, Matcha, Pfefferminze“; Seite 2 per Pagination und nach Neuladen; Suche schreibt `?q` nach 300 ms, Neuladen füllt das Suchfeld; „nicht übersetzt“ bei Matcha auf Deutsch; Fallback-Hinweis de/en; `<b>` wörtlich, Zeilenumbruch erhalten; „Zuletzt geändert … von PW Tester“; Gast ohne „Bearbeiten“/„Anlegen“, angemeldet mit; Übersetzen-Link mit `?lang=`; unbekannte und ungültige ID → 404-Seite; 360 px ohne Überlauf; keine CSP- oder Konsolenfehler außer den erwarteten 404. Gefunden und behoben: Die 404-Seite zeigte „Server Error“, jetzt „Nicht gefunden.“. Dazu `formatDuration`/`parseDuration` in `app/utils/format.ts` mit Unit-Tests; „Anlegen“, „Bearbeiten“ und „Historie“ sind vorerst Platzhalter. Suite 207 Tests.
 
 - [ ] 10. Seiten: Anlegen und Bearbeiten
   - Dateien: `app/components/ingredient/IngredientForm.vue`, `app/pages/ingredients/new.vue`, `app/pages/ingredients/[id]/edit.vue`, `i18n/locales/*.json`

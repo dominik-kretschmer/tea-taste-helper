@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Caffeine } from '../../server/generated/prisma/enums'
 import { compareQuerySchema, createIngredientSchema, ingredientListQuerySchema, updateIngredientSchema } from '../../shared/schemas/ingredient'
 import type { IngredientSnapshot } from '../../shared/types/ingredient'
+import { formatDuration, parseDuration } from '../../app/utils/format'
 import { escapeLike } from '../../server/utils/ingredients'
 import { CAFFEINE_VALUES, diffSnapshots, normalizeName, pickTranslation } from '../../shared/utils/ingredient'
 
@@ -163,5 +164,15 @@ describe('escapeLike', () => {
     ['Grüner Tee', 'Grüner Tee'],
   ])('%j → %j', (input, expected) => {
     expect(escapeLike(input)).toBe(expected)
+  })
+})
+
+describe('Ziehzeit als Min:Sek', () => {
+  it.each([[210, '3:30'], [10, '0:10'], [1800, '30:00'], [null, '']])('formatDuration(%j) → %j', (seconds, text) => {
+    expect(formatDuration(seconds)).toBe(text)
+  })
+
+  it.each([['3:30', 210], ['5', 300], [' 0:10 ', 10], ['', null], ['3:75', Number.NaN], ['abc', Number.NaN]])('parseDuration(%j) → %j', (text, seconds) => {
+    expect(parseDuration(text)).toBe(seconds)
   })
 })
