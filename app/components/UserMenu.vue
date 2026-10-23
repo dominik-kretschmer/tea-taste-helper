@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { mdiAccountCircle, mdiAccountCircleOutline, mdiCogOutline, mdiKeyOutline, mdiLogin, mdiLogout } from '@mdi/js'
+import { mdiAccountCircle, mdiAccountCircleOutline, mdiCogOutline, mdiKeyOutline, mdiLogin, mdiLogout, mdiShieldAccountOutline } from '@mdi/js'
 
-const { user, isAdmin, logout } = useAuth()
+const { user, isAdmin, isModerator, logout } = useAuth()
+const { count: openReports, refresh: refreshOpenReports } = useOpenReports()
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -9,11 +10,15 @@ async function onLogout() {
   await logout()
   await navigateTo(localePath('/'))
 }
+
+function onMenu(open: boolean) {
+  if (open) refreshOpenReports()
+}
 </script>
 
 <template>
   <template v-if="user">
-    <v-menu location="bottom end">
+    <v-menu location="bottom end" @update:model-value="onMenu">
       <template #activator="{ props }">
         <v-btn v-bind="props" :icon="mdiAccountCircle" :aria-label="t('nav.account', { name: user.displayName })" />
       </template>
@@ -22,7 +27,12 @@ async function onLogout() {
         <v-list-item :title="user.displayName" :subtitle="user.email" />
         <v-divider />
         <v-list-item :prepend-icon="mdiKeyOutline" :title="t('nav.changePassword')" :to="localePath('/account/password')" />
-        <v-list-item v-if="isAdmin" :prepend-icon="mdiCogOutline" :title="t('nav.admin')" :to="localePath('/admin')" />
+        <v-list-item v-if="isModerator" :prepend-icon="mdiShieldAccountOutline" :title="t('nav.moderation')" :to="localePath('/admin/reports')">
+          <template v-if="openReports" #append>
+            <v-badge :content="openReports" color="error" inline :aria-label="t('nav.openReports', { count: openReports })" />
+          </template>
+        </v-list-item>
+        <v-list-item v-if="isAdmin" :prepend-icon="mdiCogOutline" :title="t('nav.admin')" :to="localePath('/admin/users')" />
         <v-list-item :prepend-icon="mdiLogout" :title="t('nav.logout')" @click="onLogout" />
       </v-list>
     </v-menu>

@@ -172,7 +172,7 @@ Reihenfolge:
     - Nutzer sieht nichts davon; `/admin` leitet ihn um.
     - Unit-Test der Sprachdateien grün.
 
-- [ ] 14. Seiten: Melden, Moderationsmenü, Banner, Weiterleitung
+- [x] 14. Seiten: Melden, Moderationsmenü, Banner, Weiterleitung
   - Dateien: `app/components/moderation/{ReportDialog,EntrySearch,EntryModerationMenu,HideDialog,HiddenBanner,MergeDialog}.vue`, `app/pages/ingredients/[id]/index.vue`, `app/pages/teas/[id]/index.vue`
   - Erfüllt: AK-2.1–AK-2.3, AK-2.6 (UI), AK-4.1, AK-4.2 (Weiterleitung), AK-4.5, AK-4.6, AK-5.1, AK-5.2 (Meldung), AK-5.5, AK-9.3
   - Prüfung im Browser:
@@ -180,6 +180,15 @@ Reihenfolge:
     - Moderator: Zusammenführen mit Vorschau, Hinweis zu fehlenden Übersetzungen, Checkbox; danach Weiterleitung von der Quelle mit Hinweis.
     - Ausblenden mit Grund; `INGREDIENT_IN_USE` verständlich; Banner und Wiederherstellen.
     - 360 px, hell/dunkel.
+  - Ergebnis: Playwright auf dem Dev-Server mit `pw05`-Daten, alle Schritte erfolgreich.
+    - Gast sieht „Zum Melden anmelden“.
+    - Melden bei 360 px: Pflichtfelder bei „Sonstiges“ und „Duplikat“, Original per Suche, Snackbar, Doppelmeldung als Hinweis im Dialog, kein horizontales Scrollen.
+    - Ausblenden mit Pflicht-Grund → Banner mit Datum, Moderatorin und Grund, kein „Bearbeiten“, Gast 404; „Wiederherstellen“ → Gast wieder 200.
+    - Zusammenführen: Vorschau „1 öffentliche und 0 private Tees“, Knopf erst nach der Checkbox aktiv, danach Ziel mit `?mergedFrom` und Hinweis; der Tee enthält die Zielzutat mit 20 %. Die alte URL leitet für Gäste dorthin weiter.
+    - Verwendete Zutat ausblenden → „steckt noch in 1 Tees“ mit Knopf „Zusammenführen…“.
+    - Dunkel bei 360 px ohne Überlauf.
+    - Konsole: nur erwartete 404/409 sowie einmalig Vites „Outdated Optimize Dep“ nach dem Dev-Start.
+    - Bausteine: `ModerationEntryActions` (Melden, Anmelde-Hinweis, Menü, Snackbar) und `ModerationMergedFromAlert` halten beide Detailseiten schlank; `app/utils/moderation.ts` liefert API-Segment, Routenname und `mergedTargetOf`.
 
 - [ ] 15. Historie: Zurücksetzen und Ereignisse
   - Dateien: `app/components/catalog/{RevisionList,RevertDialog}.vue`, Historie-Seiten

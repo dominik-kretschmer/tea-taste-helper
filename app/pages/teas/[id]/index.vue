@@ -11,16 +11,24 @@ const { formError, handleError } = useFormErrors()
 const id = computed(() => String(route.params.id))
 const { data, error, refresh } = await useFetch<{ tea: TeaDetail }>(() => `/api/teas/${id.value}`)
 if (error.value) {
-  const statusCode = error.value.statusCode ?? 500
-  // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
-  throw createError({ statusCode, fatal: true })
+  // Zusammengeführt: dauerhaft zum Ziel, dort mit Hinweis (05 AK-4.2)
+  const target = mergedTargetOf(error.value)
+  if (target) {
+    await navigateTo(localePath({ name: 'teas-id', params: { id: target }, query: { mergedFrom: id.value } }), { redirectCode: 301, replace: true })
+  }
+  else {
+    // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
+    throw createError({ statusCode: error.value.statusCode ?? 500, fatal: true })
+  }
 }
 
 const tea = computed(() => data.value?.tea)
 const text = useCatalogText(tea)
 const isPrivate = computed(() => tea.value?.visibility === 'private')
+// Nur Moderatoren bekommen ausgeblendete Tees überhaupt geliefert (05 AK-5.4)
+const hidden = computed(() => !!tea.value?.moderation)
 // Private Tees sieht nur der Ersteller; öffentliche bearbeiten alle Angemeldeten (AK-3.1, AK-3.2)
-const canEdit = computed(() => loggedIn.value && (!isPrivate.value || tea.value?.isOwner))
+const canEdit = computed(() => loggedIn.value && !hidden.value && (!isPrivate.value || tea.value?.isOwner))
 const showCaffeineHint = computed(() => tea.value?.caffeine === 'unknown' && tea.value.ingredientsCaffeinated)
 
 useHead({ title: () => text.value?.text.name ?? t('teas.title') })
@@ -78,6 +86,9 @@ async function remove() {
       <h1 class="text-h4 mb-2 text-break">
         {{ text.text.name }}
       </h1>
+
+      <ModerationMergedFromAlert entity-type="tea" />
+      <ModerationHiddenBanner v-if="tea.moderation" entity-type="tea" :entity-id="tea.id" :state="tea.moderation" @restored="refresh()" />
 
       <div class="d-flex flex-wrap ga-2 mb-4">
         <v-chip v-if="isPrivate" :prepend-icon="mdiLockOutline" size="small" variant="outlined">
@@ -154,6 +165,7 @@ async function remove() {
             {{ t('teas.delete.action') }}
           </v-btn>
         </template>
+        <ModerationEntryActions entity-type="tea" :entity-id="tea.id" :reportable="!hidden && !isPrivate" @changed="refresh()" />
       </div>
 
       <v-dialog :model-value="!!dialog" max-width="440" @update:model-value="dialog = null">

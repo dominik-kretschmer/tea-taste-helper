@@ -1,6 +1,10 @@
 <script setup lang="ts">
+// Admins landen bei der Nutzerverwaltung, Moderatoren bei den Meldungen (05 AK-0.1)
 definePageMeta({
-  middleware: ['admin', () => navigateTo(useLocalePath()('/admin/users'), { replace: true })],
+  middleware: ['moderator', () => {
+    const { isAdmin } = useAuth()
+    return navigateTo(useLocalePath()(isAdmin.value ? '/admin/users' : '/admin/reports'), { replace: true })
+  }],
 })
 </script>
 

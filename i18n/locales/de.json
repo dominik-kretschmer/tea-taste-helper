@@ -15,7 +15,9 @@
     "ingredients": "Zutaten",
     "menu": "Menü öffnen",
     "main": "Hauptnavigation",
-    "teas": "Tees"
+    "teas": "Tees",
+    "moderation": "Moderation",
+    "openReports": "{count} offene Meldungen"
   },
   "home": {
     "title": "Willkommen",
@@ -72,7 +74,8 @@
     "max": "Höchstens {max}",
     "duration": "Bitte als Min:Sek angeben, z.B. 3:30",
     "duplicateIngredient": "Jede Zutat nur einmal",
-    "percentSum": "Die Anteile ergeben zusammen mehr als 100 %"
+    "percentSum": "Die Anteile ergeben zusammen mehr als 100 %",
+    "future": "Das Datum darf nicht in der Zukunft liegen."
   },
   "errors": {
     "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
@@ -92,7 +95,12 @@
     "EDIT_CONFLICT": "Jemand anderes hat die Zutat inzwischen geändert.",
     "INGREDIENT_NOT_FOUND": "Eine der Zutaten gibt es nicht (mehr).",
     "ALREADY_PUBLIC": "Der Tee ist bereits öffentlich.",
-    "TEA_PUBLIC": "Öffentliche Tees können nicht gelöscht werden."
+    "TEA_PUBLIC": "Öffentliche Tees können nicht gelöscht werden.",
+    "ALREADY_REPORTED": "Du hast diesen Eintrag bereits gemeldet. Die Meldung ist noch offen.",
+    "INGREDIENT_IN_USE": "Die Zutat steckt noch in Tees und kann nicht ausgeblendet werden.",
+    "INGREDIENT_UNAVAILABLE": "Eine der Zutaten ist inzwischen ausgeblendet oder zusammengeführt.",
+    "INVALID_MERGE": "Diese beiden Einträge lassen sich nicht zusammenführen.",
+    "INVALID_REVERT_TARGET": "Bitte wähle eine ältere Version."
   },
   "errorPage": {
     "notFound": {
@@ -122,7 +130,10 @@
     "title": "Verwaltung",
     "tabs": {
       "users": "Nutzer",
-      "audit": "Audit-Log"
+      "audit": "Audit-Log",
+      "reports": "Meldungen",
+      "hidden": "Ausgeblendet",
+      "moderationUsers": "Nutzer sperren"
     },
     "users": {
       "search": "Nach Name oder E-Mail suchen",
@@ -370,6 +381,96 @@
     },
     "errors": {
       "duplicate": "Es gibt schon einen öffentlichen Tee mit diesem Namen und dieser Marke."
+    }
+  },
+  "moderation": {
+    "title": "Moderation",
+    "entryTypes": {
+      "ingredient": "Zutat",
+      "tea": "Tee"
+    },
+    "states": {
+      "active": "aktiv",
+      "hidden": "ausgeblendet",
+      "merged": "zusammengeführt"
+    },
+    "search": {
+      "label": "Eintrag suchen",
+      "noResults": "Nichts gefunden"
+    },
+    "report": {
+      "action": "Melden",
+      "title": "Eintrag melden",
+      "reason": "Grund",
+      "reasons": {
+        "duplicate": "Duplikat",
+        "wrong_info": "Falsche Angaben",
+        "spam": "Spam / Werbung",
+        "inappropriate": "Unangemessen",
+        "other": "Sonstiges"
+      },
+      "comment": "Kommentar",
+      "commentRequired": "Kommentar (Pflicht bei „Sonstiges“)",
+      "duplicateOf": "Original",
+      "submit": "Meldung senden",
+      "done": "Danke, die Meldung ist eingegangen.",
+      "loginHint": "Zum Melden anmelden"
+    },
+    "menu": "Moderation",
+    "hide": {
+      "action": "Ausblenden",
+      "menu": "Ausblenden…",
+      "title": "Eintrag ausblenden",
+      "text": "Danach ist der Eintrag für alle außer Moderatoren nicht mehr vorhanden. Er lässt sich jederzeit wiederherstellen.",
+      "reason": "Grund",
+      "inUse": "Die Zutat steckt noch in {count} Tees. Führe sie stattdessen mit der richtigen Zutat zusammen."
+    },
+    "hidden": {
+      "banner": "Ausgeblendet am {date} von {name}",
+      "reason": "Grund: {reason}",
+      "restore": "Wiederherstellen",
+      "restored": "Der Eintrag ist wieder sichtbar.",
+      "bulkReason": "Massen-Zurücksetzung"
+    },
+    "merge": {
+      "menu": "Zusammenführen…",
+      "title": "Zusammenführen",
+      "target": "Richtiger Eintrag (Ziel)",
+      "source": "Duplikat (wird entfernt)",
+      "teas": "Es werden {public} öffentliche und {private} private Tees umgestellt.",
+      "missingTranslations": "Das Duplikat hat Übersetzungen, die dem Ziel fehlen ({languages}). Sie werden nicht übernommen.",
+      "editTarget": "Ziel erst bearbeiten",
+      "confirm": "Mir ist klar, dass sich das nicht rückgängig machen lässt.",
+      "action": "Zusammenführen",
+      "mergedFrom": "Der aufgerufene Eintrag wurde mit diesem zusammengeführt.",
+      "mergedFromHistory": "Historie des alten Eintrags",
+      "mergedInto": "Dieser Eintrag wurde zusammengeführt mit:",
+      "openTarget": "Zum Ziel"
+    },
+    "revert": {
+      "action": "Auf diese Version zurücksetzen",
+      "title": "Auf Version {version} zurücksetzen",
+      "text": "Der Inhalt von Version {version} wird als neue Version gespeichert. Die Historie bleibt vollständig erhalten.",
+      "note": "Notiz (optional)",
+      "done": "Zurückgesetzt – Version {version} ist jetzt aktuell.",
+      "noChanges": "Version {version} entspricht schon dem aktuellen Stand.",
+      "reload": "Historie neu laden",
+      "conflict": "Inzwischen hat jemand anderes geändert. Lade die Historie neu und versuche es erneut.",
+      "duplicate": "Der Name dieser Version ist inzwischen vergeben.",
+      "duplicateLink": "Eintrag mit diesem Namen ansehen",
+      "unavailable": "Diese Version enthält eine Zutat, die inzwischen ausgeblendet ist.",
+      "unavailableLink": "Zutat ansehen"
+    },
+    "history": {
+      "revertedTo": "Zurückgesetzt auf Version {version}",
+      "bulkRevert": "Massen-Zurücksetzung: Änderungen von {name}",
+      "mergedIngredient": "Zutat zusammengeführt",
+      "events": {
+        "hidden": "Ausgeblendet von {name}",
+        "restored": "Wiederhergestellt von {name}",
+        "merged": "Zusammengeführt von {name}"
+      },
+      "mergedTarget": "Ziel ansehen"
     }
   }
 }

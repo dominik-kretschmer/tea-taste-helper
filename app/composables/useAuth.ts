@@ -39,6 +39,8 @@ export function useAuth() {
     user: readonly(user),
     loggedIn: computed(() => !!user.value),
     isAdmin: computed(() => hasRole(user.value, 'admin')),
+    /** Moderatoren und Admins (05 AK-0.1) */
+    isModerator: computed(() => hasRole(user.value, 'moderator')),
     refresh,
     login,
     register,

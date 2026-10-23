@@ -15,7 +15,9 @@
     "ingredients": "Ingredients",
     "menu": "Open menu",
     "main": "Main navigation",
-    "teas": "Teas"
+    "teas": "Teas",
+    "moderation": "Moderation",
+    "openReports": "{count} open reports"
   },
   "home": {
     "title": "Welcome",
@@ -72,7 +74,8 @@
     "max": "At most {max}",
     "duration": "Please use min:sec, e.g. 3:30",
     "duplicateIngredient": "Each ingredient only once",
-    "percentSum": "The shares add up to more than 100 %"
+    "percentSum": "The shares add up to more than 100 %",
+    "future": "The date must not be in the future."
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email or password is incorrect.",
@@ -92,7 +95,12 @@
     "EDIT_CONFLICT": "Someone else has changed this ingredient in the meantime.",
     "INGREDIENT_NOT_FOUND": "One of the ingredients does not exist (anymore).",
     "ALREADY_PUBLIC": "The tea is already public.",
-    "TEA_PUBLIC": "Public teas cannot be deleted."
+    "TEA_PUBLIC": "Public teas cannot be deleted.",
+    "ALREADY_REPORTED": "You already reported this entry. Your report is still open.",
+    "INGREDIENT_IN_USE": "The ingredient is still used in teas and cannot be hidden.",
+    "INGREDIENT_UNAVAILABLE": "One of the ingredients has been hidden or merged in the meantime.",
+    "INVALID_MERGE": "These two entries cannot be merged.",
+    "INVALID_REVERT_TARGET": "Please choose an older version."
   },
   "errorPage": {
     "notFound": {
@@ -122,7 +130,10 @@
     "title": "Administration",
     "tabs": {
       "users": "Users",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "reports": "Reports",
+      "hidden": "Hidden",
+      "moderationUsers": "Block users"
     },
     "users": {
       "search": "Search by name or email",
@@ -370,6 +381,96 @@
     },
     "errors": {
       "duplicate": "A public tea with this name and brand already exists."
+    }
+  },
+  "moderation": {
+    "title": "Moderation",
+    "entryTypes": {
+      "ingredient": "Ingredient",
+      "tea": "Tea"
+    },
+    "states": {
+      "active": "active",
+      "hidden": "hidden",
+      "merged": "merged"
+    },
+    "search": {
+      "label": "Search entry",
+      "noResults": "Nothing found"
+    },
+    "report": {
+      "action": "Report",
+      "title": "Report entry",
+      "reason": "Reason",
+      "reasons": {
+        "duplicate": "Duplicate",
+        "wrong_info": "Wrong information",
+        "spam": "Spam / advertising",
+        "inappropriate": "Inappropriate",
+        "other": "Other"
+      },
+      "comment": "Comment",
+      "commentRequired": "Comment (required for “Other”)",
+      "duplicateOf": "Original",
+      "submit": "Send report",
+      "done": "Thank you, your report has been received.",
+      "loginHint": "Sign in to report"
+    },
+    "menu": "Moderation",
+    "hide": {
+      "action": "Hide",
+      "menu": "Hide…",
+      "title": "Hide entry",
+      "text": "The entry will no longer exist for anyone except moderators. It can be restored at any time.",
+      "reason": "Reason",
+      "inUse": "The ingredient is still used in {count} teas. Merge it with the correct ingredient instead."
+    },
+    "hidden": {
+      "banner": "Hidden on {date} by {name}",
+      "reason": "Reason: {reason}",
+      "restore": "Restore",
+      "restored": "The entry is visible again.",
+      "bulkReason": "Bulk revert"
+    },
+    "merge": {
+      "menu": "Merge…",
+      "title": "Merge",
+      "target": "Correct entry (target)",
+      "source": "Duplicate (will be removed)",
+      "teas": "{public} public and {private} private teas will be updated.",
+      "missingTranslations": "The duplicate has translations the target lacks ({languages}). They will not be carried over.",
+      "editTarget": "Edit target first",
+      "confirm": "I understand that this cannot be undone.",
+      "action": "Merge",
+      "mergedFrom": "The entry you opened was merged into this one.",
+      "mergedFromHistory": "History of the old entry",
+      "mergedInto": "This entry was merged into:",
+      "openTarget": "Go to target"
+    },
+    "revert": {
+      "action": "Revert to this version",
+      "title": "Revert to version {version}",
+      "text": "The content of version {version} will be saved as a new version. The full history is kept.",
+      "note": "Note (optional)",
+      "done": "Reverted – version {version} is now current.",
+      "noChanges": "Version {version} already matches the current state.",
+      "reload": "Reload history",
+      "conflict": "Someone else changed it in the meantime. Reload the history and try again.",
+      "duplicate": "The name of this version is taken in the meantime.",
+      "duplicateLink": "View entry with this name",
+      "unavailable": "This version contains an ingredient that has been hidden in the meantime.",
+      "unavailableLink": "View ingredient"
+    },
+    "history": {
+      "revertedTo": "Reverted to version {version}",
+      "bulkRevert": "Bulk revert: changes by {name}",
+      "mergedIngredient": "Ingredient merged",
+      "events": {
+        "hidden": "Hidden by {name}",
+        "restored": "Restored by {name}",
+        "merged": "Merged by {name}"
+      },
+      "mergedTarget": "View target"
     }
   }
 }

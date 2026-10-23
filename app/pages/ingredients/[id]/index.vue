@@ -7,14 +7,22 @@ const route = useRoute()
 const { loggedIn } = useAuth()
 
 const id = computed(() => String(route.params.id))
-const { data, error } = await useFetch<{ ingredient: IngredientDetail }>(() => `/api/ingredients/${id.value}`)
+const { data, error, refresh } = await useFetch<{ ingredient: IngredientDetail }>(() => `/api/ingredients/${id.value}`)
 if (error.value) {
-  const statusCode = error.value.statusCode ?? 500
-  // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
-  throw createError({ statusCode, fatal: true })
+  // Zusammengeführt: dauerhaft zum Ziel, dort mit Hinweis (05 AK-4.2)
+  const target = mergedTargetOf(error.value)
+  if (target) {
+    await navigateTo(localePath({ name: 'ingredients-id', params: { id: target }, query: { mergedFrom: id.value } }), { redirectCode: 301, replace: true })
+  }
+  else {
+    // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
+    throw createError({ statusCode: error.value.statusCode ?? 500, fatal: true })
+  }
 }
 
 const ingredient = computed(() => data.value?.ingredient)
+// Nur Moderatoren bekommen ausgeblendete Zutaten überhaupt geliefert (05 AK-5.4)
+const hidden = computed(() => !!ingredient.value?.moderation)
 const text = useIngredientText(ingredient)
 
 useHead({ title: () => text.value?.text.name ?? t('ingredients.title') })
@@ -33,9 +41,12 @@ const { data: teas } = await useFetch<Page<TeaListItem>>('/api/teas', {
         {{ text.text.name }}
       </h1>
 
+      <ModerationMergedFromAlert entity-type="ingredient" />
+      <ModerationHiddenBanner v-if="ingredient.moderation" entity-type="ingredient" :entity-id="ingredient.id" :state="ingredient.moderation" @restored="refresh()" />
+
       <v-alert v-if="!text.translated" type="info" variant="tonal" density="compact" class="mb-4">
         {{ t('catalog.notTranslatedHint', { language: t(`language.${text.locale}`) }) }}
-        <template v-if="loggedIn" #append>
+        <template v-if="loggedIn && !hidden" #append>
           <v-btn
             variant="text"
             size="small"
@@ -88,12 +99,13 @@ const { data: teas } = await useFetch<Page<TeaListItem>>('/api/teas', {
       </v-list>
 
       <div class="d-flex flex-wrap ga-2">
-        <v-btn v-if="loggedIn" color="primary" :prepend-icon="mdiPencil" :to="localePath({ name: 'ingredients-id-edit', params: { id: ingredient.id } })">
+        <v-btn v-if="loggedIn && !hidden" color="primary" :prepend-icon="mdiPencil" :to="localePath({ name: 'ingredients-id-edit', params: { id: ingredient.id } })">
           {{ t('catalog.edit') }}
         </v-btn>
         <v-btn variant="outlined" :prepend-icon="mdiHistory" :to="localePath({ name: 'ingredients-id-history', params: { id: ingredient.id } })">
           {{ t('catalog.history') }}
         </v-btn>
+        <ModerationEntryActions entity-type="ingredient" :entity-id="ingredient.id" :reportable="!hidden" @changed="refresh()" />
       </div>
     </v-col>
   </v-row>
