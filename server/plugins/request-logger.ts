@@ -6,6 +6,8 @@ declare module 'h3' {
     requestId: string
     log: Logger
     startedAt: number
+    /** true, sobald die Request-Zeile geschrieben ist (genau eine pro Anfrage, 00-chore/03) */
+    requestLogged?: boolean
   }
 }
 
@@ -23,15 +25,8 @@ export default defineNitroPlugin((nitroApp) => {
     setResponseHeader(event, 'X-Request-Id', requestId)
   })
 
-  nitroApp.hooks.hook('afterResponse', (event) => {
-    if (!event.path.startsWith('/api/')) return
-    event.context.log.info({
-      method: event.method,
-      path: event.path,
-      status: getResponseStatus(event),
-      durationMs: Math.round(performance.now() - event.context.startedAt),
-    }, 'request')
-  })
+  // Fehlerantworten erreichen afterResponse nicht; dort schreibt server/error.ts die Zeile.
+  nitroApp.hooks.hook('afterResponse', event => logRequest(event))
 
   nitroApp.hooks.hook('error', (error, { event }) => {
     // 4xx sind erwartete Fehler und stehen bereits in der Request-Zeile; nur 5xx mit Stacktrace loggen.

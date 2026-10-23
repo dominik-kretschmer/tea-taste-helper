@@ -5,6 +5,7 @@ export default defineNitroErrorHandler((error, event) => {
 
   const { status, body } = toErrorResponse(error, event.context.requestId ?? 'unknown')
   setResponseStatus(event, status)
+  logRequest(event)
   setResponseHeader(event, 'Content-Type', 'application/json')
   return send(event, JSON.stringify(body))
 })
