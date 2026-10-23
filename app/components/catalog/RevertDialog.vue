@@ -21,13 +21,14 @@ const busy = ref(false)
 const conflict = ref(false)
 const link = ref<{ name: string, id: string, text: string } | null>(null)
 
+// immediate: Der Dialog wird oft erst beim Öffnen eingebunden (v-if), dann ändert sich `open` nicht mehr
 watch(open, (value) => {
   if (!value) return
   note.value = ''
   conflict.value = false
   link.value = null
   reset()
-})
+}, { immediate: true })
 
 async function submit() {
   busy.value = true

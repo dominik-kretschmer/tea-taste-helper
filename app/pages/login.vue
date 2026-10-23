@@ -3,7 +3,7 @@ import { loginSchema } from '#shared/schemas/auth'
 
 definePageMeta({ middleware: 'guest' })
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 const { login } = useAuth()
@@ -23,7 +23,12 @@ async function submit() {
     await navigateTo(safeRedirect(route.query.redirect, localePath('/')))
   }
   catch (error) {
-    handleError(error)
+    const { code, details } = handleError(error)
+    // Gesperrt: Frist nennen, nie den Grund (05 AK-6.2)
+    if (code === 'ACCOUNT_BLOCKED') {
+      const until = (details as { until?: string | null } | undefined)?.until
+      formError.value = until ? t('login.blockedUntil', { date: formatDateTime(until, locale.value) }) : t('login.blockedPermanent')
+    }
   }
   finally {
     loading.value = false

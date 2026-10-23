@@ -45,8 +45,39 @@ const headers = computed(() => [
 
 /** Zutat-Ereignisse tragen die Zutat in `details` (targetId verweist nur auf Nutzer). */
 function ingredientId(entry: AuditEntry): string | null {
-  const isIngredientEvent = entry.event === 'INGREDIENT_CREATED' || entry.event === 'INGREDIENT_UPDATED'
+  const isIngredientEvent = ['INGREDIENT_CREATED', 'INGREDIENT_UPDATED', 'INGREDIENT_REVERTED', 'INGREDIENT_HIDDEN', 'INGREDIENT_RESTORED'].includes(entry.event)
   return isIngredientEvent && typeof entry.details?.ingredientId === 'string' ? entry.details.ingredientId : null
+}
+
+/** Moderationsereignisse (05 AK-8.2): Text und optional ein Link auf Eintrag bzw. Ziel */
+function moderationDetails(entry: AuditEntry): { text: string, link?: { name: string, id: string, label: string } } | null {
+  const d = entry.details ?? {}
+  const type: CatalogTypeValue | null = entry.event.startsWith('INGREDIENT_') ? 'ingredient' : entry.event.startsWith('TEA_') ? 'tea' : null
+  switch (entry.event) {
+    case 'INGREDIENT_MERGED':
+    case 'TEA_MERGED':
+      return {
+        text: entry.event === 'INGREDIENT_MERGED' ? t('audit.moderation.teasChanged', { count: Number(d.teasChanged ?? 0) }) : '',
+        link: { name: entityRouteName(type!), id: String(d.targetId), label: t('audit.moderation.showTarget') },
+      }
+    case 'USER_BLOCKED':
+      return { text: [d.until ? t('audit.moderation.blockedUntil', { date: formatDateTime(String(d.until), locale.value) }) : t('audit.moderation.permanent'), d.reason].filter(Boolean).join(' · ') }
+    case 'BULK_REVERT':
+      return { text: t('audit.moderation.bulk', { reverted: Number(d.reverted ?? 0), hidden: Number(d.hidden ?? 0), skipped: Number(d.skipped ?? 0) }) }
+    case 'REPORT_CREATED':
+    case 'REPORT_RESOLVED': {
+      const entryType = d.entityType as CatalogTypeValue
+      const text = entry.event === 'REPORT_CREATED'
+        ? t(`moderation.report.reasons.${String(d.reason)}`)
+        : t('audit.moderation.reports', { count: Number(d.count ?? 0), status: t(`moderation.reports.status.${String(d.status)}`) })
+      return { text, link: { name: entityRouteName(entryType), id: String(d.entityId), label: t('audit.moderation.showEntry') } }
+    }
+    case 'TEA_HIDDEN':
+    case 'INGREDIENT_HIDDEN':
+      return { text: d.reason === BULK_REVERT_REASON ? t('moderation.hidden.bulkReason') : String(d.reason ?? '') }
+    default:
+      return null
+  }
 }
 
 /**
@@ -54,7 +85,7 @@ function ingredientId(entry: AuditEntry): string | null {
  * gelöschte gibt es nicht mehr.
  */
 function teaLink(entry: AuditEntry): { id: string | null, version: unknown } | null {
-  if (!entry.event.startsWith('TEA_') || typeof entry.details?.teaId !== 'string') return null
+  if (!entry.event.startsWith('TEA_') || entry.event === 'TEA_MERGED' || typeof entry.details?.teaId !== 'string') return null
   const linkable = !entry.details.private && entry.event !== 'TEA_DELETED'
   return { id: linkable ? entry.details.teaId : null, version: entry.details.version }
 }
@@ -127,15 +158,36 @@ function describe(entry: AuditEntry): string {
         {{ item.target?.displayName ?? '–' }}
       </template>
       <template #[`item.details`]="{ item }">
-        <template v-if="ingredientId(item)">
-          {{ t('audit.version', { version: item.details?.version }) }} ·
+        <template v-if="moderationDetails(item)">
+          {{ moderationDetails(item)!.text }}
+          <template v-if="moderationDetails(item)!.link">
+            <template v-if="moderationDetails(item)!.text">
+              ·
+            </template>
+            <NuxtLink :to="localePath({ name: moderationDetails(item)!.link!.name, params: { id: moderationDetails(item)!.link!.id } })">
+              {{ moderationDetails(item)!.link!.label }}
+            </NuxtLink>
+          </template>
+        </template>
+        <template v-else-if="ingredientId(item)">
+          <template v-if="item.details?.version">
+            {{ t('audit.version', { version: item.details.version }) }}
+            <template v-if="item.details.revertedTo">
+              ({{ t('audit.moderation.revertedTo', { version: item.details.revertedTo }) }})
+            </template>
+            ·
+          </template>
           <NuxtLink :to="localePath({ name: 'ingredients-id', params: { id: ingredientId(item) } })">
             {{ t('audit.showIngredient') }}
           </NuxtLink>
         </template>
         <template v-else-if="teaLink(item)">
           <template v-if="teaLink(item)!.version">
-            {{ t('audit.version', { version: teaLink(item)!.version }) }} ·
+            {{ t('audit.version', { version: teaLink(item)!.version }) }}
+            <template v-if="item.details?.revertedTo">
+              ({{ t('audit.moderation.revertedTo', { version: item.details.revertedTo }) }})
+            </template>
+            ·
           </template>
           <NuxtLink v-if="teaLink(item)!.id" :to="localePath({ name: 'teas-id', params: { id: teaLink(item)!.id } })">
             {{ t('audit.showTea') }}

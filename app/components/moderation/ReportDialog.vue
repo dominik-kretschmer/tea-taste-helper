@@ -13,11 +13,12 @@ const { fieldErrors, formError, validate, handleError, reset } = useFormErrors()
 const form = reactive({ reason: 'spam' as ReportReasonValue, comment: '', duplicateOfId: null as string | null })
 const busy = ref(false)
 
+// immediate: Der Dialog wird oft erst beim Öffnen eingebunden (v-if), dann ändert sich `open` nicht mehr
 watch(open, (value) => {
   if (!value) return
   Object.assign(form, { reason: 'spam', comment: '', duplicateOfId: null })
   reset()
-})
+}, { immediate: true })
 
 async function submit() {
   const input = validate(reportSchema, { entityType: props.entityType, entityId: props.entityId, ...form })

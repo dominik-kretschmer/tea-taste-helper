@@ -14,12 +14,13 @@ const reason = ref('')
 const inUse = ref<number | null>(null)
 const busy = ref(false)
 
+// immediate: Der Dialog wird oft erst beim Öffnen eingebunden (v-if), dann ändert sich `open` nicht mehr
 watch(open, (value) => {
   if (!value) return
   reason.value = ''
   inUse.value = null
   reset()
-})
+}, { immediate: true })
 
 async function submit() {
   const input = validate(hideSchema, { reason: reason.value })

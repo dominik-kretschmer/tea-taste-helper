@@ -163,7 +163,7 @@ Reihenfolge:
   - Prüfung: Für jede neue Route Gast 401, Nutzer 403 (bzw. 401 bei Nutzer-Routen für Gäste), Moderator und Admin erlaubt; `/api/admin/users`, `/api/admin/audit`, Rolle ändern und Passwort-Reset für Moderatoren weiter 403.
   - Ergebnis: ein Matrix-Test in `moderation.test.ts` über 17 Moderationsrouten (Gast 401, Nutzer 403, Moderator und Admin weder 401 noch 403), 4 Admin-Routen (Moderator 403) und 3 Nutzer-Routen (Gast 401). Grün; die Einzeltests je Route bleiben zusätzlich bestehen.
 
-- [ ] 13. Zugang, Navigation, Texte
+- [x] 13. Zugang, Navigation, Texte
   - Dateien: `app/middleware/moderator.ts`, `app/composables/useAuth.ts` (`isModerator`), `app/composables/useOpenReports.ts`, `app/components/UserMenu.vue`, `app/components/AdminNav.vue`, `app/pages/admin/index.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-0.1, AK-3.5, AK-9.4 (Texte)
   - Prüfung im Browser:
@@ -171,6 +171,11 @@ Reihenfolge:
     - Admin sieht beides.
     - Nutzer sieht nichts davon; `/admin` leitet ihn um.
     - Unit-Test der Sprachdateien grün.
+  - Ergebnis (Browser zusammen mit Aufgabe 16):
+    - Nutzerin: Menü ohne „Moderation“, `/admin` und `/admin/reports` leiten auf `/`.
+    - Moderatorin: „Moderation“ mit Badge (2), `/admin` → `/admin/reports`, Tabs Meldungen (mit Badge)/Ausgeblendet/Nutzer sperren; `/admin/users` und `/admin/audit` → `/`.
+    - Admin: landet auf `/admin/users` und sieht alle fünf Tabs.
+    - Sprachdateien-Test grün.
 
 - [x] 14. Seiten: Melden, Moderationsmenü, Banner, Weiterleitung
   - Dateien: `app/components/moderation/{ReportDialog,EntrySearch,EntryModerationMenu,HideDialog,HiddenBanner,MergeDialog}.vue`, `app/pages/ingredients/[id]/index.vue`, `app/pages/teas/[id]/index.vue`
@@ -209,7 +214,7 @@ Reihenfolge:
     - Englisch dunkel bei 360 px („Reverted to version 1“, „Hidden by …“) ohne Überlauf.
     - Die Links bei `DUPLICATE_NAME`/`INGREDIENT_UNAVAILABLE` prüfen nur die API-Tests, im Browser nicht nachgestellt.
 
-- [ ] 16. Seiten: Meldungen, Ausgeblendet, Nutzer sperren
+- [x] 16. Seiten: Meldungen, Ausgeblendet, Nutzer sperren
   - Dateien: `app/pages/admin/{reports,hidden}.vue`, `app/pages/admin/moderation/users.vue`, `app/components/moderation/{BlockDialog,BulkRevertDialog}.vue`, `app/pages/login.vue`, `app/pages/admin/audit.vue`
   - Erfüllt: AK-3.1–AK-3.3 (UI), AK-5.4, AK-6.1, AK-6.2 (UI), AK-6.6, AK-6.8, AK-7.1, AK-7.5 (UI), AK-8.2, AK-9.3
   - Prüfung im Browser:
@@ -220,6 +225,14 @@ Reihenfolge:
     - Login eines Gesperrten zeigt Datum bzw. „dauerhaft“.
     - Audit zeigt alle neuen Ereignisse übersetzt, private Tees ohne Link.
     - 360 px, hell/dunkel, keine CSP-Verstöße.
+  - Ergebnis: Playwright mit `pw05`-Daten, keine Konsolenfehler.
+    - Meldungen: Karten mit aufklappbaren Meldungen; die Filter Grund/Art grenzen ein; „Erledigt“ mit Notiz → Badge 2 → 1, unter „Abgeschlossen“ mit „erledigt von … am …“ und Notiz. Ausblenden aus der Meldung → verschwindet aus „Offen“ und steht unter „Ausgeblendet“ mit Grund. „Zusammenführen“ aus einer Duplikat-Meldung öffnet die Vorschau mit vorausgewähltem Original.
+    - Nutzer sperren: 24 h mit Grund → „gesperrt bis …“, keine E-Mail für Moderatoren. Der Login des Gesperrten zeigt „Dein Konto ist gesperrt bis …“. „Entsperren“ → Login wieder 200.
+    - Massen-Zurücksetzung: Vorschau „Wird zurückgesetzt (1) … auf Version 1“ → danach heißt die Zutat wieder „pw05 Grüntee“. Ein zweiter Lauf zeigt „Übersprungen – bitte einzeln prüfen (1) · danach von anderen geändert“, weil inzwischen die Moderatorin geändert hatte.
+    - Admin sieht E-Mails; das Audit-Log zeigt Melden, Abschließen, Ausblenden, Sperren (Frist, Grund), Massen-Zurücksetzung (Zähler) und Entsperren übersetzt.
+    - 360 px hell und dunkel ohne Überlauf auf allen drei Seiten, auch `/en`.
+    - **Gefundener Fehler, behoben:** Dialoge, die erst beim Öffnen per `v-if` eingebunden werden, bekamen die Öffnung nicht mit (`watch(open)` ohne `immediate`). Die Vorschau der Massen-Zurücksetzung blieb dadurch leer, und das vorausgewählte Ziel beim Zusammenführen fehlte. Jetzt haben alle Dialoge `immediate: true` (in `MergeDialog` auch der Ziel-Watcher), im Browser nachgeprüft.
+    - Die CSP-Prüfung gegen den Production-Build steht mit der Endabnahme (Aufgabe 18) aus.
 
 - [ ] 17. Dokumentation
   - Dateien: `README.md` (Moderation, Rollen, SQL-Objekte `Report_open_key` und CHECK-Constraints, neue Fehlercodes), `.claude/skills/nuxt-dev/SKILL.md`, `.claude/specs/00-chore/README.md` (Beobachtung „Suche öffentlich ohne Rate-Limit“ mit 05 erneut prüfen und Ergebnis eintragen)

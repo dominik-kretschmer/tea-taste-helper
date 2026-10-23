@@ -46,7 +46,9 @@
   "login": {
     "title": "Anmelden",
     "submit": "Anmelden",
-    "noAccount": "Noch kein Konto?"
+    "noAccount": "Noch kein Konto?",
+    "blockedUntil": "Dein Konto ist gesperrt bis {date}.",
+    "blockedPermanent": "Dein Konto ist dauerhaft gesperrt."
   },
   "register": {
     "title": "Registrieren",
@@ -205,7 +207,17 @@
     "version": "Version {version}",
     "showIngredient": "Zutat anzeigen",
     "showTea": "Tee anzeigen",
-    "privateTea": "privater Tee"
+    "privateTea": "privater Tee",
+    "moderation": {
+      "revertedTo": "auf Version {version}",
+      "teasChanged": "{count} Tees umgestellt",
+      "blockedUntil": "bis {date}",
+      "permanent": "unbefristet",
+      "bulk": "{reverted} zurückgesetzt, {hidden} ausgeblendet, {skipped} übersprungen",
+      "reports": "{count} Meldungen · {status}",
+      "showEntry": "Eintrag anzeigen",
+      "showTarget": "Ziel anzeigen"
+    }
   },
   "catalog": {
     "fields": {
@@ -471,6 +483,103 @@
         "merged": "Zusammengeführt von {name}"
       },
       "mergedTarget": "Ziel ansehen"
+    },
+    "reports": {
+      "tabs": {
+        "open": "Offen",
+        "closed": "Abgeschlossen"
+      },
+      "filters": {
+        "reason": "Grund",
+        "type": "Art"
+      },
+      "empty": "Keine offenen Meldungen.",
+      "emptyClosed": "Keine abgeschlossenen Meldungen.",
+      "count": "{count} Meldungen · älteste vom {date}",
+      "reporter": "{name} am {date}",
+      "duplicateOf": "Original:",
+      "lastAuthor": "Zuletzt geändert von {name}",
+      "status": {
+        "resolved": "erledigt",
+        "rejected": "abgelehnt"
+      },
+      "closedBy": "{status} von {name} am {date}",
+      "actions": {
+        "history": "Historie",
+        "merge": "Zusammenführen",
+        "hide": "Ausblenden",
+        "blockAuthor": "Autor sperren",
+        "resolve": "Erledigt",
+        "reject": "Ablehnen"
+      },
+      "resolveTitle": "Meldungen als „{status}“ abschließen",
+      "resolveNote": "Notiz (optional)",
+      "closed": "Meldungen abgeschlossen."
+    },
+    "hiddenPage": {
+      "empty": "Nichts ausgeblendet.",
+      "by": "{name} am {date}"
+    },
+    "users": {
+      "search": "Anzeigename suchen",
+      "onlyBlocked": "Nur gesperrte",
+      "empty": "Keine Nutzer gefunden.",
+      "changes": "{count} Änderungen in 30 Tagen",
+      "status": {
+        "active": "aktiv",
+        "until": "gesperrt bis {date}",
+        "permanent": "dauerhaft gesperrt",
+        "expired": "Sperre abgelaufen"
+      },
+      "actions": {
+        "block": "Sperren",
+        "changeBlock": "Sperre ändern",
+        "unblock": "Entsperren",
+        "bulkRevert": "Änderungen zurücksetzen"
+      },
+      "unblocked": "{name} ist entsperrt."
+    },
+    "block": {
+      "title": "{name} sperren",
+      "titleChange": "Sperre von {name} ändern",
+      "text": "Alle Sitzungen enden sofort. Den Grund sieht nur die Moderation.",
+      "duration": "Dauer",
+      "durations": {
+        "24h": "24 Stunden",
+        "7d": "7 Tage",
+        "30d": "30 Tage",
+        "permanent": "Unbefristet"
+      },
+      "reason": "Grund",
+      "action": "Sperren",
+      "done": "{name} ist gesperrt."
+    },
+    "bulk": {
+      "title": "Änderungen von {name} zurücksetzen",
+      "period": "Zeitraum",
+      "periods": {
+        "24h": "Letzte 24 Stunden",
+        "7d": "Letzte 7 Tage",
+        "30d": "Letzte 30 Tage",
+        "since": "Ab Datum"
+      },
+      "since": "Ab Datum",
+      "revert": "Wird zurückgesetzt ({count})",
+      "hide": "Wird ausgeblendet ({count})",
+      "skip": "Wird übersprungen ({count})",
+      "resultRevert": "Zurückgesetzt ({count})",
+      "resultHide": "Ausgeblendet ({count})",
+      "resultSkip": "Übersprungen – bitte einzeln prüfen ({count})",
+      "toVersion": "auf Version {version}",
+      "reasons": {
+        "changed_by_others": "danach von anderen geändert",
+        "in_use": "wird noch in Tees verwendet",
+        "duplicate": "Name inzwischen vergeben",
+        "ingredient_unavailable": "enthält ausgeblendete Zutat",
+        "conflict": "gleichzeitig geändert"
+      },
+      "nothing": "Im Zeitraum keine Änderungen.",
+      "action": "Jetzt zurücksetzen"
     }
   }
 }

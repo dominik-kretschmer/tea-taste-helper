@@ -46,7 +46,9 @@
   "login": {
     "title": "Sign in",
     "submit": "Sign in",
-    "noAccount": "No account yet?"
+    "noAccount": "No account yet?",
+    "blockedUntil": "Your account is blocked until {date}.",
+    "blockedPermanent": "Your account is permanently blocked."
   },
   "register": {
     "title": "Sign up",
@@ -205,7 +207,17 @@
     "version": "Version {version}",
     "showIngredient": "Show ingredient",
     "showTea": "Show tea",
-    "privateTea": "private tea"
+    "privateTea": "private tea",
+    "moderation": {
+      "revertedTo": "to version {version}",
+      "teasChanged": "{count} teas updated",
+      "blockedUntil": "until {date}",
+      "permanent": "permanent",
+      "bulk": "{reverted} reverted, {hidden} hidden, {skipped} skipped",
+      "reports": "{count} reports · {status}",
+      "showEntry": "Show entry",
+      "showTarget": "Show target"
+    }
   },
   "catalog": {
     "fields": {
@@ -471,6 +483,103 @@
         "merged": "Merged by {name}"
       },
       "mergedTarget": "View target"
+    },
+    "reports": {
+      "tabs": {
+        "open": "Open",
+        "closed": "Closed"
+      },
+      "filters": {
+        "reason": "Reason",
+        "type": "Type"
+      },
+      "empty": "No open reports.",
+      "emptyClosed": "No closed reports.",
+      "count": "{count} reports · oldest from {date}",
+      "reporter": "{name} on {date}",
+      "duplicateOf": "Original:",
+      "lastAuthor": "Last changed by {name}",
+      "status": {
+        "resolved": "resolved",
+        "rejected": "rejected"
+      },
+      "closedBy": "{status} by {name} on {date}",
+      "actions": {
+        "history": "History",
+        "merge": "Merge",
+        "hide": "Hide",
+        "blockAuthor": "Block author",
+        "resolve": "Resolve",
+        "reject": "Reject"
+      },
+      "resolveTitle": "Close reports as “{status}”",
+      "resolveNote": "Note (optional)",
+      "closed": "Reports closed."
+    },
+    "hiddenPage": {
+      "empty": "Nothing hidden.",
+      "by": "{name} on {date}"
+    },
+    "users": {
+      "search": "Search display name",
+      "onlyBlocked": "Blocked only",
+      "empty": "No users found.",
+      "changes": "{count} changes in 30 days",
+      "status": {
+        "active": "active",
+        "until": "blocked until {date}",
+        "permanent": "permanently blocked",
+        "expired": "block expired"
+      },
+      "actions": {
+        "block": "Block",
+        "changeBlock": "Change block",
+        "unblock": "Unblock",
+        "bulkRevert": "Revert changes"
+      },
+      "unblocked": "{name} is unblocked."
+    },
+    "block": {
+      "title": "Block {name}",
+      "titleChange": "Change block of {name}",
+      "text": "All sessions end immediately. Only moderators see the reason.",
+      "duration": "Duration",
+      "durations": {
+        "24h": "24 hours",
+        "7d": "7 days",
+        "30d": "30 days",
+        "permanent": "Permanent"
+      },
+      "reason": "Reason",
+      "action": "Block",
+      "done": "{name} is blocked."
+    },
+    "bulk": {
+      "title": "Revert changes by {name}",
+      "period": "Period",
+      "periods": {
+        "24h": "Last 24 hours",
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "since": "Since date"
+      },
+      "since": "Since date",
+      "revert": "Will be reverted ({count})",
+      "hide": "Will be hidden ({count})",
+      "skip": "Will be skipped ({count})",
+      "resultRevert": "Reverted ({count})",
+      "resultHide": "Hidden ({count})",
+      "resultSkip": "Skipped – please check individually ({count})",
+      "toVersion": "to version {version}",
+      "reasons": {
+        "changed_by_others": "changed by others afterwards",
+        "in_use": "still used in teas",
+        "duplicate": "name taken in the meantime",
+        "ingredient_unavailable": "contains a hidden ingredient",
+        "conflict": "changed at the same time"
+      },
+      "nothing": "No changes in this period.",
+      "action": "Revert now"
     }
   }
 }

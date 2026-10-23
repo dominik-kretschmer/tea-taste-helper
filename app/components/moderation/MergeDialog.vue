@@ -14,13 +14,14 @@ const loading = ref(false)
 const confirmed = ref(false)
 const busy = ref(false)
 
+// immediate: Der Dialog wird oft erst beim Öffnen eingebunden (v-if), dann ändert sich `open` nicht mehr
 watch(open, (value) => {
   if (!value) return
   targetId.value = props.initialTarget ?? null
   preview.value = null
   confirmed.value = false
   reset()
-})
+}, { immediate: true })
 
 watch(targetId, async (id) => {
   preview.value = null
@@ -37,7 +38,7 @@ watch(targetId, async (id) => {
   finally {
     loading.value = false
   }
-})
+}, { immediate: true })
 
 const nameOf = (entry: { sourceLocale: ContentLocale, translations: CatalogTranslations }, locale: ContentLocale) => entry.translations[locale]?.name
 const languages = computed(() => preview.value?.missingTranslations.map(locale => t(`language.${locale}`)).join(', ') ?? '')
