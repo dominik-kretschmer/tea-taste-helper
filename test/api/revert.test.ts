@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { setup } from '@nuxt/test-utils/e2e'
 import { describe, expect, it } from 'vitest'
-import { createClient, db, insertIngredient, registerUser, rootDir, testServerEnv, type TestClient } from './helpers'
+import { createClient, db, insertIngredient, registerUser, rootDir, setRole, testServerEnv, type TestClient } from './helpers'
 
 const marker = () => randomUUID().slice(0, 8)
 
@@ -172,6 +172,117 @@ describe('Zurücksetzen', async () => {
       const stale = await anna.post(`/api/teas/${tea.id}/revert`, { version: 2, to: 1 })
       expect(stale.status).toBe(409)
       expect(stale.body.error).toMatchObject({ code: 'EDIT_CONFLICT', details: { currentVersion: 3 } })
+    })
+  })
+
+  describe('Massen-Zurücksetzen (AK-7)', () => {
+    const plan = (client: TestClient, userId: string, since: Date) =>
+      client.get(`/api/admin/users/${userId}/bulk-revert?since=${encodeURIComponent(since.toISOString())}&locale=de`)
+    const run = (client: TestClient, userId: string, since: Date) =>
+      client.post(`/api/admin/users/${userId}/bulk-revert`, { since: since.toISOString(), locale: 'de' })
+    const ids = (items: { entityId: string }[]) => items.map(item => item.entityId).sort()
+
+    it('setzt zurück, blendet Neues aus und überspringt Fremdänderungen – Vorschau gleich Ergebnis (AK-7.1–7.6)', async () => {
+      const { client: anna } = await registerUser({ displayName: 'Anna' })
+      const { client: vandal, user: vandalUser } = await registerUser({ displayName: 'Vandale' })
+      const { client: mod, user: modUser } = await registerUser({ displayName: 'Moni' })
+      await setRole(modUser.id, 'moderator')
+      const m = marker()
+
+      // Annas Einträge, die der Vandale ändert
+      const x = await createIngredient(anna, `Ingwer ${m}`)
+      ok(await vandal.patch(`/api/ingredients/${x.id}`, { version: 1, caffeine: 'yes' }))
+      // Version 2 liegt vor dem Zeitraum und bleibt
+      await db(`UPDATE "IngredientVersion" SET "createdAt" = now() - interval '10 days' WHERE "ingredientId" = $1 AND version = 2`, [x.id])
+      const since = new Date(Date.now() - 60_000)
+      ok(await vandal.patch(`/api/ingredients/${x.id}`, { version: 2, translations: { de: { name: `Ingwer ${m} kaputt` } } }))
+      ok(await vandal.patch(`/api/ingredients/${x.id}`, { version: 3, brewTempC: 40 }))
+
+      const base = await insertIngredient(`Basis ${m}`)
+      const tea = await createTea(anna, { name: `Annas Tee ${m}`, ingredients: [{ ingredientId: base }] })
+      ok(await vandal.patch(`/api/teas/${tea.id}`, { version: 1, caffeine: 'yes' }))
+
+      // Danach von Anna weiter bearbeitet → überspringen
+      const y = await createIngredient(anna, `Zimt ${m}`)
+      ok(await vandal.patch(`/api/ingredients/${y.id}`, { version: 1, caffeine: 'yes' }))
+      ok(await anna.patch(`/api/ingredients/${y.id}`, { version: 2, caffeine: 'no' }))
+
+      // Neu angelegt: Tee und seine Zutat werden ausgeblendet
+      const n = await createIngredient(vandal, `Neukraut ${m}`)
+      const newTea = await createTea(vandal, { name: `Spamtee ${m}`, ingredients: [{ ingredientId: n.id }] })
+      // Neu, aber in Annas Tee bzw. im privaten Tee des Vandalen verwendet → überspringen
+      const z = await createIngredient(vandal, `Fremdgenutzt ${m}`)
+      await createTea(anna, { name: `Annas zweiter ${m}`, ingredients: [{ ingredientId: z.id }] })
+      const w = await createIngredient(vandal, `Privatgenutzt ${m}`)
+      const privateTea = await createTea(vandal, { name: `Privat ${m}`, visibility: 'private', ingredients: [{ ingredientId: w.id }] })
+
+      const preview = await plan(mod, vandalUser.id, since)
+      expect(preview.status, preview.text).toBe(200)
+      const expected = {
+        revert: [x.id, tea.id].sort(),
+        hide: [n.id, newTea.id].sort(),
+        skip: [y.id, z.id, w.id].sort(),
+      }
+      expect({ revert: ids(preview.body.revert), hide: ids(preview.body.hide), skip: ids(preview.body.skip) }).toEqual(expected)
+      expect(preview.body.revert.find((item: { entityId: string }) => item.entityId === x.id)).toMatchObject({ toVersion: 2, name: `Ingwer ${m} kaputt` })
+      expect(Object.fromEntries(preview.body.skip.map((item: { entityId: string, reason: string }) => [item.entityId, item.reason])))
+        .toEqual({ [y.id]: 'changed_by_others', [z.id]: 'in_use', [w.id]: 'in_use' })
+      // Die Vorschau ändert nichts
+      expect((await anna.get(`/api/ingredients/${x.id}`)).body.ingredient.version).toBe(4)
+
+      const result = await run(mod, vandalUser.id, since)
+      expect(result.status, result.text).toBe(200)
+      expect({ revert: ids(result.body.revert), hide: ids(result.body.hide), skip: ids(result.body.skip) }).toEqual(expected)
+
+      const restored = (await anna.get(`/api/ingredients/${x.id}`)).body.ingredient as IngredientDetail
+      expect(restored).toMatchObject({ version: 5, caffeine: 'yes', brewTempC: null, translations: { de: { name: `Ingwer ${m}` } } })
+      const [latest] = ((await anna.get(`/api/ingredients/${x.id}/revisions`)).body as RevisionPage).items
+      expect(latest).toMatchObject({ author: { displayName: 'Moni' }, revertedTo: 2, bulkRevertOf: { displayName: 'Vandale' }, note: null })
+      expect((await anna.get(`/api/teas/${tea.id}`)).body.tea).toMatchObject({ version: 3, caffeine: 'unknown' })
+
+      for (const path of [`/api/ingredients/${n.id}`, `/api/teas/${newTea.id}`]) expect((await anna.get(path)).status, path).toBe(404)
+      const [hiddenRow] = await db(`SELECT "hiddenReason" FROM "Tea" WHERE id = $1`, [newTea.id])
+      expect(hiddenRow!.hiddenReason).toBe('bulk_revert')
+      expect((await anna.get(`/api/ingredients/${y.id}`)).body.ingredient.version).toBe(3)
+      expect((await vandal.get(`/api/teas/${privateTea.id}`)).body.tea.version).toBe(1)
+
+      const audits = await db(`SELECT event, "targetId", details FROM "AuditLog" WHERE "actorId" = $1 AND event <> 'USER_REGISTERED'`, [modUser.id])
+      expect(audits).toEqual([{ event: 'BULK_REVERT', targetId: vandalUser.id, details: { since: since.toISOString(), reverted: 2, hidden: 2, skipped: 3 } }])
+    })
+
+    it('gilt ohne Rate-Limit und nur im Zeitraum (AK-7.5, AK-7.6)', async () => {
+      const { user: vandalUser } = await registerUser({ displayName: 'Vielschreiber' })
+      const { client: mod, user: modUser } = await registerUser({ displayName: 'Moni' })
+      await setRole(modUser.id, 'moderator')
+      const created = await Promise.all(Array.from({ length: 32 }, (_, i) => insertIngredient(`Massen ${i} ${marker()}`)))
+      await db(`UPDATE "IngredientVersion" SET "authorId" = $2 WHERE "ingredientId" = ANY($1)`, [created, vandalUser.id])
+      // Eine Zutat liegt vor dem Zeitraum
+      await db(`UPDATE "IngredientVersion" SET "createdAt" = now() - interval '3 days' WHERE "ingredientId" = $1`, [created[0]])
+
+      const result = await run(mod, vandalUser.id, new Date(Date.now() - 24 * 3600_000))
+      expect(result.status, result.text).toBe(200)
+      expect(result.body.hide).toHaveLength(31)
+      expect(ids(result.body.hide)).not.toContain(created[0])
+    })
+
+    it('prüft Rechte und Eingaben (AK-0.2)', async () => {
+      const guest = await createClient()
+      const { client: plain, user: plainUser } = await registerUser()
+      const { client: mod, user: modUser } = await registerUser()
+      const { user: otherMod } = await registerUser()
+      await Promise.all([setRole(modUser.id, 'moderator'), setRole(otherMod.id, 'moderator')])
+      const since = new Date(Date.now() - 3600_000)
+
+      for (const client of [guest, plain]) {
+        const expected = client === guest ? 401 : 403
+        expect((await plan(client, plainUser.id, since)).status).toBe(expected)
+        expect((await run(client, plainUser.id, since)).status).toBe(expected)
+      }
+      // Wie beim Sperren: Moderatoren nicht über andere Moderatoren
+      expect((await run(mod, otherMod.id, since)).status).toBe(403)
+      expect((await run(mod, '00000000-0000-7000-8000-000000000000', since)).status).toBe(404)
+      expect((await run(mod, plainUser.id, new Date(Date.now() + 3600_000))).status).toBe(400)
+      expect((await plan(mod, plainUser.id, since)).body).toEqual({ revert: [], hide: [], skip: [] })
     })
   })
 })

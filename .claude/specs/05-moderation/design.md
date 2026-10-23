@@ -395,9 +395,9 @@ Die PATCH-Routen behalten Rechteprüfung, Rate-Limit und Audit und rufen nur noc
 
 ### Ausblenden und Wiederherstellen
 
-- **Ausblenden:** Zeile `FOR UPDATE`, aktiv, sonst 404. Bei Zutaten `countTeasUsing(id)` über aktuelle Versionen aller Tees; > 0 → 409 `INGREDIENT_IN_USE { teas }` (AK-5.2). Dann `hiddenAt/ById/Reason` setzen, `recordCatalogEvent(hidden)`, `closeReports`. Audit `*_HIDDEN { id, reason }`.
+- **Ausblenden:** Zeile `FOR UPDATE`, aktiv, sonst 404. Bei Zutaten `countTeasUsing(id)` über aktuelle Versionen aller **aktiven** Tees (ausgeblendete zählen nicht, siehe Wiederherstellen); > 0 → 409 `INGREDIENT_IN_USE { teas }` (AK-5.2). Dann `hiddenAt/ById/Reason` setzen, `recordCatalogEvent(hidden)`, `closeReports`. Audit `*_HIDDEN { id, reason }`.
 - **Wettlauf mit dem Tee-Speichern:** `assertIngredientsExist` liest die Zutaten mit `FOR SHARE` und nur aktive. Ein Tee kann eine Zutat also nicht in dem Moment aufnehmen, in dem sie ausgeblendet wird.
-- **Wiederherstellen:** Nur wenn `hiddenAt` gesetzt. Duplikatregel für alle Übersetzungen der aktuellen Version (`assertNameAvailable` bzw. `assertTeaNamesAvailable` ohne `before`) → 409 `DUPLICATE_NAME` (AK-5.5). Felder leeren, `recordCatalogEvent(restored)`, Audit `*_RESTORED`.
+- **Wiederherstellen:** Nur wenn `hiddenAt` gesetzt. Bei Tees müssen alle Zutaten der aktuellen Version aktiv sein, sonst 409 `INGREDIENT_UNAVAILABLE` (*Umsetzung:* so blockieren ausgeblendete Spam-Tees beim Massen-Zurücksetzen ihre Zutaten nicht, und es entsteht trotzdem nie ein sichtbarer Tee mit ausgeblendeter Zutat). Duplikatregel für alle Übersetzungen der aktuellen Version (`assertNameAvailable` bzw. `assertTeaNamesAvailable` ohne `before`) → 409 `DUPLICATE_NAME` (AK-5.5). Felder leeren, `recordCatalogEvent(restored)`, Audit `*_RESTORED`.
 - Duplikatregel ignoriert inaktive Einträge (AK-5.3): Die `findFirst`-Bedingungen in `assertNameAvailable` und `assertTeaNameAvailable` bekommen `ingredient: ACTIVE` bzw. `tea: ACTIVE`.
 
 ### Sperren

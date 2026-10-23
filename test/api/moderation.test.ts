@@ -377,6 +377,18 @@ describe('Moderation', async () => {
       expect(entry).toBeTruthy()
     })
 
+    it('zählt ausgeblendete Tees nicht, stellt sie aber nur mit aktiven Zutaten wieder her (AK-5.2, AK-5.5)', async () => {
+      const id = await insertIngredient(`Nur im Spam ${marker()}`)
+      const tea = await createTea(anna, { name: `Spamtee ${marker()}`, ingredients: [{ ingredientId: id }] })
+      expect((await hideVia(mod, 'teas', tea.id)).status).toBe(204)
+      expect((await hideVia(mod, 'ingredients', id)).status).toBe(204)
+      const restore = await restoreVia(mod, 'teas', tea.id)
+      expect(restore.status).toBe(409)
+      expect(restore.body.error).toMatchObject({ code: 'INGREDIENT_UNAVAILABLE', details: { ingredientId: id } })
+      expect((await restoreVia(mod, 'ingredients', id)).status).toBe(204)
+      expect((await restoreVia(mod, 'teas', tea.id)).status).toBe(204)
+    })
+
     it('lässt Ausblenden und Tee-Speichern derselben Zutat nicht beide gelingen (AK-5.2)', async () => {
       for (let round = 0; round < 3; round++) {
         const { client } = await registerUser()

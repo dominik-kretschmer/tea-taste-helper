@@ -155,14 +155,17 @@ export async function listReportGroups(db: Db, query: ReportListQuery): Promise<
   return { items, total, page: query.page, pageSize: MODERATION_PAGE_SIZE }
 }
 
-/** Teeversionen (aktuelle, nicht zusammengeführte Tees), die diese Zutat enthalten (AK-4.1, AK-5.2). */
+/**
+ * Aktive Tees, deren aktuelle Version diese Zutat enthält (AK-4.1, AK-5.2). Ausgeblendete Tees zählen
+ * nicht: Sie lassen sich nur wiederherstellen, solange alle ihre Zutaten aktiv sind (`restoreEntry`).
+ */
 export async function countTeasUsing(db: Db, ingredientId: string): Promise<{ public: number, private: number }> {
   const [row] = await db.$queryRaw<{ public: number, private: number }[]>`
     SELECT count(*) FILTER (WHERE v.visibility = 'public')::int AS public,
            count(*) FILTER (WHERE v.visibility = 'private')::int AS private
     FROM "TeaVersionIngredient" vi
     JOIN "TeaVersion" v ON v.id = vi."versionId" AND v."isCurrent"
-    JOIN "Tea" t ON t.id = v."teaId" AND t."mergedIntoId" IS NULL
+    JOIN "Tea" t ON t.id = v."teaId" AND ${activeSql('t')}
     WHERE vi."ingredientId" = ${ingredientId}::uuid`
   return row ?? { public: 0, private: 0 }
 }
@@ -221,7 +224,16 @@ export async function restoreEntry(db: Db, input: { entityType: CatalogTypeValue
   }
   else {
     const current = await loadCurrentTea(db, input.id, null, { includeInactive: true })
-    if (current) await assertTeaNamesAvailable(db, toTeaSnapshot(current.tea, current.version), { teaId: input.id })
+    if (current) {
+      const snapshot = toTeaSnapshot(current.tea, current.version)
+      // Nie ein sichtbarer Tee mit ausgeblendeter oder zusammengeführter Zutat (AK-5.1, AK-5.2)
+      const resolved = await resolveMerged(db, snapshot.ingredients.map(item => item.ingredientId))
+      const unavailable = [...resolved].find(([original, entry]) => entry.hidden || entry.id !== original)
+      if (unavailable) {
+        throw new AppError(409, 'INGREDIENT_UNAVAILABLE', 'The tea contains an ingredient that is no longer available', { ingredientId: unavailable[0] })
+      }
+      await assertTeaNamesAvailable(db, snapshot, { teaId: input.id })
+    }
     await db.tea.update({ where: { id: input.id }, data })
   }
   await recordCatalogEvent(db, { entityType: input.entityType, entityId: input.id, kind: 'restored', actorId: input.actorId })
@@ -358,4 +370,164 @@ export async function previewMerge(db: Db, entityType: CatalogTypeValue, sourceI
     missingTranslations,
     ...(entityType === 'ingredient' ? { teas: await countTeasUsing(db, sourceId) } : {}),
   }
+}
+
+// --- Massen-Zurücksetzen (AK-7.1–7.6) ---
+
+type BulkDecision =
+  | { action: 'revert', toVersion: number }
+  | { action: 'hide' }
+  | { action: 'skip', reason: BulkSkipReason }
+
+/**
+ * Was mit einem Eintrag passiert: `f` ist die erste Version des Nutzers ab `since`. Hat danach jemand
+ * anderes geändert → überspringen (AK-7.3); hat der Nutzer ihn angelegt (f = 1) → ausblenden (AK-7.4);
+ * sonst zurück auf f − 1 (AK-7.2). `null`, wenn der Nutzer im Zeitraum nichts daran geändert hat.
+ */
+export function decideBulkEntry(versions: { version: number, authorId: string | null, createdAt: Date }[], userId: string, since: Date): BulkDecision | null {
+  const sorted = [...versions].sort((a, b) => a.version - b.version)
+  const first = sorted.find(v => v.authorId === userId && v.createdAt >= since)
+  if (!first) return null
+  if (sorted.some(v => v.version > first.version && v.authorId !== userId)) return { action: 'skip', reason: 'changed_by_others' }
+  return first.version === 1 ? { action: 'hide' } : { action: 'revert', toVersion: first.version - 1 }
+}
+
+const versionFields = { version: true, authorId: true, createdAt: true } as const
+
+/** Aktive Zutaten und aktive öffentliche Tees, die der Nutzer seit `since` geändert hat (AK-7.1, AK-7.5). */
+async function bulkCandidates(db: Db, userId: string, since: Date) {
+  const changed = { authorId: userId, createdAt: { gte: since } }
+  const [ingredients, teas] = await Promise.all([
+    db.ingredient.findMany({
+      where: { ...ENTRY_ACTIVE, versions: { some: changed } },
+      select: { id: true, versions: { select: versionFields } },
+    }),
+    db.tea.findMany({
+      where: { ...ENTRY_ACTIVE, versions: { some: changed }, AND: [{ versions: { some: { isCurrent: true, visibility: 'public' } } }] },
+      select: { id: true, versions: { select: versionFields } },
+    }),
+  ])
+  return [
+    // Tees zuerst: Ausgeblendete neue Tees des Nutzers blockieren dann seine neuen Zutaten nicht mehr
+    ...teas.map(row => ({ entityType: 'tea' as const, entityId: row.id, versions: row.versions })),
+    ...ingredients.map(row => ({ entityType: 'ingredient' as const, entityId: row.id, versions: row.versions })),
+  ]
+}
+
+/** Vorschau (AK-7.1). */
+export async function planBulkRevert(db: Db, userId: string, since: Date, locale: ContentLocale): Promise<BulkRevertPlan> {
+  const candidates = await bulkCandidates(db, userId, since)
+  const infos = await loadEntryInfos(db, candidates, locale)
+  const plan: BulkRevertPlan = { revert: [], hide: [], skip: [] }
+  const hiddenTeas = new Set<string>()
+  for (const candidate of candidates) {
+    const decision = decideBulkEntry(candidate.versions, userId, since)
+    if (!decision) continue
+    const item = { entityType: candidate.entityType, entityId: candidate.entityId, name: infos.get(entryKey(candidate.entityType, candidate.entityId))?.name ?? '' }
+    if (decision.action === 'revert') {
+      plan.revert.push({ ...item, toVersion: decision.toVersion })
+    }
+    else if (decision.action === 'hide') {
+      // Wie bei der Ausführung: Eine Zutat bleibt, solange ein Tee sie enthält, der nicht mit ausgeblendet wird
+      if (candidate.entityType === 'ingredient' && (await teasUsing(db, candidate.entityId)).some(teaId => !hiddenTeas.has(teaId))) {
+        plan.skip.push({ ...item, reason: 'in_use' })
+        continue
+      }
+      if (candidate.entityType === 'tea') hiddenTeas.add(candidate.entityId)
+      plan.hide.push(item)
+    }
+    else {
+      plan.skip.push({ ...item, reason: decision.reason })
+    }
+  }
+  return plan
+}
+
+/** IDs der Tees, deren aktuelle Version die Zutat enthält (wie `countTeasUsing`). */
+async function teasUsing(db: Db, ingredientId: string): Promise<string[]> {
+  const rows = await db.$queryRaw<{ teaId: string }[]>`
+    SELECT v."teaId" FROM "TeaVersionIngredient" vi
+    JOIN "TeaVersion" v ON v.id = vi."versionId" AND v."isCurrent"
+    JOIN "Tea" t ON t.id = v."teaId" AND ${activeSql('t')}
+    WHERE vi."ingredientId" = ${ingredientId}::uuid`
+  return rows.map(row => row.teaId)
+}
+
+const SKIP_CODES: Record<string, BulkSkipReason> = {
+  INGREDIENT_IN_USE: 'in_use',
+  DUPLICATE_NAME: 'duplicate',
+  INGREDIENT_UNAVAILABLE: 'ingredient_unavailable',
+  EDIT_CONFLICT: 'conflict',
+}
+
+/** Setzt einen Eintrag auf `toVersion` zurück, gekennzeichnet als Massen-Zurücksetzung (AK-7.2). */
+async function revertForBulk(db: Db, entityType: CatalogTypeValue, id: string, toVersion: number, input: { userId: string, actorId: string }): Promise<void> {
+  const marks = { authorId: input.actorId, note: null, revertedTo: toVersion, bulkRevertOfId: input.userId }
+  if (entityType === 'ingredient') {
+    const current = await loadCurrent(db, id)
+    const target = await loadVersion(db, id, toVersion)
+    if (!current || !target) throw new AppError(409, 'EDIT_CONFLICT', 'Entry changed')
+    await saveIngredientVersion(db, {
+      ingredientId: id,
+      expectedVersion: current.version.version,
+      before: toSnapshot(current.ingredient.sourceLocale, current.version),
+      after: toSnapshot(current.ingredient.sourceLocale, target),
+      ...marks,
+    })
+    return
+  }
+  const current = await loadCurrentTea(db, id, null)
+  const target = await loadTeaVersion(db, id, toVersion)
+  if (!current || !target) throw new AppError(409, 'EDIT_CONFLICT', 'Entry changed')
+  const before = toTeaSnapshot(current.tea, current.version)
+  await saveTeaVersion(db, {
+    teaId: id,
+    expectedVersion: current.version.version,
+    before,
+    after: await revertedTeaSnapshot(db, current.tea, before, target),
+    ...marks,
+  })
+}
+
+/**
+ * Führt die Massen-Zurücksetzung aus: jeder Eintrag in einer eigenen Transaktion, damit ein Konflikt
+ * die übrigen nicht verhindert (AK-7.3). Die Entscheidung fällt dort jeweils neu. Kein Rate-Limit (AK-7.6).
+ */
+export async function runBulkRevert(prisma: ReturnType<typeof usePrisma>, input: { userId: string, actorId: string, since: Date, locale: ContentLocale }): Promise<BulkRevertResult> {
+  const candidates = await bulkCandidates(prisma, input.userId, input.since)
+  const infos = await loadEntryInfos(prisma, candidates, input.locale)
+  const result: BulkRevertResult = { revert: [], hide: [], skip: [] }
+
+  for (const candidate of candidates) {
+    const { entityType, entityId } = candidate
+    const item = { entityType, entityId, name: infos.get(entryKey(entityType, entityId))?.name ?? '' }
+    try {
+      const done = await prisma.$transaction(async (tx) => {
+        const row = await lockEntry(tx, entityType, entityId)
+        if (!row || !isEntryActive(row)) return null
+        const versions = entityType === 'ingredient'
+          ? await tx.ingredientVersion.findMany({ where: { ingredientId: entityId }, select: versionFields })
+          : await tx.teaVersion.findMany({ where: { teaId: entityId }, select: versionFields })
+        const decision = decideBulkEntry(versions, input.userId, input.since)
+        if (!decision || decision.action === 'skip') return decision
+        if (decision.action === 'hide') {
+          await hideEntry(tx, { entityType, id: entityId, actorId: input.actorId, reason: BULK_REVERT_REASON })
+        }
+        else {
+          await revertForBulk(tx, entityType, entityId, decision.toVersion, input)
+        }
+        return decision
+      })
+      if (!done) continue
+      if (done.action === 'revert') result.revert.push({ ...item, toVersion: done.toVersion })
+      else if (done.action === 'hide') result.hide.push(item)
+      else result.skip.push({ ...item, reason: done.reason })
+    }
+    catch (error) {
+      const reason = error instanceof AppError ? SKIP_CODES[error.code] : undefined
+      if (!reason) throw error
+      result.skip.push({ ...item, reason })
+    }
+  }
+  return result
 }

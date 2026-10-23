@@ -107,7 +107,7 @@ Reihenfolge:
     - Gast 401, Nutzer 403.
   - Ergebnis: 8 neue API-Tests (`moderation.test.ts` jetzt 24), gesamt 395 grün.
     - Der Wettlauf läuft über 3 Runden: Es endet immer mit 204/400 oder 201/409, nie mit beiden Erfolgen (`FOR UPDATE` beim Ausblenden, `FOR SHARE` in `assertIngredientsExist`).
-    - `countTeasUsing` zählt aktuelle Versionen aller nicht zusammengeführten Tees, also auch ausgeblendete: Sie könnten wiederhergestellt werden.
+    - `countTeasUsing` zählt aktuelle Versionen aktiver Tees (in Aufgabe 11 korrigiert, siehe dort).
     - Die Historie liefert `RevisionPage` mit `events`.
 
 - [x] 9. API: Zusammenführen
@@ -141,7 +141,7 @@ Reihenfolge:
     - Gast 401, Nutzer 403.
   - Ergebnis: 8 API-Tests in `block.test.ts`, gesamt 410 grün. Der bestehende Test aus 02 (`blockedAt` ohne Frist → `ACCOUNT_BLOCKED`) gilt unverändert als unbefristete Sperre. Entsperren unterliegt denselben Rollenregeln wie Sperren.
 
-- [ ] 11. API: Massen-Zurücksetzen
+- [x] 11. API: Massen-Zurücksetzen
   - Dateien: `server/api/admin/users/[id]/bulk-revert.{get,post}.ts`, `server/utils/moderation.ts` (`planBulkRevert`, `runBulkRevert`), Tests in `revert.test.ts`
   - Erfüllt: AK-0.2 (Routen), AK-7.1–AK-7.6, AK-8.1 (`BULK_REVERT`)
   - Prüfung (API-Tests):
@@ -152,6 +152,10 @@ Reihenfolge:
     - Private Tees unberührt; Duplikat beim Zurücksetzen → übersprungen.
     - Kein Rate-Limit (mehr als 30 Einträge); genau ein Audit-Eintrag mit Zählern.
     - Gast 401, Nutzer 403.
+  - Ergebnis: 3 neue API-Tests (`revert.test.ts` jetzt 14; der erste deckt in einem Szenario Zurücksetzen auf den Stand vor dem Zeitraum, Überspringen bei Fremdänderung, Ausblenden neuer Einträge, `in_use` auch durch eigene private Tees, unberührte private Tees und Vorschau = Ergebnis ab). Gesamt 414 grün.
+    - **Korrektur aus Aufgabe 8:** Ausgeblendete Tees zählten als „verwendet“ – dann hätte der gerade ausgeblendete Spam-Tee seine eigene neue Zutat blockiert. Jetzt zählen nur aktive Tees; dafür lehnt das Wiederherstellen eines Tees mit inzwischen ausgeblendeter oder zusammengeführter Zutat mit 409 `INGREDIENT_UNAVAILABLE` ab (Test in `moderation.test.ts`, Design angepasst).
+    - Die Vorschau sagt `in_use` voraus und berücksichtigt dabei Tees, die im selben Lauf ausgeblendet werden. Duplikate und Konflikte erkennt erst die Ausführung (Gründe `duplicate`, `conflict`, `ingredient_unavailable`).
+    - Ergänzung: Für das Massen-Zurücksetzen gelten dieselben Rollenregeln wie für das Sperren (`assertCanBlock`).
 
 - [ ] 12. Rechte-Matrix
   - Dateien: `test/api/moderation.test.ts`
