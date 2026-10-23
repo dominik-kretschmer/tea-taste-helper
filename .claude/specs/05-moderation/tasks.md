@@ -59,7 +59,7 @@ Reihenfolge:
     - `?merged=1` prüft `detailQuerySchema`.
     - `insertIngredient` und `setRole` liegen jetzt in `test/api/helpers.ts`.
 
-- [ ] 6. API: Zurücksetzen
+- [x] 6. API: Zurücksetzen
   - Dateien: `server/api/ingredients/[id]/revert.post.ts`, `server/api/teas/[id]/revert.post.ts`, `server/utils/teas.ts` (`revertedTeaSnapshot`), `server/utils/ingredients.ts` (`resolveMerged`), Revisions-Routen (Felder `revertedTo`, `bulkRevertOf`, `mergedIngredient`), `test/api/revert.test.ts`
   - Erfüllt: AK-1.1–AK-1.6, AK-8.1 (`*_REVERTED`)
   - Prüfung (API-Tests):
@@ -70,6 +70,9 @@ Reihenfolge:
     - Fremder privater Tee 404, eigener ok; Gast 401.
     - Zusammengeführte Zutat → Zielzutat; ausgeblendete → 409 `INGREDIENT_UNAVAILABLE`.
     - Audit mit `revertedTo` und `private`.
+  - Ergebnis: 11 API-Tests in `revert.test.ts`, gesamt 378 grün. Ungültige Ziele (aktuelle oder unbekannte Version) → 400 `INVALID_REVERT_TARGET`.
+    - Die Kennzeichnungen stehen über `VersionMarks` an `write*Version`/`save*Version`. `RevisionEntry` hat jetzt `revertedTo`, `bulkRevertOf` und `mergedIngredient` (aus Aufgabe 4 hierher verschoben).
+    - Zwei bestehende Historie-Tests (`ingredients.test.ts`, `teas.test.ts`) prüfen die Versionszeilen per `toEqual`; dort sind die neuen Felder als `null` ergänzt, sonst nichts geändert.
 
 - [ ] 7. API: Melden und Meldungen
   - Dateien: `server/api/reports/index.post.ts`, `server/api/admin/reports/{index.get,resolve.post,count.get}.ts`, `server/utils/moderation.ts` (`closeReports`), `test/api/moderation.test.ts`

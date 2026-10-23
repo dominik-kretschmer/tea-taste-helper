@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<Page<RevisionEntry>> =>
   const [rows, total] = await prisma.$transaction([
     prisma.teaVersion.findMany({
       where: { teaId: id },
-      include: { author: { select: { displayName: true } } },
+      include: { author: { select: { displayName: true } }, ...teaMarksInclude() },
       orderBy: { version: 'desc' },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,

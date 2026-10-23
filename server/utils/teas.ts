@@ -16,12 +16,20 @@ const teaVersionInclude = {
   translations: true,
   ingredients: { orderBy: { position: 'asc' } },
   author: { select: { displayName: true } },
+  ...teaMarksInclude(),
 } as const satisfies Prisma.TeaVersionInclude
+
+/** Kennzeichnungen einer Teeversion für die Historie (05) */
+export function teaMarksInclude() {
+  return { ...marksInclude, mergedIngredient: { select: { id: true, mergedIntoId: true } } } as const
+}
 
 export type LoadedTeaVersion = TeaVersion & {
   translations: TeaVersionTranslation[]
   ingredients: TeaVersionIngredient[]
   author: { displayName: string } | null
+  bulkRevertOf: { displayName: string } | null
+  mergedIngredient: { id: string, mergedIntoId: string | null } | null
 }
 
 export const teaNotFound = (details?: unknown) => new AppError(404, 'NOT_FOUND', 'Tea not found', details)
@@ -194,13 +202,16 @@ export async function writeTeaVersion(db: Db, input: {
   snapshot: TeaSnapshot
   authorId: string
   note: string | null
-}): Promise<LoadedTeaVersion> {
+} & VersionMarks): Promise<LoadedTeaVersion> {
   const { snapshot } = input
   return db.teaVersion.create({
     data: {
       teaId: input.teaId,
       version: input.version,
       isCurrent: true,
+      revertedTo: input.revertedTo ?? null,
+      bulkRevertOfId: input.bulkRevertOfId ?? null,
+      mergedIngredientId: input.mergedIngredientId ?? null,
       visibility: snapshot.visibility,
       kind: snapshot.kind,
       brand: snapshot.kind === 'bought' ? snapshot.brand : null,
@@ -309,7 +320,7 @@ export async function saveTeaVersion(db: Db, input: {
   after: TeaSnapshot
   authorId: string
   note: string | null
-}): Promise<{ changed: false } | { changed: true, version: LoadedTeaVersion, locales: ContentLocale[] }> {
+} & VersionMarks): Promise<{ changed: false } | { changed: true, version: LoadedTeaVersion, locales: ContentLocale[] }> {
   const { teaId: id, before, after } = input
   const changes = diffTeaSnapshots(before, after)
   if (!changes.length) return { changed: false }
@@ -331,6 +342,9 @@ export async function saveTeaVersion(db: Db, input: {
     snapshot: after,
     authorId: input.authorId,
     note: input.note,
+    revertedTo: input.revertedTo,
+    bulkRevertOfId: input.bulkRevertOfId,
+    mergedIngredientId: input.mergedIngredientId,
   }).catch((error: unknown) => {
     // Gleichzeitige Speicherung, die das UPDATE oben nicht erkannt hat (Unique-Index greift)
     if ((error as { code?: string }).code === 'P2002') throw teaEditConflict()
@@ -338,4 +352,22 @@ export async function saveTeaVersion(db: Db, input: {
   })
   const locales = [...new Set(changes.flatMap(change => ('locale' in change && change.locale ? [change.locale] : [])))]
   return { changed: true, version, locales }
+}
+
+/**
+ * Stand für das Zurücksetzen auf `target` (05 AK-1.4, AK-1.5): Inhalt der Zielversion, aber die
+ * Sichtbarkeit bleibt; zusammengeführte Zutaten werden durch ihr Ziel ersetzt. Enthält sie eine
+ * ausgeblendete Zutat, 409 INGREDIENT_UNAVAILABLE.
+ */
+export async function revertedTeaSnapshot(db: Db, tea: Pick<Tea, 'sourceLocale'>, before: TeaSnapshot, target: LoadedTeaVersion): Promise<TeaSnapshot> {
+  const snapshot = toTeaSnapshot(tea, target)
+  const resolved = await resolveMerged(db, snapshot.ingredients.map(item => item.ingredientId))
+  let ingredients = snapshot.ingredients
+  for (const [original, entry] of resolved) {
+    if (entry.hidden) {
+      throw new AppError(409, 'INGREDIENT_UNAVAILABLE', 'The version contains an ingredient that is no longer available', { ingredientId: entry.id })
+    }
+    if (entry.id !== original) ingredients = combineIngredients(ingredients, original, entry.id)
+  }
+  return { ...snapshot, visibility: before.visibility, ingredients }
 }

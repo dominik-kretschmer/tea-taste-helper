@@ -36,6 +36,19 @@ export async function lockName(db: Db, key: string): Promise<void> {
 
 // --- 05 – Moderation: Zustand eines Katalog-Eintrags ---
 
+/** Kennzeichnungen einer neuen Version: Zurücksetzen, Massen-Zurücksetzung, Zusammenführen (05). */
+export interface VersionMarks {
+  revertedTo?: number | null
+  bulkRevertOfId?: string | null
+  /** nur Tees */
+  mergedIngredientId?: string | null
+}
+
+/** Prisma-Include für die Anzeige der Kennzeichnungen in der Historie */
+export const marksInclude = {
+  bulkRevertOf: { select: { displayName: true } },
+} as const
+
 /** Moderationsfelder an `Ingredient` und `Tea`. */
 export interface ModerationFields {
   hiddenAt: Date | null

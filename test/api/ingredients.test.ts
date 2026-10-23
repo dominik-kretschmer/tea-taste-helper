@@ -359,10 +359,12 @@ describe('Zutaten-API', async () => {
       const revisions = await guest.get(`/api/ingredients/${ingredient.id}/revisions`)
       expect(revisions.status).toBe(200)
       expect(revisions.body).toMatchObject({ total: 3, page: 1, pageSize: 50 })
+      // Kennzeichnungen aus 05 (Zurücksetzen, Zusammenführen, Massen-Zurücksetzung) sind hier leer
+      const noMarks = { revertedTo: null, bulkRevertOf: null, mergedIngredient: null }
       expect(revisions.body.items.map(({ createdAt, ...rest }: RevisionEntry) => rest)).toEqual([
-        { version: 3, isCurrent: true, author: { displayName: 'Anna' }, note: 'Englisch ergänzt' },
-        { version: 2, isCurrent: false, author: { displayName: 'Ben' }, note: 'Ziehzeit ergänzt' },
-        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null },
+        { version: 3, isCurrent: true, author: { displayName: 'Anna' }, note: 'Englisch ergänzt', ...noMarks },
+        { version: 2, isCurrent: false, author: { displayName: 'Ben' }, note: 'Ziehzeit ergänzt', ...noMarks },
+        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null, ...noMarks },
       ])
       expect(JSON.stringify(revisions.body)).not.toContain('@')
 

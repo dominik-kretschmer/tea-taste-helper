@@ -14,11 +14,13 @@ export const SIMILAR_LIMIT = 5
 const versionInclude = {
   translations: true,
   author: { select: { displayName: true } },
+  ...marksInclude,
 } as const satisfies Prisma.IngredientVersionInclude
 
 export type LoadedVersion = IngredientVersion & {
   translations: IngredientVersionTranslation[]
   author: { displayName: string } | null
+  bulkRevertOf: { displayName: string } | null
 }
 
 /** Zutat-ID aus dem Routenparameter `id`; ungültige IDs gelten als nicht gefunden (AK-1.5). */
@@ -43,13 +45,27 @@ export function toSnapshot(sourceLocale: string, version: LoadedVersion): Ingred
 }
 
 /** Versionszeile für die Historie; passt auf Zutaten- und Tee-Versionen. */
-export function toRevisionEntry(version: { version: number, isCurrent: boolean, createdAt: Date, note: string | null, author: { displayName: string } | null }): RevisionEntry {
+export function toRevisionEntry(version: {
+  version: number
+  isCurrent: boolean
+  createdAt: Date
+  note: string | null
+  author: { displayName: string } | null
+  revertedTo: number | null
+  bulkRevertOf: { displayName: string } | null
+  mergedIngredient?: { id: string, mergedIntoId: string | null } | null
+}): RevisionEntry {
   return {
     version: version.version,
     isCurrent: version.isCurrent,
     createdAt: version.createdAt.toISOString(),
     author: version.author,
     note: version.note,
+    revertedTo: version.revertedTo,
+    bulkRevertOf: version.bulkRevertOf,
+    mergedIngredient: version.mergedIngredient
+      ? { id: version.mergedIngredient.id, mergedInto: version.mergedIngredient.mergedIntoId }
+      : null,
   }
 }
 
@@ -135,13 +151,15 @@ export async function writeVersion(db: Db, input: {
   snapshot: IngredientSnapshot
   authorId: string
   note: string | null
-}): Promise<LoadedVersion> {
+} & Omit<VersionMarks, 'mergedIngredientId'>): Promise<LoadedVersion> {
   const { snapshot } = input
   return db.ingredientVersion.create({
     data: {
       ingredientId: input.ingredientId,
       version: input.version,
       isCurrent: true,
+      revertedTo: input.revertedTo ?? null,
+      bulkRevertOfId: input.bulkRevertOfId ?? null,
       caffeine: snapshot.caffeine,
       brewTempC: snapshot.brewTempC,
       brewSeconds: snapshot.brewSeconds,
@@ -243,7 +261,7 @@ export async function saveIngredientVersion(db: Db, input: {
   after: IngredientSnapshot
   authorId: string
   note: string | null
-}): Promise<{ changed: false } | { changed: true, version: LoadedVersion, locales: ContentLocale[] }> {
+} & Omit<VersionMarks, 'mergedIngredientId'>): Promise<{ changed: false } | { changed: true, version: LoadedVersion, locales: ContentLocale[] }> {
   const { ingredientId: id, before, after } = input
   const changes = diffSnapshots(before, after)
   if (!changes.length) return { changed: false }
@@ -272,6 +290,8 @@ export async function saveIngredientVersion(db: Db, input: {
     snapshot: after,
     authorId: input.authorId,
     note: input.note,
+    revertedTo: input.revertedTo,
+    bulkRevertOfId: input.bulkRevertOfId,
   }).catch((error: unknown) => {
     // Gleichzeitige Speicherung, die das UPDATE oben nicht erkannt hat (Unique-Index greift)
     if ((error as { code?: string }).code === 'P2002') throw editConflict()
@@ -279,4 +299,31 @@ export async function saveIngredientVersion(db: Db, input: {
   })
   const locales = [...new Set(changes.flatMap(change => change.locale ? [change.locale] : []))]
   return { changed: true, version, locales }
+}
+
+/**
+ * Folgt Zusammenführungen bis zur aktiven Zutat (05 AK-1.5). Ergebnis je ID: die End-ID und ob sie
+ * ausgeblendet ist. Weiterleitungen bilden keine Ketten (Zusammenführen biegt frühere Quellen um),
+ * zur Sicherheit folgt die Funktion trotzdem bis zu 5 Schritten.
+ */
+export async function resolveMerged(db: Db, ids: string[]): Promise<Map<string, { id: string, hidden: boolean }>> {
+  const result = new Map(ids.map(id => [id, { id, hidden: false }]))
+  for (let step = 0; step < 5; step++) {
+    const pending = [...new Set([...result.values()].map(entry => entry.id))]
+    const rows = await db.ingredient.findMany({ where: { id: { in: pending } }, select: { id: true, mergedIntoId: true, hiddenAt: true } })
+    const byId = new Map(rows.map(row => [row.id, row]))
+    let moved = false
+    for (const [key, entry] of result) {
+      const row = byId.get(entry.id)
+      if (row?.mergedIntoId) {
+        result.set(key, { id: row.mergedIntoId, hidden: false })
+        moved = true
+      }
+      else {
+        result.set(key, { id: entry.id, hidden: !!row?.hiddenAt })
+      }
+    }
+    if (!moved) break
+  }
+  return result
 }

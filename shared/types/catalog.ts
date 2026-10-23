@@ -31,6 +31,12 @@ export interface RevisionEntry {
   createdAt: string
   author: AuthorRef | null
   note: string | null
+  /** Inhalt entspricht dieser früheren Version (05 AK-1.1) */
+  revertedTo: number | null
+  /** Massen-Zurücksetzung der Änderungen dieses Nutzers (05 AK-7.2) */
+  bulkRevertOf: AuthorRef | null
+  /** nur Tees: Version entstand durch Zusammenführen dieser Zutat (05 AK-4.3) */
+  mergedIngredient: { id: string, mergedInto: string | null } | null
 }
 
 export type SnapshotField = 'name' | 'description' | 'caffeine' | 'brewTempC' | 'brewSeconds'

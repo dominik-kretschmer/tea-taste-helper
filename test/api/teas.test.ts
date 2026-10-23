@@ -509,11 +509,13 @@ describe('Tee-API', async () => {
       const guest = await createClient()
       const revisions = await guest.get(`/api/teas/${tea.id}/revisions`)
       expect(revisions.status).toBe(200)
+      // Kennzeichnungen aus 05 (Zurücksetzen, Zusammenführen, Massen-Zurücksetzung) sind hier leer
+      const noMarks = { revertedTo: null, bulkRevertOf: null, mergedIngredient: null }
       expect(revisions.body.items.map(({ createdAt, ...rest }: RevisionEntry) => rest)).toEqual([
-        { version: 4, isCurrent: true, author: { displayName: 'Ben' }, note: null },
-        { version: 3, isCurrent: false, author: { displayName: 'Anna' }, note: null },
-        { version: 2, isCurrent: false, author: { displayName: 'Anna' }, note: 'umgebaut' },
-        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null },
+        { version: 4, isCurrent: true, author: { displayName: 'Ben' }, note: null, ...noMarks },
+        { version: 3, isCurrent: false, author: { displayName: 'Anna' }, note: null, ...noMarks },
+        { version: 2, isCurrent: false, author: { displayName: 'Anna' }, note: 'umgebaut', ...noMarks },
+        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null, ...noMarks },
       ])
 
       const compare = await guest.get(`/api/teas/${tea.id}/compare?from=1&to=4`)
