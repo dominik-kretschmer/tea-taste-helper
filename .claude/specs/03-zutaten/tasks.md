@@ -58,7 +58,7 @@ Reihenfolge:
     - Namen alter Versionen werden nicht gefunden.
   - Ergebnis: 6 API-Tests grün (16 in der Datei). Die ICU-Sortierung ordnet „apfel, Äpfel, Birne, Zimt“. Alte Versionen und Übersetzungen werden für diese Tests per SQL angelegt, weil PATCH erst in Aufgabe 6 kommt.
 
-- [ ] 6. API: Bearbeiten und Übersetzen
+- [x] 6. API: Bearbeiten und Übersetzen
   - Dateien: `server/api/ingredients/[id]/index.patch.ts`, `test/api/ingredients.test.ts`
   - Erfüllt: AK-3.1–AK-3.5, AK-4.1, AK-4.2, AK-6.1 (Bearbeiten)
   - Prüfung (API-Tests):
@@ -69,6 +69,7 @@ Reihenfolge:
     - Übersetzung hinzufügen → sofort in der Liste mit `translated: true`; unveränderte Übersetzungen sind in der neuen Version kopiert.
     - Nach mehreren Änderungen hat jede Zutat genau eine Version mit `isCurrent` (per SQL).
     - 31. Änderung in 10 Minuten (Anlegen und Bearbeiten gemischt) → 429 mit `Retry-After`.
+  - Ergebnis: 11 API-Tests grün, Suite 194 Tests. Zusätzlich: 3 gleichzeitige Speicherungen derselben Version → eine 200, zwei 409; der Index „eine aktuelle Version“ lehnt eine zweite aktuelle Zeile per SQL ab; Duplikat in neu hinzugefügter Sprache. `locales` im Audit nennt nur Sprachen mit geändertem Text (leer bei reinen Grunddaten). Ein `P2002` aus der Transaktion wird ebenfalls als `EDIT_CONFLICT` gemeldet. Die Testzutaten legen wechselnde Nutzer an, weil sonst das echte Limit greift.
 
 - [ ] 7. API: Historie und Vergleich
   - Dateien: `server/api/ingredients/[id]/revisions.get.ts`, `server/api/ingredients/[id]/compare.get.ts`, `test/api/ingredients.test.ts`
