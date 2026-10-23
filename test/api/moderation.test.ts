@@ -139,4 +139,148 @@ describe('Moderation', async () => {
       expect((await anna.get(`/api/teas/${tea.id}?merged=1`)).status).toBe(200)
     })
   })
+
+  describe('Melden und Meldungen (Aufgabe 7)', () => {
+    const report = (client: TestClient, body: Record<string, unknown>) =>
+      client.post('/api/reports', { entityType: 'ingredient', reason: 'spam', ...body })
+    const groupsFor = async (client: TestClient, query: string, entityId: string) => {
+      const response = await client.get(`/api/admin/reports?${query}`)
+      expect(response.status, response.text).toBe(200)
+      return (response.body as Page<ReportGroup>).items.filter(group => group.entityId === entityId)
+    }
+
+    it('nimmt Meldungen an und verhindert eine zweite offene Meldung (AK-2.1, AK-2.3, AK-2.4)', async () => {
+      const { client } = await registerUser({ displayName: 'Melder' })
+      const id = await insertIngredient(`Spamkraut ${marker()}`)
+      const first = await report(client, { entityId: id, reason: 'other', comment: 'Werbung im Namen' })
+      expect(first.status, first.text).toBe(201)
+      expect((await guest.get(`/api/ingredients/${id}`)).status).toBe(200)
+
+      const second = await report(client, { entityId: id, reason: 'spam' })
+      expect(second.status).toBe(409)
+      expect(second.body.error.code).toBe('ALREADY_REPORTED')
+
+      // Nach dem Abschließen darf derselbe Nutzer erneut melden
+      expect((await mod.post('/api/admin/reports/resolve', { entityType: 'ingredient', entityId: id, status: 'rejected' })).status).toBe(200)
+      expect((await report(client, { entityId: id, reason: 'spam' })).status).toBe(201)
+
+      const [entry] = await db(`SELECT "actorId", details FROM "AuditLog" WHERE event = 'REPORT_CREATED' AND details->>'reportId' = $1`, [first.body.id])
+      expect(entry.details).toEqual({ reportId: first.body.id, entityType: 'ingredient', entityId: id, reason: 'other' })
+    })
+
+    it('prüft Gründe, Kommentar und Original (AK-2.1, AK-2.2)', async () => {
+      const id = await insertIngredient(`Prüfkraut ${marker()}`)
+      const original = await insertIngredient(`Prüfkraut Original ${marker()}`)
+      const ingredientId = await insertIngredient(`Teezutat ${marker()}`)
+      const tea = await createTea(anna, { name: `Prüftee ${marker()}`, ingredients: [{ ingredientId }] })
+
+      const missingComment = await report(anna, { entityId: id, reason: 'other' })
+      expect(missingComment.status).toBe(400)
+      expect(missingComment.body.error.details).toHaveProperty('comment')
+      expect((await report(anna, { entityId: id, reason: 'duplicate' })).status).toBe(400)
+      expect((await report(anna, { entityId: id, reason: 'duplicate', duplicateOfId: id })).status).toBe(400)
+      // Original muss dieselbe Art haben
+      expect((await report(anna, { entityId: id, reason: 'duplicate', duplicateOfId: tea.id })).status).toBe(400)
+      expect((await report(anna, { entityId: id, reason: 'duplicate', duplicateOfId: original })).status).toBe(201)
+    })
+
+    it('lässt private, ausgeblendete und zusammengeführte Einträge nicht melden (AK-2.6)', async () => {
+      const ingredientId = await insertIngredient(`Geheimkraut ${marker()}`)
+      const privateTea = await createTea(anna, { name: `Geheim ${marker()}`, visibility: 'private', ingredients: [{ ingredientId }] })
+      const hidden = await insertIngredient(`Versteckt ${marker()}`)
+      await hide('Ingredient', hidden)
+      const merged = await insertIngredient(`Doppelt ${marker()}`)
+      await mergeInto('Ingredient', merged, ingredientId)
+
+      expect((await report(anna, { entityType: 'tea', entityId: privateTea.id })).status).toBe(404)
+      expect((await report(anna, { entityId: hidden })).status).toBe(404)
+      expect((await report(anna, { entityId: merged })).status).toBe(404)
+      expect((await report(anna, { entityId: randomUUID() })).status).toBe(404)
+      expect((await report(guest, { entityId: ingredientId })).status).toBe(401)
+    })
+
+    it('begrenzt auf 10 Meldungen pro Stunde (AK-2.5)', async () => {
+      const { client } = await registerUser()
+      const ids = await Promise.all(Array.from({ length: 11 }, (_, n) => insertIngredient(`Massenkraut ${n} ${marker()}`)))
+      for (const id of ids.slice(0, 10)) expect((await report(client, { entityId: id })).status).toBe(201)
+      const limited = await report(client, { entityId: ids[10] })
+      expect(limited.status).toBe(429)
+      expect(limited.headers.get('retry-after')).toBeTruthy()
+    })
+
+    it('gruppiert offene Meldungen je Eintrag mit Melder, Original und letztem Autor (AK-3.1)', async () => {
+      const [r1, r2] = await Promise.all([registerUser({ displayName: 'Rita' }), registerUser({ displayName: 'Rolf' })])
+      const name = `Gruppenkraut ${marker()}`
+      const created = await anna.post('/api/ingredients', { locale: 'de', name })
+      const id = created.body.ingredient.id as string
+      const original = await insertIngredient(`Gruppenkraut Original ${marker()}`)
+      await report(r1.client, { entityId: id, reason: 'wrong_info', comment: 'Koffein stimmt nicht' })
+      await report(r2.client, { entityId: id, reason: 'duplicate', duplicateOfId: original })
+
+      const [group] = await groupsFor(mod, 'status=open&type=ingredient&locale=de', id)
+      expect(group).toMatchObject({ entityType: 'ingredient', name, state: 'active', count: 2, lastAuthor: { displayName: 'Anna' } })
+      expect(group!.reports.map(item => [item.reason, item.reporter?.displayName, item.comment])).toEqual([
+        ['wrong_info', 'Rita', 'Koffein stimmt nicht'],
+        ['duplicate', 'Rolf', null],
+      ])
+      expect(group!.reports[1]!.duplicateOf).toEqual({ id: original, name: expect.stringContaining('Original') })
+      expect(JSON.stringify(group)).not.toContain('@')
+
+      // Filter: Grund und Art
+      expect((await groupsFor(mod, 'status=open&reason=duplicate', id))[0]!.reports).toHaveLength(1)
+      expect(await groupsFor(mod, 'status=open&reason=spam', id)).toEqual([])
+      expect(await groupsFor(mod, 'status=open&type=tea', id)).toEqual([])
+    })
+
+    it('sortiert offene Gruppen nach der ältesten Meldung (AK-3.1)', async () => {
+      const [older, newer] = [await insertIngredient(`Alt ${marker()}`), await insertIngredient(`Neu ${marker()}`)]
+      await report(anna, { entityId: newer })
+      await report(anna, { entityId: older })
+      await db(`UPDATE "Report" SET "createdAt" = now() - interval '400 days' WHERE "entityId" = $1`, [older])
+      const items = (await mod.get('/api/admin/reports?status=open')).body.items as ReportGroup[]
+      const ids = items.map(group => group.entityId)
+      expect(ids.indexOf(older)).toBeGreaterThanOrEqual(0)
+      expect(ids.indexOf(older)).toBeLessThan(ids.includes(newer) ? ids.indexOf(newer) : Infinity)
+      expect(items[0]!.entityId).toBe(older)
+    })
+
+    it('schließt Meldungen ab und zählt für das Badge Einträge, nicht Meldungen (AK-3.3, AK-3.5)', async () => {
+      const [r1, r2] = await Promise.all([registerUser(), registerUser()])
+      const id = await insertIngredient(`Badgekraut ${marker()}`)
+      const before = (await mod.get('/api/admin/reports/count')).body.open as number
+      await report(r1.client, { entityId: id })
+      await report(r2.client, { entityId: id })
+      expect((await mod.get('/api/admin/reports/count')).body.open).toBe(before + 1)
+
+      const resolved = await mod.post('/api/admin/reports/resolve', { entityType: 'ingredient', entityId: id, status: 'resolved', note: 'Name korrigiert' })
+      expect(resolved.status, resolved.text).toBe(200)
+      expect(resolved.body.closed).toBe(2)
+      expect((await mod.get('/api/admin/reports/count')).body.open).toBe(before)
+      expect(await groupsFor(mod, 'status=open', id)).toEqual([])
+
+      const [closed] = await groupsFor(mod, 'status=closed', id)
+      expect(closed!.reports.every(item => item.status === 'resolved' && item.resolvedBy?.displayName === 'Moni' && item.resolutionNote === 'Name korrigiert')).toBe(true)
+
+      const again = await mod.post('/api/admin/reports/resolve', { entityType: 'ingredient', entityId: id, status: 'resolved' })
+      expect(again.status).toBe(404)
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'REPORT_RESOLVED' AND details->>'entityId' = $1`, [id])
+      expect(entry.details).toEqual({ entityType: 'ingredient', entityId: id, status: 'resolved', count: 2 })
+    })
+
+    it('meldet öffentliche Tees (AK-2.1)', async () => {
+      const ingredientId = await insertIngredient(`Teekraut ${marker()}`)
+      const tea = await createTea(anna, { name: `Meldetee ${marker()}`, ingredients: [{ ingredientId }] })
+      const { client } = await registerUser()
+      expect((await report(client, { entityType: 'tea', entityId: tea.id })).status).toBe(201)
+      const [group] = await groupsFor(mod, 'status=open&type=tea', tea.id)
+      expect(group).toMatchObject({ entityType: 'tea', count: 1, lastAuthor: { displayName: 'Anna' } })
+    })
+
+    it('schützt die Moderationsrouten (AK-0.2)', async () => {
+      for (const [method, path] of [['GET', '/api/admin/reports'], ['GET', '/api/admin/reports/count'], ['POST', '/api/admin/reports/resolve']] as const) {
+        expect((await guest.request(method, path, method === 'POST' ? {} : undefined)).status, path).toBe(401)
+        expect((await anna.request(method, path, method === 'POST' ? {} : undefined)).status, path).toBe(403)
+      }
+    })
+  })
 })

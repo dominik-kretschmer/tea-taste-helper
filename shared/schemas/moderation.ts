@@ -1,7 +1,7 @@
 // Eingaben der Moderation (05). Import: #shared/schemas/moderation
 import { z } from './zod'
 import { BLOCK_DURATIONS, CATALOG_TYPES, MODERATION_TEXT_MAX, REPORT_REASONS } from '../utils/moderation'
-import { optionalText } from './catalog'
+import { contentLocaleSchema, optionalText } from './catalog'
 import { pageSchema } from './auth'
 
 /** Pflicht-Grund beim Ausblenden und Sperren */
@@ -32,11 +32,13 @@ export const reportListQuerySchema = z.object({
   status: z.enum(['open', 'closed']).default('open'),
   reason: reportReasonSchema.optional(),
   type: catalogTypeSchema.optional(),
+  locale: contentLocaleSchema.default('de'),
   page: pageSchema,
 })
 
 export const hiddenListQuerySchema = z.object({
   type: catalogTypeSchema.optional(),
+  locale: contentLocaleSchema.default('de'),
   page: pageSchema,
 })
 

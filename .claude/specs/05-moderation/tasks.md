@@ -74,7 +74,7 @@ Reihenfolge:
     - Die Kennzeichnungen stehen über `VersionMarks` an `write*Version`/`save*Version`. `RevisionEntry` hat jetzt `revertedTo`, `bulkRevertOf` und `mergedIngredient` (aus Aufgabe 4 hierher verschoben).
     - Zwei bestehende Historie-Tests (`ingredients.test.ts`, `teas.test.ts`) prüfen die Versionszeilen per `toEqual`; dort sind die neuen Felder als `null` ergänzt, sonst nichts geändert.
 
-- [ ] 7. API: Melden und Meldungen
+- [x] 7. API: Melden und Meldungen
   - Dateien: `server/api/reports/index.post.ts`, `server/api/admin/reports/{index.get,resolve.post,count.get}.ts`, `server/utils/moderation.ts` (`closeReports`), `test/api/moderation.test.ts`
   - Erfüllt: AK-0.2 (Meldungsrouten), AK-2.1–AK-2.6, AK-3.1, AK-3.3, AK-3.5, AK-8.1 (`REPORT_*`), AK-9.2
   - Prüfung (API-Tests):
@@ -86,6 +86,10 @@ Reihenfolge:
     - `count` zählt Einträge, nicht Meldungen.
     - Gast 401, Nutzer 403 auf allen Admin-Routen.
     - Audit ohne Kommentar.
+  - Ergebnis: 9 neue API-Tests (`moderation.test.ts` jetzt 16), Lint und Typecheck grün.
+    - Ein ungültiges Duplikat-Original (gleich, andere Art, privat, inaktiv) antwortet mit 400 `VALIDATION_ERROR` am Feld `duplicateOfId`.
+    - Das Rate-Limit zählt erst nach der Existenzprüfung, damit 404 nicht verbraucht.
+    - Die Listen nehmen `locale` für die Namen. `loadEntryInfos` benennt Einträge beider Arten, auch inaktive.
 
 - [ ] 8. API: Ausblenden und Wiederherstellen
   - Dateien: `server/api/admin/[type]/[id]/{hide,restore}.post.ts`, `server/api/admin/hidden.get.ts`, `server/utils/moderation.ts` (`hideEntry`, `restoreEntry`), `server/utils/ingredients.ts` (`countTeasUsing`), Revisions-Routen (`events`), Tests in `moderation.test.ts`
