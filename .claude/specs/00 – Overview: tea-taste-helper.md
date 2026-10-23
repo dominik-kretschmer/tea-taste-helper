@@ -166,6 +166,8 @@ Nuxt (SSR + Nitro-Server = API)
 | 10 | `10-empfehlung/` | Empfehlung, Mischungen, Begründung, Zubereitung |
 | 11 | `11-dsgvo/` | Konto löschen, Export, Anonymisierung |
 
+Querschnittliche Aufräum- und Fehlerbehebungen ohne eigenen Slice stehen in `00-chore/` (je Issue ein Unterordner `<nr>-<name>/` nach demselben Ablauf); die Übersicht ist `00-chore/README.md`.
+
 Jede Feature-Spec ist ein Ordner `.claude/specs/<nr>-<name>/` nach dem Skill `spec-driven` und enthält:
 - `requirements.md` – User Stories, Akzeptanzkriterien, Nicht im Umfang
 - `design.md` – Datenmodell, API-Endpunkte, UI, Entscheidungen, Abdeckung der Akzeptanzkriterien

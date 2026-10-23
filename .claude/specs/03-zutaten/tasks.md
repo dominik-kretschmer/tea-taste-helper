@@ -140,7 +140,7 @@ Reihenfolge:
     3. Jedes AK einzeln prüfen und als Tabelle (AK | Ergebnis | Nachweis) melden.
     4. Status von `requirements.md`, `design.md` und `tasks.md` auf „umgesetzt“ setzen.
     5. Push nur nach Rücksprache.
-  - Endabnahme (2026-10-23): `lint`, `typecheck`, 207 Tests und `build` sind grün. Production-Server (`.output`) mit Login (`__Host-session`), CSP und HSTS geprüft. Testdaten in der Dev-DB wieder gelöscht.
+  - Endabnahme (2026-10-23): `lint`, `typecheck`, 207 Tests und `build` sind grün. Production-Server (`.output`) mit Login, CSP und HSTS geprüft. *Korrektur (2026-10-23, siehe `00-chore/01`):* Der Cookiename wurde dabei nicht geprüft; ohne `NODE_ENV=production` heißt er `session` statt `__Host-session`. Testdaten in der Dev-DB wieder gelöscht.
   - CSP: Auf allen neuen Seiten (de/en, Dev und Production) meldet der Browser nur `script-src eval` aus zod. zod prüft beim Laden mit `new Function`, ob JIT erlaubt ist, fängt die Ablehnung ab und arbeitet ohne JIT weiter. Das passiert genauso auf `/login` und `/register` aus 02, ist also kein Verstoß durch 03 und blockiert nichts. Abschalten ließe es sich mit `z.config({ jitless: true })`; offen für eine eigene Änderung.
 
     | AK | Ergebnis | Nachweis |
