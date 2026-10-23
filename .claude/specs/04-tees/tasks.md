@@ -77,7 +77,7 @@ Reihenfolge:
     - Namen und Zutaten alter Versionen werden nicht gefunden.
   - Ergebnis: 8 API-Tests grün (21 in der Datei). Sortierung „apfel, Äpfel, Birne, Zimt“; private Tees fehlen in „Alle“, auch für den Ersteller; Suche über die englische Übersetzung und die Marke; Zutatenfilter ohne fremd-private und ohne alte Versionen; „Meine“ mit Sichtbarkeit; Gast mit `mine` → 401.
 
-- [ ] 8. API: Bearbeiten und Übersetzen
+- [x] 8. API: Bearbeiten und Übersetzen
   - Dateien: `server/api/teas/[id]/index.patch.ts`, `test/api/teas.test.ts`
   - Erfüllt: AK-3.1–AK-3.4, AK-5.1, AK-9.1 (Bearbeiten)
   - Prüfung (API-Tests):
@@ -91,6 +91,7 @@ Reihenfolge:
     - Übersetzung hinzufügen.
     - Genau eine aktuelle Version (SQL).
     - Rate-Limit gemeinsam mit Zutaten (Anlegen von Zutaten und Tees gemischt, 31. → 429).
+  - Ergebnis: 11 API-Tests grün (32 in der Datei, Suite 269). Zusätzlich: 3 gleichzeitige Speicherungen → eine 200, zwei 409; Ändern der Marke in ein Duplikat → 409; unbekannte Zutat in der neuen Liste → 400; eigene Schreibweise erlaubt; Admin bekommt bei fremden privaten Tees ebenfalls 404.
 
 - [ ] 9. API: Veröffentlichen und Löschen
   - Dateien: `server/api/teas/[id]/publish.post.ts`, `server/api/teas/[id]/index.delete.ts`, `test/api/teas.test.ts`

@@ -301,6 +301,132 @@ describe('Tee-API', async () => {
     })
   })
 
+  describe('Bearbeiten und Übersetzen (AK-3, AK-5)', () => {
+    const patch = (client: TestClient, id: string, body: Record<string, unknown>) => client.patch(`/api/teas/${id}`, body)
+
+    it('Dritte bearbeiten öffentliche Tees: neue Version, Ersteller bleibt, Audit', async () => {
+      const tea = await createAs(anna, { name: `Kräuter ${marker()}`, visibility: 'public', ingredients: [{ ingredientId: mint, percent: 50 }] })
+      const response = await patch(ben, tea.id, {
+        version: 1,
+        ingredients: [{ ingredientId: lemongrass, percent: 30 }, { ingredientId: mint, percent: 60 }],
+        brewTempC: 95,
+        note: 'Zitronengras ergänzt',
+      })
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        changed: true,
+        tea: { version: 2, owner: { displayName: 'Anna' }, updatedBy: { displayName: 'Ben' }, isOwner: false, brewTempC: 95 },
+      })
+      expect(response.body.tea.ingredients.map((item: TeaIngredientView) => [item.ingredientId, item.percent])).toEqual([[lemongrass, 30], [mint, 60]])
+
+      const versions = await db(`SELECT version, "isCurrent", note FROM "TeaVersion" WHERE "teaId" = $1 ORDER BY version`, [tea.id])
+      expect(versions).toEqual([
+        { version: 1, isCurrent: false, note: null },
+        { version: 2, isCurrent: true, note: 'Zitronengras ergänzt' },
+      ])
+      const [{ ownerId }] = await db(`SELECT "ownerId" FROM "Tea" WHERE id = $1`, [tea.id])
+      expect(ownerId).toBe(annaId)
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'TEA_UPDATED' AND details->>'teaId' = $1`, [tea.id])
+      expect(entry.details).toEqual({ teaId: tea.id, version: 2, locales: [], private: false })
+    })
+
+    it('fremde private Tees → 404, eigene private lassen sich bearbeiten', async () => {
+      const tea = await createAs(anna, { name: `Privat ${marker()}` })
+      expect((await patch(ben, tea.id, { version: 1, brewTempC: 80 })).status).toBe(404)
+      expect((await patch(admin, tea.id, { version: 1, brewTempC: 80 })).status).toBe(404)
+      const own = await patch(anna, tea.id, { version: 1, brewTempC: 80 })
+      expect(own.status).toBe(200)
+      expect(own.body.tea.version).toBe(2)
+    })
+
+    it('legt ohne Änderung keine Version an', async () => {
+      const name = `Gleich ${marker()}`
+      const tea = await create({ name, visibility: 'public', kind: 'bought', brand: 'Marke' })
+      const response = await patch(ben, tea.id, { version: 1, kind: 'bought', brand: ' Marke ', translations: { de: { name: ` ${name} ` } }, ingredients: [{ ingredientId: mint }] })
+      expect(response.body).toMatchObject({ changed: false, tea: { version: 1 } })
+    })
+
+    it('lehnt eine veraltete Version mit EDIT_CONFLICT ab', async () => {
+      const tea = await create({ name: `Konflikt ${marker()}`, visibility: 'public' })
+      expect((await patch(anna, tea.id, { version: 1, caffeine: 'no' })).status).toBe(200)
+      const response = await patch(ben, tea.id, { version: 1, caffeine: 'yes' })
+      expect(response.status).toBe(409)
+      expect(response.body.error).toMatchObject({ code: 'EDIT_CONFLICT', details: { currentVersion: 2 } })
+    })
+
+    it('lässt von gleichzeitigen Speicherungen derselben Version nur eine durch', async () => {
+      const tea = await create({ name: `Gleichzeitig bearbeiten ${marker()}`, visibility: 'public' })
+      const responses = await Promise.all([60, 70, 80].map(brewTempC => patch(ben, tea.id, { version: 1, brewTempC })))
+      expect(responses.map(r => r.status).sort()).toEqual([200, 409, 409])
+    })
+
+    it('prüft Duplikate beim Umbenennen und beim Ändern der Marke', async () => {
+      const m = marker()
+      const taken = await create({ name: `Assam ${m}`, visibility: 'public', kind: 'bought', brand: 'Teekanne' })
+      const other = await create({ name: `Assam ${m}`, visibility: 'public', kind: 'bought', brand: 'Meßmer' })
+      const brand = await patch(ben, other.id, { version: 1, brand: 'TEEKANNE' })
+      expect(brand.status).toBe(409)
+      expect(brand.body.error.details).toEqual({ teaId: taken.id, locale: 'de' })
+
+      const third = await create({ name: `Darjeeling ${m}`, visibility: 'public', kind: 'bought', brand: 'Teekanne' })
+      const rename = await patch(ben, third.id, { version: 1, translations: { de: { name: `assam ${m}` } } })
+      expect(rename.status).toBe(409)
+
+      const ownSpelling = await patch(ben, taken.id, { version: 1, translations: { de: { name: `ASSAM ${m}` } } })
+      expect(ownSpelling.status).toBe(200)
+    })
+
+    it('lehnt Sichtbarkeit im Bearbeiten ab (AK-4.3)', async () => {
+      const tea = await create({ name: `Einbahn ${marker()}`, visibility: 'public' })
+      const response = await patch(ben, tea.id, { version: 1, visibility: 'private' })
+      expect(response.status).toBe(400)
+      expect(response.body.error.code).toBe('VALIDATION_ERROR')
+    })
+
+    it('lehnt unbekannte Zutaten in der neuen Liste ab', async () => {
+      const tea = await create({ name: `Zutaten ${marker()}`, visibility: 'public' })
+      const response = await patch(ben, tea.id, { version: 1, ingredients: [{ ingredientId: randomUUID() }] })
+      expect(response.status).toBe(400)
+      expect(response.body.error.code).toBe('INGREDIENT_NOT_FOUND')
+    })
+
+    it('fügt eine Übersetzung hinzu', async () => {
+      const m = marker()
+      const tea = await create({ name: `Waldbeere ${m}`, visibility: 'public' })
+      const response = await patch(ben, tea.id, { version: 1, translations: { en: { name: `Forest berry ${m}`, description: 'Fruity' } } })
+      expect(response.status).toBe(200)
+      expect(response.body.tea.translations).toEqual({
+        de: { name: `Waldbeere ${m}`, description: null },
+        en: { name: `Forest berry ${m}`, description: 'Fruity' },
+      })
+      const list = await ben.get(`/api/teas?locale=en&q=${m}`)
+      expect(list.body.items[0]).toMatchObject({ name: `Forest berry ${m}`, translated: true })
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'TEA_UPDATED' AND details->>'teaId' = $1`, [tea.id])
+      expect(entry.details.locales).toEqual(['en'])
+    })
+
+    it('hält genau eine aktuelle Version je Tee', async () => {
+      const tea = await create({ name: `Viele Versionen ${marker()}`, visibility: 'public' })
+      for (let version = 1; version <= 3; version++) {
+        expect((await patch(ben, tea.id, { version, brewTempC: 70 + version })).status).toBe(200)
+      }
+      expect(await db(`SELECT "teaId" FROM "TeaVersion" WHERE "isCurrent" GROUP BY "teaId" HAVING count(*) <> 1`)).toEqual([])
+      await expect(db(`INSERT INTO "TeaVersion" (id, "teaId", version, "isCurrent", kind) VALUES (gen_random_uuid(), $1, 9, true, 'blended')`, [tea.id]))
+        .rejects.toThrow(/TeaVersion_current_key/)
+    })
+
+    it('teilt das Rate-Limit mit Zutaten: 31. Änderung → 429 (AK-3.4)', async () => {
+      const { client } = await registerUser()
+      for (let i = 0; i < 15; i++) {
+        expect((await client.post('/api/ingredients', { locale: 'de', name: `Limitzutat ${marker()}` })).status).toBe(201)
+      }
+      for (let i = 0; i < 15; i++) await createAs(client, { name: `Limittee ${marker()}` })
+      const blocked = await client.post('/api/teas', { locale: 'de', name: `Zu viel ${marker()}`, kind: 'blended', ingredients: [{ ingredientId: mint }] })
+      expect(blocked.status).toBe(429)
+      expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0)
+    })
+  })
+
   describe('Ähnliche Tees (AK-2.3)', () => {
     it('findet Tippfehler, aber nur öffentliche Tees', async () => {
       const m = marker()
