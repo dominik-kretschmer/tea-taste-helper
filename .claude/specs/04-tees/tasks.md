@@ -41,12 +41,13 @@ Reihenfolge:
     - `updateTeaSchema` lehnt `visibility` ab.
     - `diffTeaSnapshots`: hinzugefügt, entfernt, verschoben, Anteil, Art, Marke, Sichtbarkeit, keine Änderung.
     - Rest = 100 − Summe.
-  - Ergebnis: 30 Unit-Tests grün (Unit gesamt 146). Listenfehler kommen als Schlüssel (`duplicateIngredient`, `percentSum`) am Pfad `ingredients`; `useFormErrors` übersetzt `custom`-Meldungen über `validation.*` und meldet zu lange Listen als „Höchstens n“. API-Tests unberührt (die Schemas nutzt der Server erst ab Aufgabe 6).
+  - Ergebnis: 30 Unit-Tests grün (Unit gesamt 156). Listenfehler kommen als Schlüssel (`duplicateIngredient`, `percentSum`) am Pfad `ingredients`; `useFormErrors` übersetzt `custom`-Meldungen über `validation.*` und meldet zu lange Listen als „Höchstens n“. API-Tests unberührt (die Schemas nutzt der Server erst ab Aufgabe 6).
 
-- [ ] 5. Server-Bausteine für Tees
+- [x] 5. Server-Bausteine für Tees
   - Dateien: `server/utils/teas.ts` (`visibleTo`, `loadTea`, Snapshot/Detail, `writeTeaVersion`, `assertTeaNameAvailable`, `listTeas`, `findSimilarTeas`), `server/utils/ingredients.ts` (`loadIngredientViews`)
   - Erfüllt: AK-1.7, AK-2.4 (Bausteine)
   - Prüfung: Typecheck; die Abfragen prüfen die API-Tests ab Aufgabe 6.
+  - Ergebnis: Lint und Typecheck grün. Die Tee-Funktionen tragen eindeutige Namen (`loadCurrentTea`, `writeTeaVersion` …), weil `server/utils` per Auto-Import global ist. `toRevisionEntry` ist strukturell typisiert und dient beiden. Dazu kommen `assertIngredientsExist`, `assertTeaNamesAvailable` (alle Sprachen in fester Reihenfolge, optional nur geänderte) und `canViewTea` als einzige Sichtbarkeitsregel.
 
 - [ ] 6. API: Anlegen, Detail, ähnliche Tees
   - Dateien: `server/api/teas/index.post.ts`, `server/api/teas/[id]/index.get.ts`, `server/api/teas/similar.get.ts`, `test/api/teas.test.ts`

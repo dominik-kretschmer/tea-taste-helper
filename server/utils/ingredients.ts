@@ -42,7 +42,8 @@ export function toSnapshot(sourceLocale: string, version: LoadedVersion): Ingred
   }
 }
 
-export function toRevisionEntry(version: LoadedVersion | (IngredientVersion & { author: { displayName: string } | null })): RevisionEntry {
+/** Versionszeile für die Historie; passt auf Zutaten- und Tee-Versionen. */
+export function toRevisionEntry(version: { version: number, isCurrent: boolean, createdAt: Date, note: string | null, author: { displayName: string } | null }): RevisionEntry {
   return {
     version: version.version,
     isCurrent: version.isCurrent,
@@ -190,4 +191,23 @@ export async function findSimilar(db: Db, name: string, locale: ContentLocale): 
     ${displayJoins(locale)}
     ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"
     LIMIT ${SIMILAR_LIMIT}`
+}
+
+/**
+ * Zutaten mit aktuellen Übersetzungen und Koffeinwert, für die Anzeige in Tees (ein Query).
+ * Nicht vorhandene IDs fehlen in der Map.
+ */
+export async function loadIngredientViews(db: Db, ids: string[]): Promise<Map<string, Omit<TeaIngredientView, 'ingredientId' | 'percent'>>> {
+  if (!ids.length) return new Map()
+  const rows = await db.ingredient.findMany({
+    where: { id: { in: ids } },
+    include: { versions: { where: CURRENT, include: { translations: true } } },
+  })
+  return new Map(rows.flatMap((row) => {
+    const version = row.versions[0]
+    if (!version) return []
+    const translations: CatalogTranslations = {}
+    for (const text of version.translations) translations[text.locale as ContentLocale] = { name: text.name, description: text.description }
+    return [[row.id, { sourceLocale: row.sourceLocale as ContentLocale, translations, caffeine: version.caffeine }]]
+  }))
 }

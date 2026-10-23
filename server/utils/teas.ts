@@ -1,0 +1,277 @@
+import type { H3Event } from 'h3'
+import { Prisma } from '../generated/prisma/client'
+import type { Tea, TeaVersion, TeaVersionIngredient, TeaVersionTranslation } from '../generated/prisma/client'
+
+// Einzige Stelle für Abfragen auf Tees. Wie bei Zutaten ist „aktuell“ die eine Version mit
+// isCurrent = true. Dazu kommt die Sichtbarkeit: Fremde private Tees gelten überall als nicht
+// vorhanden (404, nicht in Listen) – auch für Admins (AK-1.7).
+
+export const TEA_LIST_PAGE_SIZE = 24
+export const TEA_SIMILAR_LIMIT = 5
+
+/** Angemeldeter Nutzer der Anfrage oder `null` für Gäste. */
+export type Viewer = { id: string } | null | undefined
+
+const teaVersionInclude = {
+  translations: true,
+  ingredients: { orderBy: { position: 'asc' } },
+  author: { select: { displayName: true } },
+} as const satisfies Prisma.TeaVersionInclude
+
+export type LoadedTeaVersion = TeaVersion & {
+  translations: TeaVersionTranslation[]
+  ingredients: TeaVersionIngredient[]
+  author: { displayName: string } | null
+}
+
+export const teaNotFound = () => new AppError(404, 'NOT_FOUND', 'Tea not found')
+
+/** Tee-ID aus dem Routenparameter `id`; ungültige IDs gelten als nicht gefunden. */
+export function getTeaIdParam(event: H3Event): string {
+  return getUuidParam(event, teaNotFound)
+}
+
+/** Öffentlich oder eigener Tee (AK-1.7). */
+export function canViewTea(tea: Pick<Tea, 'ownerId'>, version: Pick<TeaVersion, 'visibility'>, viewer: Viewer): boolean {
+  return version.visibility === 'public' || (!!viewer && tea.ownerId === viewer.id)
+}
+
+/** Aktuelle Version samt Tee, oder `null`, wenn es den Tee nicht gibt oder der Betrachter ihn nicht sehen darf. */
+export async function loadCurrentTea(db: Db, id: string, viewer: Viewer) {
+  const tea = await db.tea.findUnique({
+    where: { id },
+    include: { versions: { where: { isCurrent: true }, include: teaVersionInclude } },
+  })
+  const version = tea?.versions[0]
+  if (!tea || !version || !canViewTea(tea, version, viewer)) return null
+  return { tea, version }
+}
+
+/** Eine bestimmte Version (alt oder aktuell); die Sichtbarkeit prüft der Aufrufer über die aktuelle Version. */
+export async function loadTeaVersion(db: Db, teaId: string, version: number): Promise<LoadedTeaVersion | null> {
+  return db.teaVersion.findUnique({
+    where: { teaId_version: { teaId, version } },
+    include: teaVersionInclude,
+  })
+}
+
+export function toTeaSnapshot(tea: Pick<Tea, 'sourceLocale'>, version: LoadedTeaVersion): TeaSnapshot {
+  const translations: CatalogTranslations = {}
+  for (const row of version.translations) {
+    translations[row.locale as ContentLocale] = { name: row.name, description: row.description }
+  }
+  return {
+    sourceLocale: tea.sourceLocale as ContentLocale,
+    visibility: version.visibility,
+    kind: version.kind,
+    brand: version.brand,
+    caffeine: version.caffeine,
+    brewTempC: version.brewTempC,
+    brewSeconds: version.brewSeconds,
+    translations,
+    ingredients: version.ingredients.map(row => ({ ingredientId: row.ingredientId, percent: row.percent })),
+  }
+}
+
+/** Detail mit Zutatennamen in allen Sprachen, Ersteller und Koffein-Hinweis (AK-1.5, AK-1.6). */
+export async function toTeaDetail(db: Db, tea: Tea, version: LoadedTeaVersion, viewer: Viewer): Promise<TeaDetail> {
+  const snapshot = toTeaSnapshot(tea, version)
+  const [views, owner] = await Promise.all([
+    loadIngredientViews(db, snapshot.ingredients.map(item => item.ingredientId)),
+    tea.ownerId ? db.user.findUnique({ where: { id: tea.ownerId }, select: { displayName: true } }) : null,
+  ])
+  const ingredients = snapshot.ingredients.flatMap((item) => {
+    const view = views.get(item.ingredientId)
+    return view ? [{ ...item, ...view }] : []
+  })
+  return {
+    id: tea.id,
+    ...snapshot,
+    ingredients,
+    ingredientsCaffeinated: ingredients.some(item => item.caffeine === 'yes'),
+    version: version.version,
+    updatedAt: version.createdAt.toISOString(),
+    updatedBy: version.author,
+    owner,
+    isOwner: !!viewer && tea.ownerId === viewer.id,
+  }
+}
+
+export async function loadTeaDetail(db: Db, id: string, viewer: Viewer): Promise<TeaDetail> {
+  const current = await loadCurrentTea(db, id, viewer)
+  if (!current) throw teaNotFound()
+  return toTeaDetail(db, current.tea, current.version, viewer)
+}
+
+/** Alle Zutaten müssen existieren, sonst 400 mit der Position der ersten fehlenden (AK-2.5). */
+export async function assertIngredientsExist(db: Db, ingredients: TeaIngredientRef[]): Promise<void> {
+  const found = await db.ingredient.findMany({
+    where: { id: { in: ingredients.map(item => item.ingredientId) } },
+    select: { id: true },
+  })
+  const ids = new Set(found.map(row => row.id))
+  const index = ingredients.findIndex(item => !ids.has(item.ingredientId))
+  if (index >= 0) {
+    throw new AppError(400, 'INGREDIENT_NOT_FOUND', 'Ingredient not found', { index, ingredientId: ingredients[index]!.ingredientId })
+  }
+}
+
+/** Schlüssel der Marke für die Duplikatregel; ohne Marke ''. */
+export const brandKeyOf = (brand: string | null) => (brand ? normalizeName(brand) : '')
+
+/**
+ * Duplikatregel für öffentliche Tees (AK-2.4): keine öffentliche aktuelle Version eines anderen Tees
+ * darf in dieser Sprache denselben normalisierten Namen **und** dieselbe Marke haben.
+ */
+export async function assertTeaNameAvailable(db: Db, locale: ContentLocale, nameKey: string, brandKey: string, ignoreTeaId?: string): Promise<void> {
+  await lockName(db, `tea-name:${locale}:${nameKey}:${brandKey}`)
+  const existing = await db.teaVersionTranslation.findFirst({
+    where: {
+      locale,
+      nameKey,
+      version: {
+        isCurrent: true,
+        visibility: 'public',
+        brandKey,
+        ...(ignoreTeaId ? { teaId: { not: ignoreTeaId } } : {}),
+      },
+    },
+    select: { version: { select: { teaId: true } } },
+  })
+  if (existing) {
+    throw new AppError(409, 'DUPLICATE_NAME', 'A public tea with this name and brand already exists', {
+      teaId: existing.version.teaId,
+      locale,
+    })
+  }
+}
+
+/**
+ * Prüft alle Namen eines öffentlichen Stands in fester Sprachreihenfolge (wegen der Sperren).
+ * Mit `before` nur Sprachen, deren Name oder deren Marke sich gegenüber diesem Stand geändert hat.
+ */
+export async function assertTeaNamesAvailable(db: Db, snapshot: TeaSnapshot, options: { teaId?: string, before?: TeaSnapshot } = {}): Promise<void> {
+  if (snapshot.visibility !== 'public') return
+  const brandKey = brandKeyOf(snapshot.brand)
+  for (const locale of CONTENT_LOCALES) {
+    const name = snapshot.translations[locale]?.name
+    if (!name) continue
+    const nameKey = normalizeName(name)
+    const { before } = options
+    const previous = before?.translations[locale]?.name
+    const unchanged = before
+      && before.visibility === 'public'
+      && previous !== undefined
+      && normalizeName(previous) === nameKey
+      && brandKeyOf(before.brand) === brandKey
+    if (!unchanged) await assertTeaNameAvailable(db, locale, nameKey, brandKey, options.teaId)
+  }
+}
+
+/** Legt eine neue, aktuelle Version mit allen Übersetzungen und Zutaten des Snapshots an. */
+export async function writeTeaVersion(db: Db, input: {
+  teaId: string
+  version: number
+  snapshot: TeaSnapshot
+  authorId: string
+  note: string | null
+}): Promise<LoadedTeaVersion> {
+  const { snapshot } = input
+  return db.teaVersion.create({
+    data: {
+      teaId: input.teaId,
+      version: input.version,
+      isCurrent: true,
+      visibility: snapshot.visibility,
+      kind: snapshot.kind,
+      brand: snapshot.kind === 'bought' ? snapshot.brand : null,
+      brandKey: snapshot.kind === 'bought' ? brandKeyOf(snapshot.brand) : '',
+      caffeine: snapshot.caffeine,
+      brewTempC: snapshot.brewTempC,
+      brewSeconds: snapshot.brewSeconds,
+      authorId: input.authorId,
+      note: input.note,
+      translations: {
+        create: CONTENT_LOCALES.flatMap((locale) => {
+          const text = snapshot.translations[locale]
+          return text ? [{ locale, name: text.name, nameKey: normalizeName(text.name), description: text.description }] : []
+        }),
+      },
+      ingredients: {
+        create: snapshot.ingredients.map((item, position) => ({ position, ingredientId: item.ingredientId, percent: item.percent })),
+      },
+    },
+    include: teaVersionInclude,
+  })
+}
+
+// --- Liste, Suche, Ähnlichkeit (SQL wie bei Zutaten) ---
+
+/** Anzeigename in `locale`, sonst Originalsprache; `v` ist die aktuelle Version, `t` der Tee. */
+const teaDisplayJoins = (locale: ContentLocale) => Prisma.sql`
+  JOIN "TeaVersionTranslation" src ON src."versionId" = v.id AND src.locale = t."sourceLocale"
+  LEFT JOIN "TeaVersionTranslation" own ON own."versionId" = v.id AND own.locale = ${locale}`
+
+export interface TeaListQuery {
+  q?: string
+  page: number
+  locale: ContentLocale
+  ingredient?: string
+  mine?: boolean
+}
+
+/**
+ * Öffentliche Tees (AK-1.1) bzw. mit `mine` alle eigenen (AK-7.1); Suche über Namen aller Sprachen
+ * und die Marke (AK-1.2), Filter auf eine Zutat (AK-1.3).
+ */
+export async function listTeas(db: Db, query: TeaListQuery, viewer: Viewer): Promise<Page<TeaListItem>> {
+  const scope = query.mine && viewer
+    ? Prisma.sql`t."ownerId" = ${viewer.id}::uuid`
+    : Prisma.sql`v.visibility = 'public'`
+  const pattern = query.q ? `%${escapeLike(query.q)}%` : null
+  const search = pattern
+    ? Prisma.sql`AND (v.brand ILIKE ${pattern} OR EXISTS (
+        SELECT 1 FROM "TeaVersionTranslation" x WHERE x."versionId" = v.id AND x.name ILIKE ${pattern}))`
+    : Prisma.empty
+  const ingredient = query.ingredient
+    ? Prisma.sql`AND EXISTS (
+        SELECT 1 FROM "TeaVersionIngredient" vi WHERE vi."versionId" = v.id AND vi."ingredientId" = ${query.ingredient}::uuid)`
+    : Prisma.empty
+
+  const [items, [{ total } = { total: 0 }]] = await Promise.all([
+    db.$queryRaw<TeaListItem[]>`
+      SELECT t.id, COALESCE(own.name, src.name) AS name, own.name IS NOT NULL AS translated, v.brand,
+             v.kind::text AS kind, v.caffeine::text AS caffeine, v.visibility::text AS visibility
+      FROM "Tea" t
+      JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
+      ${teaDisplayJoins(query.locale)}
+      WHERE ${scope} ${search} ${ingredient}
+      ORDER BY lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu", lower(COALESCE(v.brand, '')) COLLATE "de-x-icu", t.id
+      LIMIT ${TEA_LIST_PAGE_SIZE} OFFSET ${(query.page - 1) * TEA_LIST_PAGE_SIZE}`,
+    db.$queryRaw<{ total: number }[]>`
+      SELECT count(*)::int AS total
+      FROM "Tea" t
+      JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
+      WHERE ${scope} ${search} ${ingredient}`,
+  ])
+  return { items, total, page: query.page, pageSize: TEA_LIST_PAGE_SIZE }
+}
+
+/** Bis zu 5 öffentliche Tees mit ähnlichem Namen in irgendeiner Sprache (AK-2.3). */
+export async function findSimilarTeas(db: Db, name: string, locale: ContentLocale): Promise<{ id: string, name: string, brand: string | null }[]> {
+  return db.$queryRaw`
+    WITH hits AS (
+      SELECT v."teaId" AS id, max(similarity(x.name, ${name})) AS score
+      FROM "TeaVersionTranslation" x
+      JOIN "TeaVersion" v ON v.id = x."versionId" AND v."isCurrent" AND v.visibility = 'public'
+      WHERE x.name % ${name} OR x.name ILIKE ${`%${escapeLike(name)}%`}
+      GROUP BY v."teaId"
+    )
+    SELECT t.id, COALESCE(own.name, src.name) AS name, v.brand
+    FROM hits h
+    JOIN "Tea" t ON t.id = h.id
+    JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
+    ${teaDisplayJoins(locale)}
+    ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"
+    LIMIT ${TEA_SIMILAR_LIMIT}`
+}
