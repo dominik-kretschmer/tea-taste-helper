@@ -61,8 +61,3 @@ export function useFormErrors() {
 
   return { fieldErrors, formError, validate, handleError, reset }
 }
-
-/** Nur interne Pfade als Ziel nach dem Login zulassen (kein Open Redirect über ?redirect=//evil). */
-export function safeRedirect(target: unknown, fallback: string): string {
-  return typeof target === 'string' && target.startsWith('/') && !target.startsWith('//') ? target : fallback
-}

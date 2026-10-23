@@ -5,6 +5,7 @@ definePageMeta({ middleware: 'guest' })
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+const route = useRoute()
 const { register } = useAuth()
 const { fieldErrors, formError, validate, handleError } = useFormErrors()
 
@@ -19,7 +20,8 @@ async function submit() {
   loading.value = true
   try {
     await register(input)
-    await navigateTo(localePath('/'))
+    // Wie beim Login zurück zum Ziel, z.B. „Zutat anlegen“ (00-chore/10)
+    await navigateTo(safeRedirect(route.query.redirect, localePath('/')))
   }
   catch (error) {
     handleError(error)
@@ -69,7 +71,7 @@ async function submit() {
       </v-form>
       <p class="text-body-2 mt-6">
         {{ t('register.haveAccount') }}
-        <NuxtLink :to="localePath('/login')">
+        <NuxtLink :to="localePath({ path: '/login', query: redirectQuery(route.query.redirect) })">
           {{ t('nav.login') }}
         </NuxtLink>
       </p>

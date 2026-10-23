@@ -59,7 +59,7 @@ async function submit() {
       </v-form>
       <p class="text-body-2 mt-6">
         {{ t('login.noAccount') }}
-        <NuxtLink :to="localePath('/register')">
+        <NuxtLink :to="localePath({ path: '/register', query: redirectQuery(route.query.redirect) })">
           {{ t('nav.register') }}
         </NuxtLink>
       </p>
