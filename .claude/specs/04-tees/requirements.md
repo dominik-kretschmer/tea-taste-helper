@@ -1,7 +1,7 @@
 # 04 – Tees
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 04 (§2 Begriffe, §4 Katalog, §8 Mehrsprachigkeit, §13 Audit-Log). Baut auf [03 – Zutaten](../03-zutaten/requirements.md) auf. Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-23)**
+> Status: **umgesetzt (2026-10-23)**
 
 ## Ziel
 

@@ -1,6 +1,6 @@
 # Aufgaben: 04 – Tees
 
-> Phase 3 zu [design.md](design.md). Status: **freigegeben (2026-10-23)**
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-23)**
 
 Reihenfolge:
 - gemeinsame Bausteine aus 03 herauslösen (ohne Verhaltensänderung) → Datenmodell → Regeln → Server-Bausteine → API → UI → Dokumentation → Endabnahme.
@@ -195,7 +195,7 @@ Reihenfolge:
   - Prüfung: README listet alle SQL-Objekte aus 0003 und 0004 und beschreibt Tees und Sichtbarkeit kurz.
   - Ergebnis: README hat den Abschnitt „Tees“ (Sichtbarkeit, Veröffentlichen, Duplikatregel, „Meine“), `TeaVersion_current_key` in der Migrations-Tabelle, beide GIN-Indizes und die neuen Fehlercodes. Der Skill nennt beide partiellen Indizes und die Regel, Tees nur über `server/utils/teas.ts` abzufragen.
 
-- [ ] 17. Abschluss
+- [x] 17. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
   - Ablauf:
     1. `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei.
@@ -204,3 +204,43 @@ Reihenfolge:
     4. Testdaten aus der Dev-DB löschen.
     5. Status von `requirements.md`, `design.md` und `tasks.md` auf „umgesetzt“ setzen.
     6. Push nur nach Rücksprache.
+  - Endabnahme (2026-10-23, Stand nach Merge von origin/main und Rückbau auf TypeScript 6):
+    - `lint`, `typecheck`, 336 Tests (inkl. der Tests der parallelen 00-chore-Arbeit) und `build` sind grün.
+    - Production-Server (`.output`) **ohne** `NODE_ENV` gestartet, weil 00-chore/01 inzwischen behoben ist: Cookie `__Host-session` mit `Secure; HttpOnly; SameSite=Lax`, HSTS aktiv, CSP ohne `unsafe-eval`, Logs als JSON.
+    - CSP-Durchlauf mit `securitypolicyviolation`-Listener über alle Tee-Seiten (de/en), Zutatenseite und Audit, inkl. Zutatensuche im Formular: **keine** Meldung. Der zod-Eval (00-chore/08) tritt nicht mehr auf.
+    - Testdaten (`pw03`/`pw04`: 3 Nutzer, 19 Tees, 11 Zutaten, 72 Audit-Einträge) aus der Dev-DB gelöscht; Daten ohne diese Kennung blieben unberührt.
+
+    | AK | Ergebnis | Nachweis |
+    |---|---|---|
+    | 0.1, 0.2 | ✅ | Migration 0004, Schemas; Unit `tea.test.ts` (Grenzen 0/1/20/21 Zutaten, Anteil 0/1/100/101, Summe, Marke nur bei „gekauft“); API „Anlegen“ (Ersteller, Originalsprache, Sichtbarkeit) |
+    | 0.3 | ✅ | Unit `remainingPercent`; Browser „Rest unbekannt: 20 %“, kein Rest bei 100 % |
+    | 1.1 | ✅ | API: nur öffentliche Tees, auch für den Ersteller; Sortierung mit Umlauten, 24/Seite; Browser `/tees`, `/en/teas` |
+    | 1.2 | ✅ | API: Suche über englische Übersetzung und Marke, alte Versionen nicht; Browser Suche mit `?q` |
+    | 1.3 | ✅ | API Zutatenfilter ohne fremd-private; Browser Filter-Chip, entfernbar |
+    | 1.4 | ✅ | API `translated`; Browser Fallback-Hinweis de/en, Zutatennamen mit Fallback |
+    | 1.5 | ✅ | API Detail mit Zutaten, Reihenfolge, Ersteller ohne E-Mail; Browser Detailseite |
+    | 1.6 | ✅ | API `ingredientsCaffeinated`; Browser „laut Zutaten koffeinhaltig“ nur bei `unbekannt` |
+    | 1.7 | ✅ | Sichtbarkeits-Matrix (Gast, Nutzer, Moderator, Admin → 404 auf allen Routen); Browser 404-Seite |
+    | 2.1 | ✅ | API Version 1 privat (Standard) bzw. öffentlich, Audit; Browser Anlegen → Detail |
+    | 2.2 | ✅ | Browser: Zutatensuche, ausgegraut bei Doppelwahl; „Zutat fehlt“ → Zutat anlegen → zurück mit vollständigem Entwurf und neuer Zutat |
+    | 2.3 | ✅ | API `similar` nur öffentlich; Browser „Ähnliche öffentliche Tees“ nur bei „öffentlich“ |
+    | 2.4 | ✅ | API: Name + Marke öffentlich → 409 mit `teaId`; andere/keine Marke und privat erlaubt; 5 gleichzeitige → eine 201; Browser Meldung mit Link |
+    | 2.5 | ✅ | API `INGREDIENT_NOT_FOUND`, doppelte Zutat, Summe > 100 → 400; Browser Feldfehler am Zutatenfeld |
+    | 2.6 | ✅ | API Gast 401; Browser Anmelde-Hinweis, Gast → Login |
+    | 3.1 | ✅ | API Dritte bearbeiten öffentliche Tees (Version 2, Ersteller bleibt, Zutatenliste ersetzt); Browser Bearbeiten |
+    | 3.2 | ✅ | API/Matrix: fremd-privat → 404 (auch Admin) |
+    | 3.3 | ✅ | API Konflikt (auch 3 gleichzeitige), „keine Änderung“, Duplikat beim Umbenennen und bei Markenänderung; Browser Konflikt mit zwei Tabs, „Keine Änderungen“ |
+    | 3.4 | ✅ | API: 15 Zutaten + 15 Tees, 31. Änderung → 429 |
+    | 3.5, 3.6 | ✅ | API Löschen privat → 204 samt Versionen, öffentlich → 409 `TEA_PUBLIC`, fremd → 404; Browser Dialog |
+    | 4.1–4.4 | ✅ | API Veröffentlichen → neue Version, zweites Mal 400 `ALREADY_PUBLIC`, Duplikat 409, nur Ersteller, `visibility` im PATCH → 400; Browser Dialog |
+    | 5.1 | ✅ | API Übersetzung hinzufügen; Browser Tabs, `?lang=en`, englische Detailseite |
+    | 6.1, 6.2 | ✅ | API Historie/Vergleich mit Zutaten, Marke, Sichtbarkeit, fremd-privat 404; Browser „Pfefferminze: 20 % → 30 %, Position 2 → 1“, „+ Äpfel (5 %)“, „− Birne“ |
+    | 7.1 | ✅ | API `mine=1` (Gast 401); Browser Tab „Meine“ mit Chips privat/öffentlich |
+    | 8.1 | ✅ | Browser Zutatenseite: 10 öffentliche Tees + „Alle 18 anzeigen“ → gefilterte Liste; private erscheinen nicht |
+    | 9.1 | ✅ | API alle vier Ereignisse mit `teaId`, Version, `private`; Browser Audit „Tee anzeigen“ nur bei öffentlichen, „privater Tee“ sonst |
+    | 10.1 | ✅ | Gemeinsame Schemas; Browser übersetzte Feldfehler de/en |
+    | 10.2 | ✅ | API `<script>`/`<b>` unverändert; Browser `<b>` wörtlich, Zeilenumbrüche erhalten |
+    | 10.3 | ✅ | Unit-Test Sprachdateien; Navigation „Tees“; 360 px ohne Überlauf auf allen Tee-Seiten; keine CSP-Verstöße (Production) |
+    | 10.4 | ✅ | `test/unit/tea.test.ts` (30), `test/api/teas.test.ts` (41) |
+
+  - Push durch den Nutzer.
