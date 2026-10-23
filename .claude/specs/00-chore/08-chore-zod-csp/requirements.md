@@ -1,6 +1,6 @@
 # 08 – zod löst CSP-Verstöße „script-src eval“ aus
 
-> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **Entwurf – wartet auf Freigabe**
+> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **freigegeben (2026-10-23)**
 
 ## Befund
 

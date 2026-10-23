@@ -1,5 +1,5 @@
 // Gemeinsame Eingabe-Schemas für Client (Formulare) und Server (API). Import: #shared/schemas/auth
-import { z } from 'zod'
+import { z } from './zod'
 import { AUDIT_EVENTS, ROLES } from '../utils/roles'
 
 export const PASSWORD_MIN = 10

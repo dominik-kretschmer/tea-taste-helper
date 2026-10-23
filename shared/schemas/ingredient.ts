@@ -1,5 +1,5 @@
 // Eingabe-Schemas für Zutaten (Client und Server). Import: #shared/schemas/ingredient
-import { z } from 'zod'
+import { z } from './zod'
 import { pageSchema } from './auth'
 import {
   catalogNameSchema, catalogTextSchema, contentLocaleSchema, createFactsShape, noteSchema, searchTermSchema,

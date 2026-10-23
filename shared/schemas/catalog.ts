@@ -1,5 +1,5 @@
 // Gemeinsame Eingabe-Bausteine für Katalog-Einträge (Zutaten, Tees). Import: #shared/schemas/catalog
-import { z } from 'zod'
+import { z } from './zod'
 import {
   BREW_SECONDS_MAX, BREW_SECONDS_MIN, BREW_TEMP_MAX, BREW_TEMP_MIN, CAFFEINE_VALUES, CATALOG_DESCRIPTION_MAX,
   CATALOG_NAME_MAX, CATALOG_NAME_MIN, CATALOG_NOTE_MAX, CONTENT_LOCALES,

@@ -1,5 +1,5 @@
 // Eingabe-Schemas für Tees (Client und Server). Import: #shared/schemas/tea
-import { z } from 'zod'
+import { z } from './zod'
 import { TEA_BRAND_MAX, TEA_INGREDIENTS_MAX, TEA_INGREDIENTS_MIN, TEA_KINDS, VISIBILITIES } from '../utils/tea'
 import { pageSchema } from './auth'
 import {
