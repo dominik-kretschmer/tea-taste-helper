@@ -19,7 +19,7 @@ Reihenfolge:
     - Die API-Tests aus 01 und 02 bleiben grün.
   - Ergebnis: Beide DBs haben die Indizes, `de-x-icu` ist vorhanden. Prisma wollte nur den GIN-Index löschen; er steht jetzt auch im Schema (`type: Gin`), der Diff ist leer (siehe Design). `global-api.ts` leert bereits alle Tabellen und blieb unverändert. Die Audit-Ereignisse in `shared/` und ihre Texte sind vorgezogen, weil Typecheck und Enum-Test sie brauchen. 124 Tests grün.
 
-- [ ] 2. Gemeinsame Typen, Regeln und Schemas
+- [x] 2. Gemeinsame Typen, Regeln und Schemas
   - Dateien: `shared/types/ingredient.ts`, `shared/utils/ingredient.ts` (`CONTENT_LOCALES`, `normalizeName`, `pickTranslation`, `diffSnapshots`), `shared/schemas/ingredient.ts`, `shared/utils/roles.ts`, `shared/types/auth.ts` (Audit-Ereignisse), `test/unit/ingredient.test.ts`
   - Erfüllt: AK-1.3 (Regel), AK-2.3 (Normalisierung), AK-3.3 (Regel), AK-4.3, AK-5.2 (Regel), AK-7.1
   - Prüfung (Unit-Tests):
@@ -27,6 +27,7 @@ Reihenfolge:
     - `diffSnapshots`: Grundfeld geändert, Übersetzung neu (`from: null`) bzw. geändert, keine Änderung → leer.
     - `pickTranslation`: aktuelle Sprache vorhanden bzw. Fallback auf Originalsprache mit `translated: false`.
     - Schemas: Grenzen Name 1/2/80/81, Beschreibung 2000/2001, Temperatur 39/40/100/101, Ziehzeit 9/10/1800/1801, unbekannte Sprache; leere Beschreibung → `null`.
+  - Ergebnis: 39 Unit-Tests grün. Die Audit-Ereignisse kamen schon mit Aufgabe 1. `pageSchema` aus `shared/schemas/auth.ts` wird jetzt exportiert und mitbenutzt; dazu `revisionsQuerySchema` und die Grenzwerte als Konstanten in `shared/utils/ingredient.ts`. Leere Notizen werden wie leere Beschreibungen zu `null`.
 
 - [ ] 3. Server-Bausteine
   - Dateien: `server/utils/ingredients.ts` (`CURRENT`-Filter, Laden als Snapshot/Detail, Version schreiben, `assertNameAvailable` mit Advisory-Sperre, `escapeLike`), `test/unit/ingredient.test.ts` (`escapeLike`)

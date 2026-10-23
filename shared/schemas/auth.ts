@@ -40,7 +40,7 @@ export const changeRoleSchema = z.object({
   role: z.enum(ROLES),
 })
 
-const pageSchema = z.coerce.number().int().min(1).max(10_000).default(1)
+export const pageSchema = z.coerce.number().int().min(1).max(10_000).default(1)
 
 export const adminUsersQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
