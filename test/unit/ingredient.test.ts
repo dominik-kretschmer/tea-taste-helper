@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { Caffeine } from '../../server/generated/prisma/enums'
 import { compareQuerySchema, createIngredientSchema, ingredientListQuerySchema, updateIngredientSchema } from '../../shared/schemas/ingredient'
 import type { IngredientSnapshot } from '../../shared/types/ingredient'
+import { escapeLike } from '../../server/utils/ingredients'
 import { CAFFEINE_VALUES, diffSnapshots, normalizeName, pickTranslation } from '../../shared/utils/ingredient'
 
 const base = { locale: 'de', name: 'Pfefferminze' } as const
@@ -152,4 +153,15 @@ describe('Abfrage-Schemas', () => {
 
 it('Koffeinwerte stimmen mit dem Prisma-Enum überein', () => {
   expect([...CAFFEINE_VALUES].sort()).toEqual(Object.values(Caffeine).sort())
+})
+
+describe('escapeLike', () => {
+  it.each([
+    ['100%', '100\\%'],
+    ['a_b', 'a\\_b'],
+    ['c:\\tee', 'c:\\\\tee'],
+    ['Grüner Tee', 'Grüner Tee'],
+  ])('%j → %j', (input, expected) => {
+    expect(escapeLike(input)).toBe(expected)
+  })
 })

@@ -29,10 +29,11 @@ Reihenfolge:
     - Schemas: Grenzen Name 1/2/80/81, Beschreibung 2000/2001, Temperatur 39/40/100/101, Ziehzeit 9/10/1800/1801, unbekannte Sprache; leere Beschreibung → `null`.
   - Ergebnis: 39 Unit-Tests grün. Die Audit-Ereignisse kamen schon mit Aufgabe 1. `pageSchema` aus `shared/schemas/auth.ts` wird jetzt exportiert und mitbenutzt; dazu `revisionsQuerySchema` und die Grenzwerte als Konstanten in `shared/utils/ingredient.ts`. Leere Notizen werden wie leere Beschreibungen zu `null`.
 
-- [ ] 3. Server-Bausteine
+- [x] 3. Server-Bausteine
   - Dateien: `server/utils/ingredients.ts` (`CURRENT`-Filter, Laden als Snapshot/Detail, Version schreiben, `assertNameAvailable` mit Advisory-Sperre, `escapeLike`), `test/unit/ingredient.test.ts` (`escapeLike`)
   - Erfüllt: AK-1.2 (Baustein), AK-2.3, AK-3.4 (Baustein)
   - Prüfung: Unit-Test für `escapeLike` (`%`, `_`, `\`). Die Abfragen prüfen die API-Tests ab Aufgabe 4.
+  - Ergebnis: Unit-Test grün. Die SQL-Abfragen für Liste und ähnliche Namen (`listIngredients`, `findSimilar`) liegen mit in `server/utils/ingredients.ts`. Ähnlichkeit nutzt den Operator `%` (Schwelle 0,3 wie im Design) statt `similarity() > 0.3`, damit der GIN-Index greift.
 
 - [ ] 4. API: Anlegen, Detail, ähnliche Namen
   - Dateien: `server/api/ingredients/index.post.ts`, `server/api/ingredients/[id]/index.get.ts`, `server/api/ingredients/similar.get.ts`, `test/api/ingredients.test.ts`
