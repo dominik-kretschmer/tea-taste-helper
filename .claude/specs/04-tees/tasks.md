@@ -49,7 +49,7 @@ Reihenfolge:
   - Prüfung: Typecheck; die Abfragen prüfen die API-Tests ab Aufgabe 6.
   - Ergebnis: Lint und Typecheck grün. Die Tee-Funktionen tragen eindeutige Namen (`loadCurrentTea`, `writeTeaVersion` …), weil `server/utils` per Auto-Import global ist. `toRevisionEntry` ist strukturell typisiert und dient beiden. Dazu kommen `assertIngredientsExist`, `assertTeaNamesAvailable` (alle Sprachen in fester Reihenfolge, optional nur geänderte) und `canViewTea` als einzige Sichtbarkeitsregel.
 
-- [ ] 6. API: Anlegen, Detail, ähnliche Tees
+- [x] 6. API: Anlegen, Detail, ähnliche Tees
   - Dateien: `server/api/teas/index.post.ts`, `server/api/teas/[id]/index.get.ts`, `server/api/teas/similar.get.ts`, `test/api/teas.test.ts`
   - Erfüllt: AK-1.5, AK-1.6, AK-1.7 (Detail), AK-2.1, AK-2.3–AK-2.6, AK-9.1 (Anlegen), AK-10.2
   - Prüfung (API-Tests):
@@ -62,6 +62,7 @@ Reihenfolge:
     - `similar` nur öffentlich.
     - 80 × „İ“ als Name speicherbar.
     - `<script>` als Text.
+  - Ergebnis: 13 API-Tests grün. Testzutaten werden per SQL angelegt, damit das Rate-Limit nicht greift; das Rate-Limit selbst prüft Aufgabe 8.
 
 - [ ] 7. API: Liste, Suche, Zutatenfilter, Meine
   - Dateien: `server/api/teas/index.get.ts`, `test/api/teas.test.ts`
