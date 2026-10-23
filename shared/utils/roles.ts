@@ -22,4 +22,8 @@ export const AUDIT_EVENTS = [
   'ADMIN_BOOTSTRAPPED',
   'INGREDIENT_CREATED',
   'INGREDIENT_UPDATED',
+  'TEA_CREATED',
+  'TEA_UPDATED',
+  'TEA_PUBLISHED',
+  'TEA_DELETED',
 ] as const satisfies readonly AuditEventType[]

@@ -11,6 +11,10 @@ export type AuditEventType =
   | 'ADMIN_BOOTSTRAPPED'
   | 'INGREDIENT_CREATED'
   | 'INGREDIENT_UPDATED'
+  | 'TEA_CREATED'
+  | 'TEA_UPDATED'
+  | 'TEA_PUBLISHED'
+  | 'TEA_DELETED'
 
 /** Nutzer, wie ihn der Nutzer selbst und Admins sehen (enthält die E-Mail – nicht für öffentliche Ansichten). */
 export interface PublicUser {

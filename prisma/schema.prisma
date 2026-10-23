@@ -36,6 +36,8 @@ model User {
   auditAsActor       AuditLog[]          @relation("AuditActor")
   auditAsTarget      AuditLog[]          @relation("AuditTarget")
   ingredientVersions IngredientVersion[] @relation("IngredientVersionAuthor")
+  teasOwned          Tea[]               @relation("TeaOwner")
+  teaVersions        TeaVersion[]        @relation("TeaVersionAuthor")
 
   @@index([displayName])
 }
@@ -65,6 +67,10 @@ enum AuditEvent {
   ADMIN_BOOTSTRAPPED
   INGREDIENT_CREATED
   INGREDIENT_UPDATED
+  TEA_CREATED
+  TEA_UPDATED
+  TEA_PUBLISHED
+  TEA_DELETED
 }
 
 model AuditLog {
@@ -99,11 +105,12 @@ enum Caffeine {
 
 /// Identität einer Zutat; alle Inhalte stehen in den Versionen.
 model Ingredient {
-  id           String              @id @default(uuid(7)) @db.Uuid
+  id           String                 @id @default(uuid(7)) @db.Uuid
   /// 'de' | 'en' (zod-geprüft), ändert sich nie
-  sourceLocale String              @db.VarChar(5)
-  createdAt    DateTime            @default(now())
+  sourceLocale String                 @db.VarChar(5)
+  createdAt    DateTime               @default(now())
   versions     IngredientVersion[]
+  teaUses      TeaVersionIngredient[]
 }
 
 /// Eine vollständige Version; genau eine pro Zutat ist aktuell (isCurrent).
@@ -141,4 +148,94 @@ model IngredientVersionTranslation {
   @@index([locale, nameKey])
   /// Suche und Ähnlichkeit (pg_trgm) über alle Namen; die Abfragen filtern per Join auf aktuelle Versionen
   @@index([name(ops: raw("gin_trgm_ops"))], map: "IngredientVersionTranslation_name_trgm", type: Gin)
+}
+
+// ---------------------------------------------------------------------------
+// 04 – Tees
+// Zusätzlich als SQL in 0004_teas (Prisma kennt ihn nicht): partieller Unique-Index
+// "TeaVersion_current_key". pg_trgm kommt aus 0003.
+// ---------------------------------------------------------------------------
+
+enum TeaKind {
+  /// gekauft
+  bought
+  /// selbst gemischt
+  blended
+}
+
+enum Visibility {
+  private
+  public
+}
+
+/// Identität eines Tees; Inhalte stehen in den Versionen.
+model Tea {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  /// 'de' | 'en' (zod-geprüft), ändert sich nie
+  sourceLocale String       @db.VarChar(5)
+  /// Ersteller; null nach Kontolöschung (Slice 11)
+  ownerId      String?      @db.Uuid
+  owner        User?        @relation("TeaOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+  versions     TeaVersion[]
+
+  @@index([ownerId])
+}
+
+/// Eine vollständige Version inkl. Zutatenliste; genau eine pro Tee ist aktuell (isCurrent).
+model TeaVersion {
+  id           String                  @id @default(uuid(7)) @db.Uuid
+  teaId        String                  @db.Uuid
+  tea          Tea                     @relation(fields: [teaId], references: [id], onDelete: Cascade)
+  version      Int
+  isCurrent    Boolean                 @default(false)
+  visibility   Visibility              @default(private)
+  kind         TeaKind
+  /// nur bei kind = bought
+  brand        String?                 @db.VarChar(80)
+  /// normalizeName(brand) bzw. '' – Teil der Duplikatregel
+  brandKey     String                  @default("")
+  caffeine     Caffeine                @default(unknown)
+  /// 40–100
+  brewTempC    Int?                    @db.SmallInt
+  /// 10–1800
+  brewSeconds  Int?                    @db.SmallInt
+  authorId     String?                 @db.Uuid
+  author       User?                   @relation("TeaVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note         String?                 @db.VarChar(200)
+  createdAt    DateTime                @default(now())
+  translations TeaVersionTranslation[]
+  ingredients  TeaVersionIngredient[]
+
+  @@unique([teaId, version])
+}
+
+model TeaVersionTranslation {
+  versionId   String     @db.Uuid
+  version     TeaVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  locale      String     @db.VarChar(5)
+  name        String     @db.VarChar(80)
+  /// normalizeName(name); TEXT, weil die Normalisierung bis zu 3× länger werden kann (00-chore/04)
+  nameKey     String
+  description String?    @db.VarChar(2000)
+
+  @@id([versionId, locale])
+  @@index([locale, nameKey])
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "TeaVersionTranslation_name_trgm", type: Gin)
+}
+
+/// Zutat einer Version in fester Reihenfolge, optional mit Anteil in Prozent
+model TeaVersionIngredient {
+  versionId    String     @db.Uuid
+  version      TeaVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  /// 0, 1, 2 …
+  position     Int        @db.SmallInt
+  ingredientId String     @db.Uuid
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  /// 1–100; null = ohne Angabe
+  percent      Int?       @db.SmallInt
+
+  @@id([versionId, position])
+  @@unique([versionId, ingredientId])
+  @@index([ingredientId])
 }

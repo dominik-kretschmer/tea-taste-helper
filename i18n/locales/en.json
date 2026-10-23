@@ -140,7 +140,11 @@
       "ROLE_CHANGED": "Role changed",
       "ADMIN_BOOTSTRAPPED": "Admin via ADMIN_EMAIL",
       "INGREDIENT_CREATED": "Ingredient created",
-      "INGREDIENT_UPDATED": "Ingredient updated"
+      "INGREDIENT_UPDATED": "Ingredient updated",
+      "TEA_CREATED": "Tea created",
+      "TEA_UPDATED": "Tea updated",
+      "TEA_PUBLISHED": "Tea published",
+      "TEA_DELETED": "Tea deleted"
     },
     "via": {
       "registration": "at registration",

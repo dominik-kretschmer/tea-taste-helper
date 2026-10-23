@@ -22,7 +22,7 @@ Reihenfolge:
   - Prüfung im Browser: Anlegen und Bearbeiten von Zutaten verhalten sich wie vorher (Tabs, „+“, Feldfehler, Min:Sek, ähnliche Zutaten, Konflikt). Dabei wird auch `<v-row dense>` durch `density="compact"` ersetzt (00-chore/09), keine „[Vuetify UPGRADE]“-Warnung.
   - Ergebnis: Die Playwright-Durchläufe aus 03 (Anlegen, Feldfehler de/en, Duplikat, Tabs mit „Original“/„+“, `?lang=en`, Konflikt, „Keine Änderungen“, Historie, Audit, 360 px) liefern dieselben Ergebnisse wie vorher; keine „[Vuetify UPGRADE]“-Warnung mehr. Die Texte der Bausteine liegen jetzt unter `catalog.*` (`fields`, `caffeineOptions`, `tabs`) statt unter `ingredients.*`.
 
-- [ ] 3. Datenmodell und Migration
+- [x] 3. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma`, `prisma/migrations/0004_teas/` (per `--create-only`, ergänzt um `TeaVersion_current_key`), `shared/utils/roles.ts`, `shared/types/auth.ts` (4 Audit-Ereignisse), `i18n/locales/*.json` (Audit-Texte)
   - Erfüllt: AK-0.1, AK-0.2, AK-9.1 (Grundlage)
   - Prüfung:
@@ -30,6 +30,7 @@ Reihenfolge:
     - `prisma migrate diff` gegen die DB ist leer; `migrate dev` meldet „Already in sync“.
     - Partieller Index und GIN-Index vorhanden; die Indizes aus 0003 sind unangetastet.
     - Bestehende Tests grün.
+  - Ergebnis: Die Migration enthält kein `DROP`. Beide DBs haben `TeaVersion_current_key` und `TeaVersionTranslation_name_trgm`, die Indizes aus 0003 sind unverändert. `migrate diff` ist leer, `migrate dev` meldet „Already in sync“. 207 Tests grün. `nameKey` ist `TEXT` (Lehre aus 00-chore/04).
 
 - [ ] 4. Typen, Regeln und Schemas für Tees
   - Dateien: `shared/types/tea.ts`, `shared/utils/tea.ts` (`diffTeaSnapshots`, Rest-Berechnung), `shared/schemas/tea.ts`, `app/composables/useFormErrors.ts` (Listenfehler `duplicateIngredient`, `percentSum`), `test/unit/tea.test.ts`
