@@ -10,10 +10,11 @@ Reihenfolge:
 - Zum Abschluss jeder Aufgabe laufen `npm run lint`, `npm run typecheck` und `npm test` grün.
 - Browserprüfungen mit Testdaten unter der Kennung `pw04`, danach wieder aus der Dev-DB löschen.
 
-- [ ] 1. Gemeinsame Katalog-Bausteine herauslösen (Server und shared)
+- [x] 1. Gemeinsame Katalog-Bausteine herauslösen (Server und shared)
   - Dateien: `shared/utils/catalog.ts`, `shared/utils/ingredient.ts`, `shared/schemas/catalog.ts`, `shared/schemas/ingredient.ts`, `server/utils/catalog.ts` (`escapeLike`, `getUuidParam`, `assertCatalogRateLimit`, `lockName`), `server/utils/ingredients.ts`, Zutaten-Routen (Rate-Limit über den Helfer)
   - Erfüllt: Grundlage für AK-1.2, AK-2.4, AK-3.4, AK-10.1
   - Prüfung: Keine Verhaltensänderung. Alle bisherigen Unit- und API-Tests (207) bleiben unverändert grün; die bisherigen Exporte (`normalizeName`, `CONTENT_LOCALES`, `ingredientTextSchema` …) bleiben erhalten.
+  - Ergebnis: 207 Tests grün, Lint und Typecheck grün. Abweichung: Gemeinsame Typen liegen in `shared/types/catalog.ts` (`CatalogText`, `CatalogFacts`, `RevisionEntry`, `SnapshotChange` …), `IngredientText` bleibt als Alias. Die Grenzwerte heißen jetzt `CATALOG_NAME_MAX` usw., weil Re-Exporte aus `shared/utils/` von Nuxts Auto-Import doppelt gemeldet würden. Deshalb änderten sich in `test/unit/ingredient.test.ts` nur die Import-Zeilen, die Tests selbst nicht. Die Schemas aus `#shared/schemas/ingredient` bleiben erhalten.
 
 - [ ] 2. UI-Bausteine aus IngredientForm herauslösen
   - Dateien: `app/components/catalog/TranslationFields.vue`, `app/components/catalog/BrewFields.vue`, `app/components/ingredient/IngredientForm.vue`

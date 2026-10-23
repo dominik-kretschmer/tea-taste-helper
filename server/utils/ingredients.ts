@@ -1,13 +1,10 @@
 import type { H3Event } from 'h3'
-import { z } from 'zod'
 import { Prisma } from '../generated/prisma/client'
 import type { IngredientVersion, IngredientVersionTranslation } from '../generated/prisma/client'
 
 // Einzige Stelle für Abfragen auf Zutaten. Inhalte stehen in Versionen; „aktuell“ ist immer die eine
 // Version mit isCurrent = true. Jede Abfrage auf Inhalte muss über CURRENT bzw. den Join in den
 // SQL-Abfragen gehen, sonst tauchen Namen alter Versionen auf.
-
-type Db = Prisma.TransactionClient
 
 export const CURRENT = { isCurrent: true } as const satisfies Prisma.IngredientVersionWhereInput
 
@@ -26,17 +23,10 @@ export type LoadedVersion = IngredientVersion & {
 
 /** Zutat-ID aus dem Routenparameter `id`; ungültige IDs gelten als nicht gefunden (AK-1.5). */
 export function getIngredientIdParam(event: H3Event): string {
-  const parsed = z.uuid().safeParse(getRouterParam(event, 'id'))
-  if (!parsed.success) throw notFound()
-  return parsed.data
+  return getUuidParam(event, notFound)
 }
 
 export const notFound = () => new AppError(404, 'NOT_FOUND', 'Ingredient not found')
-
-/** Maskiert `%`, `_` und `\` für ILIKE (Standard-Escape ist der Backslash). */
-export function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, char => `\\${char}`)
-}
 
 export function toSnapshot(sourceLocale: string, version: LoadedVersion): IngredientSnapshot {
   const translations: IngredientSnapshot['translations'] = {}
@@ -103,7 +93,7 @@ export async function loadDetail(db: Db, id: string): Promise<IngredientDetail> 
  * CONTENT_LOCALES-Reihenfolge aufrufen, damit sich Sperren nicht über Kreuz blockieren.
  */
 export async function assertNameAvailable(db: Db, locale: ContentLocale, nameKey: string, ignoreIngredientId?: string): Promise<void> {
-  await db.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtext(${`ingredient-name:${locale}:${nameKey}`}))`
+  await lockName(db, `ingredient-name:${locale}:${nameKey}`)
   const existing = await db.ingredientVersionTranslation.findFirst({
     where: {
       locale,

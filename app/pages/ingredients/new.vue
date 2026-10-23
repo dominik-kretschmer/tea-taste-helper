@@ -20,7 +20,7 @@ let debounce: ReturnType<typeof setTimeout> | undefined
 watch(() => [form.value.translations[form.value.locale].name, form.value.locale] as const, ([name]) => {
   clearTimeout(debounce)
   const trimmed = name.trim()
-  if (trimmed.length < INGREDIENT_NAME_MIN) {
+  if (trimmed.length < CATALOG_NAME_MIN) {
     similar.value = []
     return
   }

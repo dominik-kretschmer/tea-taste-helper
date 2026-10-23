@@ -3,8 +3,9 @@ import { Caffeine } from '../../server/generated/prisma/enums'
 import { compareQuerySchema, createIngredientSchema, ingredientListQuerySchema, updateIngredientSchema } from '../../shared/schemas/ingredient'
 import type { IngredientSnapshot } from '../../shared/types/ingredient'
 import { formatDuration, parseDuration } from '../../app/utils/format'
-import { escapeLike } from '../../server/utils/ingredients'
-import { CAFFEINE_VALUES, diffSnapshots, normalizeName, pickTranslation } from '../../shared/utils/ingredient'
+import { escapeLike } from '../../server/utils/catalog'
+import { CAFFEINE_VALUES, normalizeName, pickTranslation } from '../../shared/utils/catalog'
+import { diffSnapshots } from '../../shared/utils/ingredient'
 
 const base = { locale: 'de', name: 'Pfefferminze' } as const
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { mdiCoffeeOffOutline, mdiCoffeeOutline, mdiHelpCircleOutline, mdiPlus } from '@mdi/js'
-import { BREW_SECONDS_MAX, BREW_SECONDS_MIN, INGREDIENT_DESCRIPTION_MAX, INGREDIENT_NAME_MAX, INGREDIENT_NOTE_MAX } from '#shared/utils/ingredient'
+import { BREW_SECONDS_MAX, BREW_SECONDS_MIN, CATALOG_DESCRIPTION_MAX, CATALOG_NAME_MAX, CATALOG_NOTE_MAX } from '#shared/utils/catalog'
 
 // Felder für Anlegen und Bearbeiten. Beim Anlegen wird eine Sprache gewählt; beim Bearbeiten gibt es
 // einen Tab pro Sprache (Originalsprache markiert, fehlende Übersetzungen mit „+“).
@@ -73,14 +73,14 @@ const brewTimeHint = `${formatDuration(BREW_SECONDS_MIN)} – ${formatDuration(B
       <v-text-field
         v-model="state.translations[code].name"
         :label="t('ingredients.fields.name')"
-        :counter="INGREDIENT_NAME_MAX"
+        :counter="CATALOG_NAME_MAX"
         :error-messages="textError(code, 'name')"
       />
       <slot v-if="code === state.locale" name="after-name" :locale="code" />
       <v-textarea
         v-model="state.translations[code].description"
         :label="t('ingredients.fields.description')"
-        :counter="INGREDIENT_DESCRIPTION_MAX"
+        :counter="CATALOG_DESCRIPTION_MAX"
         :error-messages="textError(code, 'description')"
         auto-grow
         rows="3"
@@ -133,7 +133,7 @@ const brewTimeHint = `${formatDuration(BREW_SECONDS_MIN)} – ${formatDuration(B
       :label="t('ingredients.fields.note')"
       :hint="t('ingredients.fields.noteHint')"
       persistent-hint
-      :counter="INGREDIENT_NOTE_MAX"
+      :counter="CATALOG_NOTE_MAX"
       :error-messages="fieldErrors.note"
       class="mt-4"
     />

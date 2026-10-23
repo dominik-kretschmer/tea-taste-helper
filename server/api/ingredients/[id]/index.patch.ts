@@ -1,11 +1,9 @@
 import { updateIngredientSchema } from '#shared/schemas/ingredient'
 
-const TEN_MINUTES = 10 * 60 * 1000
-
 export default defineEventHandler(async (event) => {
   const user = requireUser(event)
   const id = getIngredientIdParam(event)
-  assertRateLimit(event, consume(`catalog:user:${user.id}`, 30, TEN_MINUTES))
+  assertCatalogRateLimit(event, user)
   const input = await readValidatedBody(event, updateIngredientSchema.parse)
 
   const result = await usePrisma().$transaction(async (tx) => {
