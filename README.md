@@ -50,6 +50,17 @@ docker compose down && docker volume rm tea-taste-helper_postgres_data && docker
 | `npm run db:reset` | Datenbank zurücksetzen und Migrationen neu einspielen |
 | `npm run db:studio` | Prisma Studio |
 
+## Gebauten Server starten
+
+```bash
+npm run build
+node --env-file=.env .output/server/index.mjs
+```
+
+- Ohne `NODE_ENV` läuft der gebaute Server als **Production**: Session-Cookie `__Host-session` mit `Secure`, Logs als JSON (eine Zeile pro Eintrag), `NUXT_CSURF_ENCRYPT_SECRET` ist Pflicht. Nur `npm run dev` ist Development.
+- `Secure`-Cookies funktionieren auch auf `http://localhost` (Browser behandeln `localhost` als sicheren Kontext), sonst nur über HTTPS.
+- `NODE_ENV=development` nur zum Debuggen: Der Server warnt dann beim Start, setzt unsichere Cookies und braucht `pino-pretty` (Dev-Abhängigkeit).
+
 ## Konfiguration
 
 Alle Variablen stehen in [`.env.example`](.env.example). Der Server prüft sie beim Start und bricht mit dem Namen der fehlerhaften Variable ab.
@@ -123,7 +134,7 @@ Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CRED
 
 ## Sicherheit
 
-- **Sessions** liegen in der Datenbank (nur der SHA-256-Hash des Tokens) im Cookie `session` bzw. in Production `__Host-session`.
+- **Sessions** liegen in der Datenbank (nur der SHA-256-Hash des Tokens). Das Cookie heißt unter `npm run dev` `session`, im gebauten Server `__Host-session` (mit `Secure`).
 - **CSRF:** Schreibende Anfragen (`POST`, `PUT`, `PATCH`, `DELETE`) an `/api` brauchen den Header `csrf-token`. Das Token steht als `<meta name="csrf-token">` im HTML und gehört zum Cookie `csrf`. In der App erledigt das `$api` (`useNuxtApp().$api`).
 - **Security-Header** inklusive CSP mit Nonce setzt `nuxt-security`.
 - **Rate-Limits:** Login 10 pro IP bzw. 5 Fehlversuche pro E-Mail in 15 Minuten, Registrierung 5 pro IP und Stunde.

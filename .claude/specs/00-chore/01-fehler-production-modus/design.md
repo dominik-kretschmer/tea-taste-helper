@@ -1,6 +1,6 @@
 # Design: 01 – Gebauter Server läuft ohne NODE_ENV als „development“
 
-> Phase 2 zu [requirements.md](requirements.md). Status: **Entwurf – wartet auf Freigabe**
+> Phase 2 zu [requirements.md](requirements.md). Status: **freigegeben (2026-10-23)**
 
 ## Überblick
 

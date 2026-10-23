@@ -32,10 +32,29 @@ describe('parseEnv', () => {
   })
 
   it('setzt Standardwerte für optionale Variablen', () => {
-    const env = parseEnv({ DATABASE_URL: valid.DATABASE_URL, OLLAMA_URL: '' })
+    const env = parseEnv({ DATABASE_URL: valid.DATABASE_URL, OLLAMA_URL: '' }, { dev: true })
     expect(env.OLLAMA_URL).toBe('http://localhost:11434')
     expect(env.LOG_LEVEL).toBe('info')
     expect(env.NODE_ENV).toBe('development')
+  })
+
+  describe('NODE_ENV-Standard (00-chore/01)', () => {
+    const minimal = { DATABASE_URL: valid.DATABASE_URL }
+
+    it('ist im gebauten Server production und verlangt dann den CSRF-Schlüssel', () => {
+      expect(() => parseEnv(minimal)).toThrow(/NUXT_CSURF_ENCRYPT_SECRET/)
+      expect(() => parseEnv({ ...minimal, NODE_ENV: '' })).toThrow(/NUXT_CSURF_ENCRYPT_SECRET/)
+      expect(parseEnv({ ...minimal, NUXT_CSURF_ENCRYPT_SECRET: 'a'.repeat(32) }).NODE_ENV).toBe('production')
+    })
+
+    it('ist unter nuxt dev development, ohne CSRF-Pflicht', () => {
+      expect(parseEnv(minimal, { dev: true }).NODE_ENV).toBe('development')
+    })
+
+    it('übernimmt einen ausdrücklich gesetzten Wert', () => {
+      expect(parseEnv({ ...minimal, NODE_ENV: 'development' }).NODE_ENV).toBe('development')
+      expect(parseEnv({ ...minimal, NODE_ENV: 'test' }).NODE_ENV).toBe('test')
+    })
   })
 
   it.each([
@@ -52,7 +71,7 @@ describe('parseEnv', () => {
 
   it('listet alle fehlerhaften Variablen auf einmal', () => {
     try {
-      parseEnv({ LOG_LEVEL: 'foo', OLLAMA_URL: 'kein-url' })
+      parseEnv({ LOG_LEVEL: 'foo', OLLAMA_URL: 'kein-url' }, { dev: true })
       expect.unreachable()
     }
     catch (error) {

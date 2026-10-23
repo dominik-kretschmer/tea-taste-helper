@@ -352,7 +352,7 @@ NUXT_CSURF_ENCRYPT_SECRET=
 - `test/setup/global-api.ts`: Vor jedem Lauf werden die Tabellen in `tea_test` geleert (`TRUNCATE ... CASCADE`).
 - Für Session-Ablauf und Rate-Limit-Fenster setzen die Tests Zeitstempel direkt in der Test-DB bzw. nutzen Fake-Timer, statt zu warten.
 - **Ergänzt in Aufgabe 8:**
-  - Die API-Tests laufen gegen einen Production-Build. Nitro setzt `NODE_ENV` dort beim Build fest auf `production`. Die Tests prüfen deshalb das Cookie `__Host-session` mit `Secure`. In der CI ist `NUXT_CSURF_ENCRYPT_SECRET` gesetzt.
+  - Die API-Tests laufen gegen einen Production-Build. ~~Nitro setzt `NODE_ENV` dort beim Build fest auf `production`.~~ *Korrektur (2026-10-23, `00-chore/01`):* Das galt nur für Code, den der Build ersetzt (`nuxt.config.ts`), nicht für `useEnv()` zur Laufzeit; `@nuxt/test-utils` setzte `NODE_ENV=production` selbst. Seit 00-chore/01 ist ein gebauter Server ohne `NODE_ENV` immer Production. Die Tests prüfen deshalb das Cookie `__Host-session` mit `Secure`. In der CI ist `NUXT_CSURF_ENCRYPT_SECRET` gesetzt.
   - Der Testserver läuft mit `TRUST_PROXY=true`. Jeder Test-Client schickt eine eigene `X-Forwarded-For`-IP, damit sich die IP-Limits nicht über Tests hinweg summieren.
   - Das `api`-Projekt läuft mit höchstens 2 Workern, weil mehr parallele Builds 8 GB RAM sprengen.
   - Der Login beendet eine bereits bestehende Session des Browsers, bevor er eine neue anlegt.

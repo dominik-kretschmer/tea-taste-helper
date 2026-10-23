@@ -4,11 +4,13 @@ import { z } from 'zod'
 const optional = <T extends z.ZodType>(schema: T) =>
   z.preprocess(value => (value === '' ? undefined : value), schema)
 
-export const envSchema = z.object({
+// Der Standard für NODE_ENV hängt am Build-Typ: nur `nuxt dev` ist development, ein gebauter
+// Server ohne NODE_ENV läuft als production (00-chore/01). Ein gesetzter Wert gilt immer.
+const createEnvSchema = (dev: boolean) => z.object({
   DATABASE_URL: optional(z.url({ protocol: /^postgres(ql)?$/ })),
   OLLAMA_URL: optional(z.url().default('http://localhost:11434')),
   LOG_LEVEL: optional(z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')),
-  NODE_ENV: optional(z.enum(['development', 'production', 'test']).default('development')),
+  NODE_ENV: optional(z.enum(['development', 'production', 'test']).default(dev ? 'development' : 'production')),
   // Wird bei Registrierung bzw. Serverstart automatisch Admin (02, AK-4.1/4.2)
   ADMIN_EMAIL: optional(z.email().transform(email => email.toLowerCase()).optional()),
   // X-Forwarded-For nur hinter einem vertrauenswürdigen Reverse Proxy auswerten
@@ -22,7 +24,12 @@ export const envSchema = z.object({
   }
 })
 
-export type Env = z.infer<typeof envSchema>
+export type Env = z.infer<ReturnType<typeof createEnvSchema>>
+
+export interface ParseEnvOptions {
+  /** true nur unter `nuxt dev`; bestimmt den Standard für NODE_ENV */
+  dev?: boolean
+}
 
 export class EnvError extends Error {
   constructor(public readonly issues: string[]) {
@@ -31,9 +38,12 @@ export class EnvError extends Error {
   }
 }
 
-/** Prüft die Umgebungsvariablen; wirft einen EnvError, der jede fehlerhafte Variable beim Namen nennt. */
-export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = envSchema.safeParse(source)
+/**
+ * Prüft die Umgebungsvariablen; wirft einen EnvError, der jede fehlerhafte Variable beim Namen nennt.
+ * Ohne `dev` gilt der sichere Standard (production).
+ */
+export function parseEnv(source: Record<string, string | undefined>, { dev = false }: ParseEnvOptions = {}): Env {
+  const result = createEnvSchema(dev).safeParse(source)
   if (!result.success) {
     throw new EnvError(result.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`))
   }
@@ -44,6 +54,6 @@ let cached: Env | undefined
 
 /** Geprüfte Umgebung des laufenden Prozesses, wird nur einmal geparst. */
 export function useEnv(): Env {
-  cached ??= parseEnv(process.env)
+  cached ??= parseEnv(process.env, { dev: import.meta.dev })
   return cached
 }

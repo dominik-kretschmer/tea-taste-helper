@@ -12,7 +12,7 @@ export const randomIp = () => `10.${randomInt(256)}.${randomInt(256)}.${randomIn
 export const uniqueEmail = (prefix = 'user') => `${prefix}-${randomUUID().slice(0, 8)}@test.local`
 export const PASSWORD = 'richtig-geheim-123'
 
-/** Die API-Tests laufen gegen einen Production-Build (NODE_ENV wird beim Build fest gesetzt). */
+/** Die API-Tests laufen gegen den gebauten Server, der ohne NODE_ENV als production gilt (00-chore/01); @nuxt/test-utils setzt zusätzlich NODE_ENV=production. */
 export const SESSION_COOKIE = '__Host-session'
 
 export interface ApiResponse<T = any> {
