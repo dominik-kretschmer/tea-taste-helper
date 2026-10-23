@@ -117,13 +117,14 @@ Reihenfolge:
     - Keine Änderungsrouten auf `/revisions`.
   - Ergebnis: 3 API-Tests grün (40 in der Datei). Der Vergleich 1 → 4 zeigt Art, Marke, Sichtbarkeit und zwei verschobene Zutaten mit neuem Anteil; 3 → 4 zeigt eine entfernte Zutat, deren Name über `ingredients` mitkommt. Fremd-private Historie und Vergleich → 404 (auch Admin, Gast).
 
-- [ ] 11. Sichtbarkeits-Matrix
+- [x] 11. Sichtbarkeits-Matrix
   - Dateien: `test/api/teas.test.ts`
   - Erfüllt: AK-1.7, AK-3.2, AK-4.4, AK-6.2, AK-10.4
   - Prüfung: Ein Test spielt einen privaten Tee von Nutzer A gegen Gast, Nutzer B, Moderator und Admin über **alle** Routen durch:
     - Detail, PATCH, Publish, DELETE, Revisions und Compare → 404;
     - Liste, Suche, `similar`, Zutatenfilter und `mine` → nicht enthalten.
     - Für A selbst funktioniert alles.
+  - Ergebnis: Grün. Gast bekommt auf Schreibrouten 401 (Anmeldung wird zuerst geprüft), sonst 404; Nutzer, Moderator und Admin bekommen überall 404; Liste, Zutatenfilter, `similar` und „Meine“ enthalten den Tee nicht. Für die Erstellerin funktionieren Detail, Historie, „Meine“, Bearbeiten und Löschen.
 
 - [ ] 12. Sprachpfade, Navigation, Texte
   - Dateien: `nuxt.config.ts` (`i18n.pages`), `app/components/AppNav.vue`, `i18n/locales/*.json`

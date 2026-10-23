@@ -553,6 +553,60 @@ describe('Tee-API', async () => {
     })
   })
 
+  describe('Sichtbarkeits-Matrix (AK-1.7, AK-3.2, AK-4.4, AK-6.2)', () => {
+    it('ein privater Tee existiert für Gast, Nutzer, Moderator und Admin auf keiner Route', async () => {
+      const m = marker()
+      const secretIngredient = await ingredient(`Matrixzutat ${m}`)
+      // eigene Erstellerin, damit Annas Rate-Limit aus den übrigen Tests nicht greift
+      const { client: owner } = await registerUser({ displayName: 'Clara' })
+      const secret = await createAs(owner, { name: `Matrix ${m}`, ingredients: [{ ingredientId: secretIngredient }] })
+
+      const moderator = await registerUser({ displayName: 'Moritz' })
+      expect((await admin.patch(`/api/admin/users/${moderator.user.id}/role`, { role: 'moderator' })).status).toBe(200)
+      const others: [string, TestClient][] = [['Gast', await createClient()], ['Nutzer', ben], ['Moderator', moderator.client], ['Admin', admin]]
+
+      const routes: [string, string, unknown?][] = [
+        ['GET', `/api/teas/${secret.id}`],
+        ['PATCH', `/api/teas/${secret.id}`, { version: 1, brewTempC: 80 }],
+        ['POST', `/api/teas/${secret.id}/publish`, { version: 1 }],
+        ['DELETE', `/api/teas/${secret.id}`],
+        ['GET', `/api/teas/${secret.id}/revisions`],
+        ['GET', `/api/teas/${secret.id}/compare?from=1&to=1`],
+      ]
+      const lists = [
+        `/api/teas?locale=de&q=${m}`,
+        `/api/teas?locale=de&ingredient=${secretIngredient}`,
+        `/api/teas/similar?locale=de&name=${encodeURIComponent(`Matrix ${m}`)}`,
+      ]
+
+      for (const [who, client] of others) {
+        const loggedIn = who !== 'Gast'
+        for (const [method, path, body] of routes) {
+          const response = await client.request(method, path, body)
+          // Schreibrouten verlangen zuerst eine Anmeldung; angemeldet ist der Tee „nicht vorhanden“
+          const expected = method !== 'GET' && !loggedIn ? 401 : 404
+          expect(response.status, `${who}: ${method} ${path}`).toBe(expected)
+        }
+        for (const path of lists) {
+          const response = await client.get(path)
+          expect(response.status, `${who}: ${path}`).toBe(200)
+          expect(response.body.items.map((item: { id: string }) => item.id), `${who}: ${path}`).not.toContain(secret.id)
+        }
+        if (loggedIn) {
+          const mine = await client.get(`/api/teas?locale=de&mine=1&q=${m}`)
+          expect(mine.body.items, `${who}: mine`).toEqual([])
+        }
+      }
+
+      // Für die Erstellerin selbst funktioniert alles
+      expect((await owner.get(`/api/teas/${secret.id}`)).status).toBe(200)
+      expect((await owner.get(`/api/teas/${secret.id}/revisions`)).status).toBe(200)
+      expect((await owner.get(`/api/teas?locale=de&mine=1&q=${m}`)).body.items.map((item: TeaListItem) => item.id)).toEqual([secret.id])
+      expect((await owner.patch(`/api/teas/${secret.id}`, { version: 1, brewTempC: 80 })).status).toBe(200)
+      expect((await owner.request('DELETE', `/api/teas/${secret.id}`)).status).toBe(204)
+    })
+  })
+
   describe('Ähnliche Tees (AK-2.3)', () => {
     it('findet Tippfehler, aber nur öffentliche Tees', async () => {
       const m = marker()
