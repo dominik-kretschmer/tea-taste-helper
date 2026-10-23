@@ -259,3 +259,103 @@ export async function listHiddenEntries(db: Db, query: { type?: CatalogTypeValue
     pageSize: MODERATION_PAGE_SIZE,
   }
 }
+
+const invalidMerge = (message: string) => new AppError(400, 'INVALID_MERGE', message)
+
+/** Beide Einträge sperren (feste Reihenfolge nach ID) und prüfen: vorhanden, verschieden, aktiv (AK-4.1). */
+async function lockMergePair(db: Db, entityType: CatalogTypeValue, sourceId: string, targetId: string): Promise<void> {
+  if (sourceId === targetId) throw invalidMerge('Source and target must differ')
+  const rows = new Map<string, Awaited<ReturnType<typeof lockEntry>>>()
+  for (const id of [sourceId, targetId].sort()) rows.set(id, await lockEntry(db, entityType, id))
+  if (!rows.get(sourceId)) throw entryNotFound()
+  if (!rows.get(targetId)) throw invalidMerge('Target not found')
+  if (![...rows.values()].every(row => row && isEntryActive(row))) throw invalidMerge('Hidden or merged entries cannot be merged')
+}
+
+/** Frühere Quellen zeigen auf das neue Ziel, damit Weiterleitungen keine Ketten bilden. */
+async function markMerged(db: Db, entityType: CatalogTypeValue, sourceId: string, targetId: string, actorId: string): Promise<void> {
+  const mergedAt = new Date()
+  if (entityType === 'ingredient') {
+    await db.ingredient.update({ where: { id: sourceId }, data: { mergedIntoId: targetId, mergedAt } })
+    await db.ingredient.updateMany({ where: { mergedIntoId: sourceId }, data: { mergedIntoId: targetId } })
+  }
+  else {
+    await db.tea.update({ where: { id: sourceId }, data: { mergedIntoId: targetId, mergedAt } })
+    await db.tea.updateMany({ where: { mergedIntoId: sourceId }, data: { mergedIntoId: targetId } })
+  }
+  await recordCatalogEvent(db, { entityType, entityId: sourceId, kind: 'merged', actorId, targetId })
+  await closeReports(db, { entityType, entityId: sourceId, actorId, status: 'resolved' })
+}
+
+/**
+ * Führt die Zutat `sourceId` in `targetId` zusammen (AK-4.2–4.7), in der Transaktion des Aufrufers:
+ * Jeder Tee, dessen aktuelle Version die Quelle enthält, bekommt eine neue Version mit dem Ziel.
+ * Die Abfrage läuft wiederholt, bis kein Tee mehr übrig ist: Ein gleichzeitiges Speichern, das vor
+ * dem Sperren committet wurde, liefert eine neue Version, die erst die nächste Abfrage sieht.
+ */
+export async function mergeIngredients(db: Db, input: { sourceId: string, targetId: string, actorId: string }): Promise<{ teasChanged: number, privateTeasChanged: number }> {
+  const { sourceId, targetId } = input
+  await lockMergePair(db, 'ingredient', sourceId, targetId)
+
+  let teasChanged = 0
+  let privateTeasChanged = 0
+  for (let round = 0; round < 10; round++) {
+    const versions = await db.$queryRaw<{ teaId: string, version: number }[]>`
+      SELECT v."teaId", v.version FROM "TeaVersion" v
+      JOIN "TeaVersionIngredient" vi ON vi."versionId" = v.id AND vi."ingredientId" = ${sourceId}::uuid
+      WHERE v."isCurrent"
+      ORDER BY v."teaId"
+      FOR UPDATE OF v`
+    if (!versions.length) break
+    for (const locked of versions) {
+      const tea = await db.tea.findUniqueOrThrow({ where: { id: locked.teaId } })
+      const version = await loadTeaVersion(db, locked.teaId, locked.version)
+      if (!version) continue
+      const before = toTeaSnapshot(tea, version)
+      const after = { ...before, ingredients: combineIngredients(before.ingredients, sourceId, targetId) }
+      await saveTeaVersion(db, {
+        teaId: tea.id,
+        expectedVersion: locked.version,
+        before,
+        after,
+        authorId: input.actorId,
+        note: null,
+        mergedIngredientId: sourceId,
+      })
+      teasChanged++
+      if (before.visibility === 'private') privateTeasChanged++
+    }
+  }
+
+  await markMerged(db, 'ingredient', sourceId, targetId, input.actorId)
+  return { teasChanged, privateTeasChanged }
+}
+
+/** Führt den öffentlichen Tee `sourceId` in `targetId` zusammen (AK-4.2); Verweise auf Tees gibt es noch nicht. */
+export async function mergeTeas(db: Db, input: { sourceId: string, targetId: string, actorId: string }): Promise<void> {
+  await lockMergePair(db, 'tea', input.sourceId, input.targetId)
+  await markMerged(db, 'tea', input.sourceId, input.targetId, input.actorId)
+}
+
+/** Vorschau: beide Einträge, betroffene Tees, fehlende Übersetzungen im Ziel (AK-4.1, AK-4.5). */
+export async function previewMerge(db: Db, entityType: CatalogTypeValue, sourceId: string, targetId: string, viewer: PublicUser): Promise<MergePreview> {
+  if (sourceId === targetId) throw invalidMerge('Source and target must differ')
+  const load = async (id: string) => {
+    if (entityType === 'ingredient') {
+      const current = await loadCurrent(db, id)
+      return current ? toDetail(id, current.ingredient.sourceLocale, current.version) : null
+    }
+    const current = await loadCurrentTea(db, id, null)
+    return current ? toTeaDetail(db, current.tea, current.version, viewer) : null
+  }
+  const [source, target] = await Promise.all([load(sourceId), load(targetId)])
+  if (!source) throw entryNotFound()
+  if (!target) throw invalidMerge('Target not found or not active')
+  const missingTranslations = CONTENT_LOCALES.filter(locale => source.translations[locale] && !target.translations[locale])
+  return {
+    source,
+    target,
+    missingTranslations,
+    ...(entityType === 'ingredient' ? { teas: await countTeasUsing(db, sourceId) } : {}),
+  }
+}

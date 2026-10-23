@@ -110,7 +110,7 @@ Reihenfolge:
     - `countTeasUsing` zählt aktuelle Versionen aller nicht zusammengeführten Tees, also auch ausgeblendete: Sie könnten wiederhergestellt werden.
     - Die Historie liefert `RevisionPage` mit `events`.
 
-- [ ] 9. API: Zusammenführen
+- [x] 9. API: Zusammenführen
   - Dateien: `server/api/admin/[type]/[id]/merge.{get,post}.ts`, `server/utils/moderation.ts` (`mergeIngredients`, `mergeTeas`), Tee-Vergleich (`mergedInto` je Zutat), Tests in `moderation.test.ts`
   - Erfüllt: AK-0.2 (Routen), AK-3.4 (Zusammenführen), AK-4.1–AK-4.7, AK-8.1 (`*_MERGED`)
   - Prüfung (API-Tests):
@@ -124,6 +124,10 @@ Reihenfolge:
     - Gleichzeitiges PATCH eines betroffenen Tees → 409 statt Verlust.
     - Tee-Zusammenführung.
     - Gast 401, Nutzer 403.
+  - Ergebnis: 7 neue API-Tests (`moderation.test.ts` jetzt 31), gesamt 402 grün. Ungültige Paare → 400 `INVALID_MERGE`, unbekannte Quelle → 404.
+    - Abweichung vom Design (AK-4.7): Unter READ COMMITTED sieht ein `SELECT … FOR UPDATE` keine Teeversion, die ein gleichzeitiges PATCH nach Beginn der Abfrage committet hat. `mergeIngredients` wiederholt deshalb die Abfrage, bis kein aktueller Tee die Quelle mehr enthält (höchstens 10 Runden).
+    - Der Test mit gleichzeitigem PATCH läuft über 3 Runden: Die Zusammenführung greift immer; die Änderung bleibt erhalten (200) oder wird mit 409 abgelehnt, nie still verloren.
+    - Die Transaktion beim Zusammenführen von Zutaten hat 60 s Timeout statt der 5 s von Prisma.
 
 - [ ] 10. API: Sperren, Login, Nutzerliste
   - Dateien: `server/api/admin/users/[id]/block.{post,delete}.ts`, `server/api/admin/moderation/users.get.ts`, `server/utils/users.ts` (`assertCanBlock`, `toModerationUser`), `server/utils/session.ts`, `server/api/auth/login.post.ts`, `test/api/block.test.ts`

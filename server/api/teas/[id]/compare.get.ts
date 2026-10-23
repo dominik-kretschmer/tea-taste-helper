@@ -14,8 +14,17 @@ export default defineEventHandler(async (event) => {
 
   // Namen aller Zutaten beider Stände, damit auch entfernte Zutaten lesbar sind
   const ids = [...new Set([...result.from.snapshot.ingredients, ...result.to.snapshot.ingredients].map(item => item.ingredientId))]
-  const views = await loadIngredientViews(prisma, ids)
-  const ingredients = Object.fromEntries([...views].map(([key, view]) => [key, { sourceLocale: view.sourceLocale, translations: view.translations }]))
+  const [views, merged] = await Promise.all([
+    loadIngredientViews(prisma, ids),
+    // Zusammengeführte Zutaten verlinken auf ihr Ziel (05 AK-4.4)
+    prisma.ingredient.findMany({ where: { id: { in: ids }, mergedIntoId: { not: null } }, select: { id: true, mergedIntoId: true } }),
+  ])
+  const mergedInto = new Map(merged.map(row => [row.id, row.mergedIntoId]))
+  const ingredients = Object.fromEntries([...views].map(([key, view]) => [key, {
+    sourceLocale: view.sourceLocale,
+    translations: view.translations,
+    ...(mergedInto.has(key) ? { mergedInto: mergedInto.get(key) } : {}),
+  }]))
 
   return { ...result, changes: diffTeaSnapshots(result.from.snapshot, result.to.snapshot), ingredients }
 })

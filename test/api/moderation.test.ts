@@ -403,4 +403,135 @@ describe('Moderation', async () => {
       }
     })
   })
+
+  describe('Zusammenführen (Aufgabe 9)', () => {
+    const mergeVia = (client: TestClient, type: 'ingredients' | 'teas', source: string, targetId: string) =>
+      client.post(`/api/admin/${type}/${source}/merge`, { targetId })
+    const ingredientsOf = async (teaId: string, client: TestClient = anna) =>
+      ((await client.get(`/api/teas/${teaId}`)).body.tea as TeaDetail).ingredients.map(item => [item.ingredientId, item.percent])
+
+    it('zeigt eine Vorschau mit betroffenen Tees und fehlenden Übersetzungen (AK-4.1, AK-4.5)', async () => {
+      const { client: ben } = await registerUser({ displayName: 'Ben' })
+      const source = await insertIngredient(`Vorschau ${marker()}`)
+      const target = await insertIngredient(`Vorschau Ziel ${marker()}`)
+      await db(`INSERT INTO "IngredientVersionTranslation" ("versionId", locale, name, "nameKey")
+                SELECT id, 'en', 'Preview', 'preview' FROM "IngredientVersion" WHERE "ingredientId" = $1 AND "isCurrent"`, [source])
+      await createTea(ben, { name: `Vorschautee ${marker()}`, ingredients: [{ ingredientId: source }] })
+      await createTea(ben, { name: `Vorschau privat ${marker()}`, visibility: 'private', ingredients: [{ ingredientId: source }] })
+
+      const preview = await mod.get(`/api/admin/ingredients/${source}/merge?target=${target}`)
+      expect(preview.status, preview.text).toBe(200)
+      expect(preview.body).toMatchObject({ source: { id: source }, target: { id: target }, teas: { public: 1, private: 1 }, missingTranslations: ['en'] })
+      expect(JSON.stringify(preview.body)).not.toContain('Vorschau privat')
+
+      expect((await mod.get(`/api/admin/ingredients/${source}/merge?target=${source}`)).status).toBe(400)
+      expect((await mod.get(`/api/admin/ingredients/${source}/merge?target=${randomUUID()}`)).status).toBe(400)
+      expect((await mod.get(`/api/admin/ingredients/${randomUUID()}/merge?target=${target}`)).status).toBe(404)
+    })
+
+    it('stellt alle Tees auf das Ziel um und leitet die Quelle weiter (AK-4.2–4.4)', async () => {
+      const { client: ben } = await registerUser({ displayName: 'Ben' })
+      const name = `Pfeferminze ${marker()}`
+      const source = await insertIngredient(name)
+      const target = await insertIngredient(`Pfefferminze ${marker()}`)
+      const other = await insertIngredient(`Zitrone ${marker()}`)
+      const onlySource = await createTea(ben, { name: `Nur Quelle ${marker()}`, ingredients: [{ ingredientId: other, percent: 50 }, { ingredientId: source, percent: 30 }] })
+      const both = await createTea(ben, { name: `Beide ${marker()}`, ingredients: [{ ingredientId: source, percent: 20 }, { ingredientId: other }, { ingredientId: target, percent: 30 }] })
+      const privateTea = await createTea(ben, { name: `Privat ${marker()}`, visibility: 'private', ingredients: [{ ingredientId: source }] })
+      expect((await anna.post('/api/reports', { entityType: 'ingredient', entityId: source, reason: 'duplicate', duplicateOfId: target })).status).toBe(201)
+
+      const response = await mergeVia(mod, 'ingredients', source, target)
+      expect(response.status, response.text).toBe(200)
+      expect(response.body).toEqual({ targetId: target, teasChanged: 3 })
+
+      expect(await ingredientsOf(onlySource.id)).toEqual([[other, 50], [target, 30]])
+      expect(await ingredientsOf(both.id)).toEqual([[other, null], [target, 50]])
+      expect(await ingredientsOf(privateTea.id, ben)).toEqual([[target, null]])
+
+      // Neue Version vom Moderator, gekennzeichnet; die alte bleibt unverändert
+      const revisions = (await guest.get(`/api/teas/${onlySource.id}/revisions`)).body as RevisionPage
+      expect(revisions.items[0]).toMatchObject({ version: 2, author: { displayName: 'Moni' }, note: null, mergedIngredient: { id: source, mergedInto: target } })
+      const compare = await guest.get(`/api/teas/${onlySource.id}/compare?from=1&to=2`)
+      expect(compare.body.from.snapshot.ingredients).toEqual([{ ingredientId: other, percent: 50 }, { ingredientId: source, percent: 30 }])
+      expect(compare.body.ingredients[source]).toMatchObject({ mergedInto: target })
+
+      // Quelle: 404 mit Ziel, nicht mehr in Liste/Suche/Ähnlichkeit, Historie lesbar
+      const detail = await guest.get(`/api/ingredients/${source}`)
+      expect(detail.status).toBe(404)
+      expect(detail.body.error.details).toEqual({ mergedInto: target })
+      expect((await guest.get(`/api/ingredients?locale=de&q=${encodeURIComponent(name)}`)).body.total).toBe(0)
+      expect((await guest.get(`/api/ingredients/similar?locale=de&name=${encodeURIComponent(name)}`)).body.items.map((item: { id: string }) => item.id)).not.toContain(source)
+      const history = (await guest.get(`/api/ingredients/${source}/revisions`)).body as RevisionPage
+      expect(history.events).toEqual([expect.objectContaining({ kind: 'merged', mergedInto: target })])
+
+      const [reportRow] = await db(`SELECT status FROM "Report" WHERE "entityId" = $1`, [source])
+      expect(reportRow!.status).toBe('resolved')
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'INGREDIENT_MERGED' AND details->>'sourceId' = $1`, [source])
+      expect(entry.details).toEqual({ sourceId: source, targetId: target, teasChanged: 3, privateTeasChanged: 1 })
+      const [{ count }] = await db(`SELECT count(*)::int AS count FROM "AuditLog" WHERE event = 'TEA_UPDATED' AND details->>'teaId' = ANY($1)`, [[onlySource.id, both.id, privateTea.id]])
+      expect(count).toBe(0)
+    })
+
+    it('biegt frühere Quellen auf das neue Ziel um (AK-4.2)', async () => {
+      const [a, b, c] = await Promise.all(['A', 'B', 'C'].map(n => insertIngredient(`Kette ${n} ${marker()}`)))
+      expect((await mergeVia(mod, 'ingredients', a, b)).status).toBe(200)
+      expect((await mergeVia(mod, 'ingredients', b, c)).status).toBe(200)
+      expect((await guest.get(`/api/ingredients/${a}`)).body.error.details).toEqual({ mergedInto: c })
+    })
+
+    it('lehnt ungültige Paare ab (AK-4.1, AK-4.6)', async () => {
+      const [a, b, hidden] = await Promise.all([1, 2, 3].map(n => insertIngredient(`Paar ${n} ${marker()}`)))
+      await hide('Ingredient', hidden)
+      expect((await mergeVia(mod, 'ingredients', a, a)).status).toBe(400)
+      expect((await mergeVia(mod, 'ingredients', a, hidden)).status).toBe(400)
+      expect((await mergeVia(mod, 'ingredients', hidden, a)).status).toBe(400)
+      expect((await mergeVia(mod, 'ingredients', a, b)).status).toBe(200)
+      // Endgültig: eine zusammengeführte Quelle lässt sich nicht erneut zusammenführen
+      expect((await mergeVia(mod, 'ingredients', a, b)).status).toBe(400)
+      expect((await mergeVia(mod, 'ingredients', b, a)).status).toBe(400)
+    })
+
+    it('verliert keine gleichzeitige Tee-Änderung (AK-4.7)', async () => {
+      for (let round = 0; round < 3; round++) {
+        const { client: ben } = await registerUser({ displayName: 'Ben' })
+        const [source, target] = await Promise.all([1, 2].map(n => insertIngredient(`Parallel ${round} ${n} ${marker()}`)))
+        const tea = await createTea(ben, { name: `Paralleltee ${round} ${marker()}`, ingredients: [{ ingredientId: source }] })
+        const [merged, edited] = await Promise.all([
+          mergeVia(mod, 'ingredients', source, target),
+          ben.patch(`/api/teas/${tea.id}`, { version: 1, caffeine: 'yes' }),
+        ])
+        expect(merged.status, merged.text).toBe(200)
+        expect([200, 409]).toContain(edited.status)
+        const detail = (await ben.get(`/api/teas/${tea.id}`)).body.tea as TeaDetail
+        // Die Zusammenführung greift immer; die Änderung bleibt erhalten oder wurde sichtbar abgelehnt
+        expect(detail.ingredients.map(item => item.ingredientId)).toEqual([target])
+        expect(detail.caffeine).toBe(edited.status === 200 ? 'yes' : 'unknown')
+      }
+    })
+
+    it('führt öffentliche Tees zusammen (AK-4.2)', async () => {
+      const ingredientId = await insertIngredient(`Teepaar ${marker()}`)
+      const source = await createTea(anna, { name: `Earl Grey ${marker()}`, ingredients: [{ ingredientId }] })
+      const target = await createTea(anna, { name: `Earl Gray ${marker()}`, ingredients: [{ ingredientId }] })
+      const privateTea = await createTea(anna, { name: `Earl privat ${marker()}`, visibility: 'private', ingredients: [{ ingredientId }] })
+      expect((await mergeVia(mod, 'teas', privateTea.id, target.id)).status).toBe(404)
+      expect((await mergeVia(mod, 'teas', source.id, privateTea.id)).status).toBe(400)
+
+      const response = await mergeVia(mod, 'teas', source.id, target.id)
+      expect(response.status, response.text).toBe(200)
+      expect((await guest.get(`/api/teas/${source.id}`)).body.error.details).toEqual({ mergedInto: target.id })
+      expect((await guest.get(`/api/teas?locale=de&ingredient=${ingredientId}`)).body.items.map((item: { id: string }) => item.id)).toEqual([target.id])
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'TEA_MERGED' AND details->>'sourceId' = $1`, [source.id])
+      expect(entry.details).toEqual({ sourceId: source.id, targetId: target.id })
+    })
+
+    it('schützt die Routen (AK-0.2)', async () => {
+      const [a, b] = await Promise.all([1, 2].map(n => insertIngredient(`Schutz ${n} ${marker()}`)))
+      for (const [method, path] of [['GET', `/api/admin/ingredients/${a}/merge?target=${b}`], ['POST', `/api/admin/ingredients/${a}/merge`]] as const) {
+        const body = method === 'POST' ? { targetId: b } : undefined
+        expect((await guest.request(method, path, body)).status, path).toBe(401)
+        expect((await anna.request(method, path, body)).status, path).toBe(403)
+      }
+    })
+  })
 })
