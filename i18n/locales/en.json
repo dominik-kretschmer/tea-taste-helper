@@ -63,7 +63,9 @@
     "invalid": "Invalid input",
     "min": "At least {min}",
     "max": "At most {max}",
-    "duration": "Please use min:sec, e.g. 3:30"
+    "duration": "Please use min:sec, e.g. 3:30",
+    "duplicateIngredient": "Each ingredient only once",
+    "percentSum": "The shares add up to more than 100 %"
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email or password is incorrect.",

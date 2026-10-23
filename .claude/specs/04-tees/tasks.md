@@ -32,7 +32,7 @@ Reihenfolge:
     - Bestehende Tests grün.
   - Ergebnis: Die Migration enthält kein `DROP`. Beide DBs haben `TeaVersion_current_key` und `TeaVersionTranslation_name_trgm`, die Indizes aus 0003 sind unverändert. `migrate diff` ist leer, `migrate dev` meldet „Already in sync“. 207 Tests grün. `nameKey` ist `TEXT` (Lehre aus 00-chore/04).
 
-- [ ] 4. Typen, Regeln und Schemas für Tees
+- [x] 4. Typen, Regeln und Schemas für Tees
   - Dateien: `shared/types/tea.ts`, `shared/utils/tea.ts` (`diffTeaSnapshots`, Rest-Berechnung), `shared/schemas/tea.ts`, `app/composables/useFormErrors.ts` (Listenfehler `duplicateIngredient`, `percentSum`), `test/unit/tea.test.ts`
   - Erfüllt: AK-0.1, AK-0.3, AK-2.5 (Regel), AK-4.3 (Regel), AK-6.1 (Regel), AK-10.1
   - Prüfung (Unit-Tests):
@@ -41,6 +41,7 @@ Reihenfolge:
     - `updateTeaSchema` lehnt `visibility` ab.
     - `diffTeaSnapshots`: hinzugefügt, entfernt, verschoben, Anteil, Art, Marke, Sichtbarkeit, keine Änderung.
     - Rest = 100 − Summe.
+  - Ergebnis: 30 Unit-Tests grün (Unit gesamt 146). Listenfehler kommen als Schlüssel (`duplicateIngredient`, `percentSum`) am Pfad `ingredients`; `useFormErrors` übersetzt `custom`-Meldungen über `validation.*` und meldet zu lange Listen als „Höchstens n“. API-Tests unberührt (die Schemas nutzt der Server erst ab Aufgabe 6).
 
 - [ ] 5. Server-Bausteine für Tees
   - Dateien: `server/utils/teas.ts` (`visibleTo`, `loadTea`, Snapshot/Detail, `writeTeaVersion`, `assertTeaNameAvailable`, `listTeas`, `findSimilarTeas`), `server/utils/ingredients.ts` (`loadIngredientViews`)

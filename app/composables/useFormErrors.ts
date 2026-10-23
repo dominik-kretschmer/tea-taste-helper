@@ -20,8 +20,11 @@ export function useFormErrors() {
         if (issue.origin === 'number') return t('validation.min', { min: Number(issue.minimum) })
         return Number(issue.minimum) <= 1 ? t('validation.required') : t('validation.tooShort', { min: Number(issue.minimum) })
       case 'too_big':
-        if (issue.origin === 'number') return t('validation.max', { max: Number(issue.maximum) })
+        if (issue.origin === 'number' || issue.origin === 'array') return t('validation.max', { max: Number(issue.maximum) })
         return t('validation.tooLong', { max: Number(issue.maximum) })
+      case 'custom':
+        // Listenregeln (z.B. Zutaten eines Tees) tragen einen Schlüssel aus validation.* als Meldung
+        return te(`validation.${issue.message}`) ? t(`validation.${issue.message}`) : t('validation.invalid')
       case 'invalid_format':
         return issue.format === 'email' ? t('validation.email') : t('validation.invalid')
       default:

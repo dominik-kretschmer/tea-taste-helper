@@ -63,7 +63,9 @@
     "invalid": "Ungültige Eingabe",
     "min": "Mindestens {min}",
     "max": "Höchstens {max}",
-    "duration": "Bitte als Min:Sek angeben, z.B. 3:30"
+    "duration": "Bitte als Min:Sek angeben, z.B. 3:30",
+    "duplicateIngredient": "Jede Zutat nur einmal",
+    "percentSum": "Die Anteile ergeben zusammen mehr als 100 %"
   },
   "errors": {
     "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
