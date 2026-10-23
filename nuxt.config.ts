@@ -67,6 +67,17 @@ export default defineNuxtConfig({
       redirectOn: 'root',
     },
   },
+  routeRules: {
+    '/**': {
+      headers: {
+        // Chromium schickt das Systemthema mit; Critical-CH wiederholt den allerersten Request
+        // einmal mit dem Hint, damit schon das Server-HTML dunkel sein kann (00-chore/06)
+        'Accept-CH': 'Sec-CH-Prefers-Color-Scheme',
+        'Critical-CH': 'Sec-CH-Prefers-Color-Scheme',
+        'Vary': 'Sec-CH-Prefers-Color-Scheme',
+      },
+    },
+  },
   build: {
     transpile: ['vuetify'],
   },

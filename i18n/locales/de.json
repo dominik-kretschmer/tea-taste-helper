@@ -25,6 +25,12 @@
     "de": "Deutsch",
     "en": "English"
   },
+  "theme": {
+    "label": "Darstellung",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "Wie System"
+  },
   "form": {
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen"

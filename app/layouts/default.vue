@@ -26,6 +26,7 @@ useHead(() => ({
       </v-app-bar-title>
       <template #append>
         <AppNav class="d-none d-sm-flex mr-2" />
+        <ThemeSwitcher />
         <LanguageSwitcher />
         <UserMenu />
       </template>
