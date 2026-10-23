@@ -190,7 +190,7 @@ Reihenfolge:
     - Konsole: nur erwartete 404/409 sowie einmalig Vites „Outdated Optimize Dep“ nach dem Dev-Start.
     - Bausteine: `ModerationEntryActions` (Melden, Anmelde-Hinweis, Menü, Snackbar) und `ModerationMergedFromAlert` halten beide Detailseiten schlank; `app/utils/moderation.ts` liefert API-Segment, Routenname und `mergedTargetOf`.
 
-- [ ] 15. Historie: Zurücksetzen und Ereignisse
+- [x] 15. Historie: Zurücksetzen und Ereignisse
   - Dateien: `app/components/catalog/{RevisionList,RevertDialog}.vue`, Historie-Seiten
   - Erfüllt: AK-1.1, AK-1.3, AK-1.5, AK-1.6 (UI), AK-4.2 (Historie der Quelle), AK-5.6
   - Prüfung im Browser:
@@ -199,6 +199,15 @@ Reihenfolge:
     - Gäste und Fremde bei privaten Tees sehen keinen Knopf.
     - Ereigniszeilen (Grund nur für Moderatoren); Kennzeichnungen für Zusammenführen und Massen-Zurücksetzung.
     - Historie einer zusammengeführten Quelle mit Hinweis, ohne Zurücksetzen.
+  - Ergebnis: Playwright mit `pw05`-Daten, alle Schritte erfolgreich, keine Konsolenfehler außer dem erwarteten 409.
+    - Zurücksetzen mit Notiz → neue Version 4 mit Chip „Zurückgesetzt auf Version 1“, Snackbar; der Vergleich springt auf 3 → 4.
+    - Konflikt in einem zweiten Tab → Hinweis mit „Historie neu laden“ → aktuelle Version 5 erscheint. Ist die Zielversion inhaltlich schon aktuell, meldet der Dialog „entspricht schon dem aktuellen Stand“ statt eines Konflikts (Server: `changed: false`).
+    - Ereigniszeilen „Ausgeblendet/Wiederhergestellt von …“; den Grund sehen nur Moderatoren.
+    - Tee-Historie mit Chip „Zutat zusammengeführt“ (verlinkt das Ziel).
+    - Historie der zusammengeführten Quelle mit Hinweis und Link, ohne Zurücksetzen.
+    - Gäste sehen keinen Knopf.
+    - Englisch dunkel bei 360 px („Reverted to version 1“, „Hidden by …“) ohne Überlauf.
+    - Die Links bei `DUPLICATE_NAME`/`INGREDIENT_UNAVAILABLE` prüfen nur die API-Tests, im Browser nicht nachgestellt.
 
 - [ ] 16. Seiten: Meldungen, Ausgeblendet, Nutzer sperren
   - Dateien: `app/pages/admin/{reports,hidden}.vue`, `app/pages/admin/moderation/users.vue`, `app/components/moderation/{BlockDialog,BulkRevertDialog}.vue`, `app/pages/login.vue`, `app/pages/admin/audit.vue`

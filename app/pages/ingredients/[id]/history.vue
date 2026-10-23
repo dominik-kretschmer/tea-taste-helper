@@ -2,14 +2,16 @@
 import { mdiArrowLeft } from '@mdi/js'
 
 const { t } = useI18n()
+const { loggedIn } = useAuth()
 const localePath = useLocalePath()
 const route = useRoute()
 
 const id = computed(() => String(route.params.id))
 const page = ref(1)
-const [{ data: detail, error }, { data: revisions }] = await Promise.all([
-  useFetch<{ ingredient: IngredientDetail }>(() => `/api/ingredients/${id.value}`),
-  useFetch<Page<RevisionEntry>>(() => `/api/ingredients/${id.value}/revisions`, { query: { page } }),
+const [{ data: detail, error, refresh: refreshDetail }, { data: revisions, refresh: refreshRevisions }] = await Promise.all([
+  // ?merged=1: Die Historie bleibt auch nach dem Zusammenführen lesbar (05 AK-4.2)
+  useFetch<{ ingredient: IngredientDetail }>(() => `/api/ingredients/${id.value}`, { query: { merged: 1 } }),
+  useFetch<RevisionPage>(() => `/api/ingredients/${id.value}/revisions`, { query: { page } }),
 ])
 if (error.value) {
   const statusCode = error.value.statusCode ?? 500
@@ -24,11 +26,30 @@ useHead({ title: () => t('ingredients.historyPage.title', { name: text.value?.te
 const latest = detail.value!.ingredient.version
 const compareTo = ref(latest)
 const compareFrom = ref(Math.max(1, latest - 1))
-const canCompare = latest > 1
+const canCompare = ref(latest > 1)
+
+const mergedInto = computed(() => detail.value?.ingredient.mergedInto ?? null)
+// Zurücksetzen nur für Angemeldete und aktive Einträge; private Tees sieht ohnehin nur der Ersteller (05 AK-1.2, AK-1.6)
+const canRevert = computed(() => loggedIn.value && !mergedInto.value && !detail.value?.ingredient.moderation)
+const revertMessage = ref<string | null>(null)
+
+async function onReverted(result: { changed: boolean, version: number }) {
+  revertMessage.value = result.changed
+    ? t('moderation.revert.done', { version: result.version })
+    : t('moderation.revert.noChanges', { version: result.version })
+  await reload()
+  compareTo.value = result.version
+  compareFrom.value = Math.max(1, result.version - 1)
+  canCompare.value = result.version > 1
+}
+
+async function reload() {
+  await Promise.all([refreshDetail(), refreshRevisions()])
+}
 
 const { data: comparison, pending: comparing } = await useFetch<{ changes: SnapshotChange[] }>(
   () => `/api/ingredients/${id.value}/compare`,
-  { query: { from: compareFrom, to: compareTo }, immediate: canCompare },
+  { query: { from: compareFrom, to: compareTo }, immediate: canCompare.value },
 )
 </script>
 
@@ -42,13 +63,26 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
         {{ t('ingredients.historyPage.title', { name: text?.text.name ?? '' }) }}
       </h1>
 
+      <v-alert v-if="mergedInto" type="info" variant="tonal" density="compact" class="mb-4">
+        {{ t('moderation.merge.mergedInto') }}
+        <NuxtLink :to="localePath({ name: 'ingredients-id', params: { id: mergedInto } })" class="d-block">
+          {{ t('moderation.merge.openTarget') }}
+        </NuxtLink>
+      </v-alert>
+
       <CatalogRevisionList
         v-model:from="compareFrom"
         v-model:to="compareTo"
         v-model:page="page"
         :revisions="revisions"
         :can-compare="canCompare"
+        entity-type="ingredient"
+        :entity-id="id"
+        :can-revert="canRevert"
+        @reverted="onReverted"
+        @reload="reload"
       />
+      <v-snackbar :model-value="!!revertMessage" color="success" :text="revertMessage ?? ''" @update:model-value="revertMessage = null" />
 
       <template v-if="canCompare">
         <h2 class="text-h6 mt-6 mb-2">
