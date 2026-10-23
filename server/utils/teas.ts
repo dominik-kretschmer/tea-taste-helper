@@ -275,3 +275,48 @@ export async function findSimilarTeas(db: Db, name: string, locale: ContentLocal
     ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"
     LIMIT ${TEA_SIMILAR_LIMIT}`
 }
+
+const teaEditConflict = (details?: unknown) => new AppError(409, 'EDIT_CONFLICT', 'The tea was changed in the meantime', details)
+
+/**
+ * Speichert `after` als neue Version, wenn er sich von `before` unterscheidet. Einziger Weg für
+ * Änderungen am Inhalt: Zutatenprüfung, optimistisches Sperren über `expectedVersion` und
+ * Duplikatregel (AK-2.5, AK-3.3). Rechte, Rate-Limit und Audit bleiben beim Aufrufer.
+ */
+export async function saveTeaVersion(db: Db, input: {
+  teaId: string
+  expectedVersion: number
+  before: TeaSnapshot
+  after: TeaSnapshot
+  authorId: string
+  note: string | null
+}): Promise<{ changed: false } | { changed: true, version: LoadedTeaVersion, locales: ContentLocale[] }> {
+  const { teaId: id, before, after } = input
+  const changes = diffTeaSnapshots(before, after)
+  if (!changes.length) return { changed: false }
+  if (changes.some(change => change.field === 'ingredient')) await assertIngredientsExist(db, after.ingredients)
+
+  // Nur die Version deaktivieren, die der Aufrufer geladen hat
+  const deactivated = await db.$executeRaw`
+    UPDATE "TeaVersion" SET "isCurrent" = false
+    WHERE "teaId" = ${id}::uuid AND "isCurrent" AND version = ${input.expectedVersion}`
+  if (deactivated === 0) {
+    const latest = await db.teaVersion.findFirst({ where: { teaId: id, isCurrent: true }, select: { version: true } })
+    throw teaEditConflict({ currentVersion: latest?.version ?? input.expectedVersion })
+  }
+
+  await assertTeaNamesAvailable(db, after, { teaId: id, before })
+  const version = await writeTeaVersion(db, {
+    teaId: id,
+    version: input.expectedVersion + 1,
+    snapshot: after,
+    authorId: input.authorId,
+    note: input.note,
+  }).catch((error: unknown) => {
+    // Gleichzeitige Speicherung, die das UPDATE oben nicht erkannt hat (Unique-Index greift)
+    if ((error as { code?: string }).code === 'P2002') throw teaEditConflict()
+    throw error
+  })
+  const locales = [...new Set(changes.flatMap(change => ('locale' in change && change.locale ? [change.locale] : [])))]
+  return { changed: true, version, locales }
+}

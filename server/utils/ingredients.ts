@@ -211,3 +211,55 @@ export async function loadIngredientViews(db: Db, ids: string[]): Promise<Map<st
     return [[row.id, { sourceLocale: row.sourceLocale as ContentLocale, translations, caffeine: version.caffeine }]]
   }))
 }
+
+const editConflict = (details?: unknown) => new AppError(409, 'EDIT_CONFLICT', 'The ingredient was changed in the meantime', details)
+
+/**
+ * Speichert `after` als neue Version, wenn er sich von `before` unterscheidet (AK-3.3). Einziger Weg
+ * für Änderungen am Inhalt: optimistisches Sperren über `expectedVersion` (AK-3.2) und Duplikatregel
+ * für geänderte Namen (AK-3.4, AK-4.2). Rechte, Rate-Limit und Audit bleiben beim Aufrufer.
+ */
+export async function saveIngredientVersion(db: Db, input: {
+  ingredientId: string
+  expectedVersion: number
+  before: IngredientSnapshot
+  after: IngredientSnapshot
+  authorId: string
+  note: string | null
+}): Promise<{ changed: false } | { changed: true, version: LoadedVersion, locales: ContentLocale[] }> {
+  const { ingredientId: id, before, after } = input
+  const changes = diffSnapshots(before, after)
+  if (!changes.length) return { changed: false }
+
+  // Nur die Version deaktivieren, die der Aufrufer geladen hat
+  const deactivated = await db.$executeRaw`
+    UPDATE "IngredientVersion" SET "isCurrent" = false
+    WHERE "ingredientId" = ${id}::uuid AND "isCurrent" AND version = ${input.expectedVersion}`
+  if (deactivated === 0) {
+    const latest = await loadCurrent(db, id)
+    throw editConflict({ currentVersion: latest?.version.version ?? input.expectedVersion })
+  }
+
+  // Reihenfolge fest wegen der Sperren
+  for (const locale of CONTENT_LOCALES) {
+    const name = after.translations[locale]?.name
+    if (!name) continue
+    const key = normalizeName(name)
+    const previous = before.translations[locale]?.name
+    if (previous === undefined || normalizeName(previous) !== key) await assertNameAvailable(db, locale, key, id)
+  }
+
+  const version = await writeVersion(db, {
+    ingredientId: id,
+    version: input.expectedVersion + 1,
+    snapshot: after,
+    authorId: input.authorId,
+    note: input.note,
+  }).catch((error: unknown) => {
+    // Gleichzeitige Speicherung, die das UPDATE oben nicht erkannt hat (Unique-Index greift)
+    if ((error as { code?: string }).code === 'P2002') throw editConflict()
+    throw error
+  })
+  const locales = [...new Set(changes.flatMap(change => change.locale ? [change.locale] : []))]
+  return { changed: true, version, locales }
+}

@@ -25,32 +25,18 @@ export default defineEventHandler(async (event) => {
       ingredients: input.ingredients ?? before.ingredients,
     }
 
-    const changes = diffTeaSnapshots(before, after)
-    if (!changes.length) {
+    const saved = await saveTeaVersion(tx, {
+      teaId: id,
+      expectedVersion: input.version,
+      before,
+      after,
+      authorId: user.id,
+      note: input.note,
+    })
+    if (!saved.changed) {
       return { tea: await toTeaDetail(tx, tea, current.version, user), changed: false, locales: [] }
     }
-    if (input.ingredients) await assertIngredientsExist(tx, input.ingredients)
-
-    // Optimistisches Sperren: nur die Version deaktivieren, die der Client geladen hat
-    const deactivated = await tx.$executeRaw`
-      UPDATE "TeaVersion" SET "isCurrent" = false
-      WHERE "teaId" = ${id}::uuid AND "isCurrent" AND version = ${input.version}`
-    if (deactivated === 0) {
-      throw new AppError(409, 'EDIT_CONFLICT', 'The tea was changed in the meantime', {
-        currentVersion: current.version.version,
-      })
-    }
-
-    await assertTeaNamesAvailable(tx, after, { teaId: id, before })
-    const version = await writeTeaVersion(tx, { teaId: id, version: input.version + 1, snapshot: after, authorId: user.id, note: input.note })
-    const locales = [...new Set(changes.flatMap(change => ('locale' in change && change.locale ? [change.locale] : [])))]
-    return { tea: await toTeaDetail(tx, tea, version, user), changed: true, locales }
-  }).catch((error: unknown) => {
-    // Gleichzeitige Speicherung, die das UPDATE oben nicht erkannt hat (Unique-Index greift)
-    if ((error as { code?: string }).code === 'P2002') {
-      throw new AppError(409, 'EDIT_CONFLICT', 'The tea was changed in the meantime')
-    }
-    throw error
+    return { tea: await toTeaDetail(tx, tea, saved.version, user), changed: true, locales: saved.locales }
   })
 
   if (result.changed) {
