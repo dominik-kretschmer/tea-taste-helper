@@ -1,6 +1,6 @@
 # 04 – Zutatennamen, die beim Kleinschreiben länger werden, führen zu 500
 
-> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **Entwurf – wartet auf Freigabe**
+> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **freigegeben (2026-10-23)**
 
 ## Befund
 

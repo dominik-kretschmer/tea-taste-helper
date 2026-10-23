@@ -140,8 +140,8 @@ model IngredientVersionTranslation {
   version     IngredientVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
   locale      String            @db.VarChar(5)
   name        String            @db.VarChar(80)
-  /// normalizeName(name) – für die Duplikatregel
-  nameKey     String            @db.VarChar(80)
+  /// normalizeName(name) – für die Duplikatregel; TEXT, weil die Normalisierung bis zu 3× länger werden kann (00-chore/04)
+  nameKey     String
   description String?           @db.VarChar(2000)
 
   @@id([versionId, locale])

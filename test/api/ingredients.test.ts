@@ -422,4 +422,41 @@ describe('Zutaten-API', async () => {
       expect((await anna.get('/api/ingredients/similar?locale=de&name=x')).status).toBe(400)
     })
   })
+
+  // nameKey kann länger als der Name werden: „İ“ → 2, U+FB2C → 3 Code-Units (00-chore/04)
+  describe('Namen mit längerem Schlüssel (00-chore/04)', () => {
+    /** Name mit genau 80 Code-Units: 72 × `char` plus eindeutiger Marker */
+    const longName = (char: string) => `${char.repeat(72)}${marker()}`
+
+    it('speichert 80 Zeichen, deren nameKey länger wird (AK-1.1)', async () => {
+      for (const char of ['İ', '\uFB2C']) {
+        const name = longName(char)
+        expect(name).toHaveLength(80)
+        const ingredient = await create({ name })
+        expect(ingredient.translations.de!.name).toBe(name)
+      }
+    })
+
+    it('erkennt solche Namen als Duplikat (AK-1.2)', async () => {
+      const m = marker()
+      const existing = await create({ name: `${'İ'.repeat(72)}${m}` })
+      // andere Schreibweise: Marker groß, Leerraum am Rand
+      const response = await anna.post('/api/ingredients', { locale: 'de', name: ` ${'İ'.repeat(72)}${m.toUpperCase()} ` })
+      expect(response.status).toBe(409)
+      expect(response.body.error).toMatchObject({ code: 'DUPLICATE_NAME', details: { ingredientId: existing.id } })
+    })
+
+    it('erlaubt Umbenennen und Übersetzen auf solche Namen (AK-1.1)', async () => {
+      const ingredient = await create({ name: `Umbenennen ${marker()}` })
+      const renamed = await ben.patch(`/api/ingredients/${ingredient.id}`, { version: 1, translations: { de: { name: longName('İ') } } })
+      expect(renamed.status, renamed.text).toBe(200)
+      const translated = await ben.patch(`/api/ingredients/${ingredient.id}`, { version: 2, translations: { en: { name: longName('İ') } } })
+      expect(translated.status, translated.text).toBe(200)
+    })
+
+    it('lehnt 81 Zeichen weiterhin ab', async () => {
+      const response = await anna.post('/api/ingredients', { locale: 'de', name: 'İ'.repeat(81) })
+      expect(response.status).toBe(400)
+    })
+  })
 })

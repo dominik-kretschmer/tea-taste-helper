@@ -24,6 +24,13 @@ describe('normalizeName', () => {
     expect(nfd).not.toBe('Grüner Tee')
     expect(normalizeName(nfd)).toBe(normalizeName('Grüner Tee'))
   })
+
+  // Der Schlüssel kann länger als der Name werden; die Spalte nameKey ist deshalb TEXT (00-chore/04)
+  it('verlängert „İ“ auf 2 und U+FB2C auf 3 Code-Units', () => {
+    expect(normalizeName('İ'.repeat(80))).toBe('i\u0307'.repeat(80))
+    expect(normalizeName('İ'.repeat(80))).toHaveLength(160)
+    expect(normalizeName('\uFB2C'.repeat(80))).toHaveLength(240)
+  })
 })
 
 const snapshot = (overrides: Partial<IngredientSnapshot> = {}): IngredientSnapshot => ({
