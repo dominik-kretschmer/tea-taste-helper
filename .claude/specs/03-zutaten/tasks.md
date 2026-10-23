@@ -71,7 +71,7 @@ Reihenfolge:
     - 31. Änderung in 10 Minuten (Anlegen und Bearbeiten gemischt) → 429 mit `Retry-After`.
   - Ergebnis: 11 API-Tests grün, Suite 194 Tests. Zusätzlich: 3 gleichzeitige Speicherungen derselben Version → eine 200, zwei 409; der Index „eine aktuelle Version“ lehnt eine zweite aktuelle Zeile per SQL ab; Duplikat in neu hinzugefügter Sprache. `locales` im Audit nennt nur Sprachen mit geändertem Text (leer bei reinen Grunddaten). Ein `P2002` aus der Transaktion wird ebenfalls als `EDIT_CONFLICT` gemeldet. Die Testzutaten legen wechselnde Nutzer an, weil sonst das echte Limit greift.
 
-- [ ] 7. API: Historie und Vergleich
+- [x] 7. API: Historie und Vergleich
   - Dateien: `server/api/ingredients/[id]/revisions.get.ts`, `server/api/ingredients/[id]/compare.get.ts`, `test/api/ingredients.test.ts`
   - Erfüllt: AK-5.1–AK-5.3
   - Prüfung (API-Tests):
@@ -79,6 +79,7 @@ Reihenfolge:
     - Vergleich 1 → 3 listet alle geänderten Felder, eine neue Sprache mit `from: null`.
     - Unbekannte Version → 404, `from`/`to` keine Zahl → 400.
     - `PATCH`/`DELETE` auf `/revisions` und `DELETE` auf die Zutat → 404 bzw. 405.
+  - Ergebnis: 3 API-Tests grün (30 in der Datei). `PATCH`/`PUT`/`DELETE` auf `/revisions` und `PUT`/`DELETE` auf die Zutat liefern alle 404 aus der Catch-all-Route, nie 405. Die Historie ist wie die Detailseite öffentlich.
 
 - [ ] 8. Sprachpfade und Navigation
   - Dateien: `nuxt.config.ts` (`i18n.customRoutes`, `i18n.pages`), `app/components/AppNav.vue`, `app/layouts/default.vue`, `i18n/locales/*.json`

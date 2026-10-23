@@ -348,6 +348,62 @@ describe('Zutaten-API', async () => {
     })
   })
 
+  describe('Historie und Vergleich (AK-5)', () => {
+    it('listet alle Versionen neueste zuerst und vergleicht zwei davon', async () => {
+      const m = marker()
+      const ingredient = await createAs(anna, { name: `Pfefferminze ${m}`, caffeine: 'no', brewTempC: 95 })
+      await ben.patch(`/api/ingredients/${ingredient.id}`, { version: 1, brewSeconds: 300, note: 'Ziehzeit ergänzt' })
+      await anna.patch(`/api/ingredients/${ingredient.id}`, { version: 2, translations: { en: { name: `Peppermint ${m}` } }, note: 'Englisch ergänzt' })
+
+      const guest = await createClient()
+      const revisions = await guest.get(`/api/ingredients/${ingredient.id}/revisions`)
+      expect(revisions.status).toBe(200)
+      expect(revisions.body).toMatchObject({ total: 3, page: 1, pageSize: 50 })
+      expect(revisions.body.items.map(({ createdAt, ...rest }: RevisionEntry) => rest)).toEqual([
+        { version: 3, isCurrent: true, author: { displayName: 'Anna' }, note: 'Englisch ergänzt' },
+        { version: 2, isCurrent: false, author: { displayName: 'Ben' }, note: 'Ziehzeit ergänzt' },
+        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null },
+      ])
+      expect(JSON.stringify(revisions.body)).not.toContain('@')
+
+      const compare = await guest.get(`/api/ingredients/${ingredient.id}/compare?from=1&to=3`)
+      expect(compare.status).toBe(200)
+      expect(compare.body.changes).toEqual([
+        { field: 'brewSeconds', from: null, to: 300 },
+        { field: 'name', locale: 'en', from: null, to: `Peppermint ${m}` },
+      ])
+      expect(compare.body.from).toMatchObject({ version: 1, snapshot: { brewSeconds: null, translations: { de: { name: `Pfefferminze ${m}` } } } })
+      expect(compare.body.to).toMatchObject({ version: 3, isCurrent: true, snapshot: { brewSeconds: 300 } })
+    })
+
+    it('antwortet 404 für unbekannte Zutaten und Versionen, 400 für ungültige Nummern', async () => {
+      const ingredient = await create({ name: `Vergleich ${marker()}` })
+      expect((await anna.get(`/api/ingredients/${randomUUID()}/revisions`)).status).toBe(404)
+      expect((await anna.get(`/api/ingredients/${randomUUID()}/compare?from=1&to=1`)).status).toBe(404)
+      expect((await anna.get(`/api/ingredients/${ingredient.id}/compare?from=1&to=9`)).status).toBe(404)
+      expect((await anna.get(`/api/ingredients/${ingredient.id}/compare?from=a&to=1`)).status).toBe(400)
+      expect((await anna.get(`/api/ingredients/${ingredient.id}/compare`)).status).toBe(400)
+    })
+
+    it('bietet keine Routen zum Ändern oder Löschen von Versionen und Zutaten (AK-3.6, AK-5.3)', async () => {
+      const ingredient = await create({ name: `Unveränderlich ${marker()}` })
+      const attempts: [string, string][] = [
+        ['PATCH', `/api/ingredients/${ingredient.id}/revisions`],
+        ['DELETE', `/api/ingredients/${ingredient.id}/revisions`],
+        ['PUT', `/api/ingredients/${ingredient.id}/revisions`],
+        ['DELETE', `/api/ingredients/${ingredient.id}`],
+        ['PUT', `/api/ingredients/${ingredient.id}`],
+      ]
+      for (const [method, path] of attempts) {
+        const response = await anna.request(method, path, {})
+        expect(response.status, `${method} ${path}`).toBe(404)
+      }
+      const [{ count }] = await db(`SELECT count(*)::int AS count FROM "IngredientVersion" WHERE "ingredientId" = $1`, [ingredient.id])
+      expect(count).toBe(1)
+      expect((await anna.get(`/api/ingredients/${ingredient.id}`)).status).toBe(200)
+    })
+  })
+
   describe('Ähnliche Namen (AK-2.2)', () => {
     it('findet Tippfehler und Teilwörter, höchstens 5', async () => {
       const m = marker()
