@@ -1,7 +1,7 @@
 # 00 – Chore: Projektanalyse nach Slice 03
 
 > Analyse vom 2026-10-23, Stand `5bc54f9`. Jedes Issue ist ein eigener Ordner und läuft nach dem Skill `spec-driven` (Anforderungen → Design → Aufgaben → Umsetzung), sofern nicht anders vereinbart.
-> Status: **Anforderungen als Entwurf – warten auf Freigabe**
+> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt; 05 (npm audit) hat bewusst noch kein Design. Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
 
 ## Vorgehen
 
