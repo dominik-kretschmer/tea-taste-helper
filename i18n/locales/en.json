@@ -150,6 +150,27 @@
     "version": "Version {version}",
     "showIngredient": "Show ingredient"
   },
+  "catalog": {
+    "fields": {
+      "locale": "Language",
+      "name": "Name",
+      "description": "Description",
+      "caffeine": "Caffeine",
+      "brewTempC": "Temperature (°C)",
+      "brewTime": "Steeping time (min:sec)",
+      "note": "Change note",
+      "noteHint": "Optional, shown in the history."
+    },
+    "caffeineOptions": {
+      "yes": "Yes",
+      "no": "No",
+      "unknown": "Unknown"
+    },
+    "tabs": {
+      "source": "Original",
+      "missing": "Translation missing"
+    }
+  },
   "ingredients": {
     "title": "Ingredients",
     "search": "Search ingredients",
@@ -169,26 +190,11 @@
       "no": "Caffeine-free",
       "unknown": "Caffeine unknown"
     },
-    "caffeineOptions": {
-      "yes": "Yes",
-      "no": "No",
-      "unknown": "Unknown"
-    },
     "brew": {
       "title": "Preparation",
       "temp": "{temp} °C",
       "time": "{time} min",
       "none": "No preparation notes"
-    },
-    "fields": {
-      "locale": "Language",
-      "name": "Name",
-      "description": "Description",
-      "caffeine": "Caffeine",
-      "brewTempC": "Temperature (°C)",
-      "brewTime": "Steeping time (min:sec)",
-      "note": "Change note",
-      "noteHint": "Optional, shown in the history."
     },
     "similar": {
       "title": "Similar ingredients – does it already exist?"
@@ -198,8 +204,6 @@
     },
     "editPage": {
       "title": "Edit {name}",
-      "source": "Original",
-      "missing": "Translation missing",
       "save": "Save",
       "noChanges": "No changes – no new version was created.",
       "conflict": "Someone else has changed this ingredient in the meantime (now version {version}). Load the current version and enter your change again.",

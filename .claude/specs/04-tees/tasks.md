@@ -16,10 +16,11 @@ Reihenfolge:
   - Prüfung: Keine Verhaltensänderung. Alle bisherigen Unit- und API-Tests (207) bleiben unverändert grün; die bisherigen Exporte (`normalizeName`, `CONTENT_LOCALES`, `ingredientTextSchema` …) bleiben erhalten.
   - Ergebnis: 207 Tests grün, Lint und Typecheck grün. Abweichung: Gemeinsame Typen liegen in `shared/types/catalog.ts` (`CatalogText`, `CatalogFacts`, `RevisionEntry`, `SnapshotChange` …), `IngredientText` bleibt als Alias. Die Grenzwerte heißen jetzt `CATALOG_NAME_MAX` usw., weil Re-Exporte aus `shared/utils/` von Nuxts Auto-Import doppelt gemeldet würden. Deshalb änderten sich in `test/unit/ingredient.test.ts` nur die Import-Zeilen, die Tests selbst nicht. Die Schemas aus `#shared/schemas/ingredient` bleiben erhalten.
 
-- [ ] 2. UI-Bausteine aus IngredientForm herauslösen
+- [x] 2. UI-Bausteine aus IngredientForm herauslösen
   - Dateien: `app/components/catalog/TranslationFields.vue`, `app/components/catalog/BrewFields.vue`, `app/components/ingredient/IngredientForm.vue`
   - Erfüllt: Grundlage für AK-5.1, AK-10.1
   - Prüfung im Browser: Anlegen und Bearbeiten von Zutaten verhalten sich wie vorher (Tabs, „+“, Feldfehler, Min:Sek, ähnliche Zutaten, Konflikt). Dabei wird auch `<v-row dense>` durch `density="compact"` ersetzt (00-chore/09), keine „[Vuetify UPGRADE]“-Warnung.
+  - Ergebnis: Die Playwright-Durchläufe aus 03 (Anlegen, Feldfehler de/en, Duplikat, Tabs mit „Original“/„+“, `?lang=en`, Konflikt, „Keine Änderungen“, Historie, Audit, 360 px) liefern dieselben Ergebnisse wie vorher; keine „[Vuetify UPGRADE]“-Warnung mehr. Die Texte der Bausteine liegen jetzt unter `catalog.*` (`fields`, `caffeineOptions`, `tabs`) statt unter `ingredients.*`.
 
 - [ ] 3. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma`, `prisma/migrations/0004_teas/` (per `--create-only`, ergänzt um `TeaVersion_current_key`), `shared/utils/roles.ts`, `shared/types/auth.ts` (4 Audit-Ereignisse), `i18n/locales/*.json` (Audit-Texte)

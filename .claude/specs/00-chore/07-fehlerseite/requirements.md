@@ -19,7 +19,7 @@ Fehler erscheinen in der App-Gestaltung, übersetzt und mit einem Weg zurück; L
 
 ## Akzeptanzkriterien
 
-- **AK-1.1:** WENN eine unbekannte Seite oder eine nicht vorhandene Zutat aufgerufen wird, DANN erscheint eine Fehlerseite mit App-Bar, Sprachumschalter, übersetztem Titel („Seite nicht gefunden“ / „Page not found“), HTTP-Status 404 und einem Link zur Startseite in der aktuellen Sprache.
+- **AK-1.1:** WENN eine unbekannte Seite oder eine nicht vorhandene Zutat aufgerufen wird, DANN erscheint eine Fehlerseite mit App-Bar, Sprachumschalter, übersetztem Titel („Seite nicht gefunden“ / „Page not found“), HTTP-Status 404 und je einem Link zur Startseite und zur Zutatenliste in der aktuellen Sprache.
 - **AK-1.2:** WENN ein Serverfehler (500) beim Rendern auftritt, DANN erscheint dieselbe Fehlerseite mit übersetzter Meldung ohne technische Details.
 - **AK-1.3:** WENN die Zutatenliste nicht geladen werden kann, DANN erscheint eine übersetzte Fehlermeldung mit „Erneut versuchen“, nicht die Meldung „Keine Zutaten gefunden“.
 - **AK-1.4:** Dasselbe gilt für die Nutzer- und Audit-Liste im Admin-Bereich.
@@ -31,4 +31,4 @@ Fehler erscheinen in der App-Gestaltung, übersetzt und mit einem Weg zurück; L
 
 ## Offene Fragen
 
-- Soll die 404-Seite eine Suche oder Links (Zutaten) anbieten oder reicht „Zur Startseite“?
+- keine. *Entschieden (2026-10-23):* Links „Zur Startseite“ und „Zu den Zutaten“, keine Suche.

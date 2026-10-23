@@ -18,7 +18,7 @@ Gleichzeitig sind HSTS, `upgrade-insecure-requests` und die CSP schon „product
 
 ## Ziel
 
-Ein gebauter Server verhält sich immer wie Production, egal ob `NODE_ENV` gesetzt ist. Nur `nuxt dev` ist Development.
+Ein gebauter Server verhält sich wie Production, wenn `NODE_ENV` fehlt. `nuxt dev` ist Development. Ein ausdrücklich gesetztes `NODE_ENV` gilt weiterhin (z.B. zum Debuggen), wird beim gebauten Server aber deutlich gewarnt.
 
 ## User Stories
 
@@ -32,6 +32,7 @@ Ein gebauter Server verhält sich immer wie Production, egal ob `NODE_ENV` geset
 - **AK-1.4:** WENN `nuxt dev` läuft, DANN bleibt alles wie bisher (Cookie `session` ohne `Secure`, formatierte Logs, CSRF-Schlüssel optional).
 - **AK-1.5:** Ein automatischer Test startet den gebauten Server **ohne** `NODE_ENV` und prüft AK-1.1 und AK-1.3.
 - **AK-1.6:** Die Annahme in `02-auth-rollen/design.md` („Nitro setzt NODE_ENV beim Build fest“) ist korrigiert; README beschreibt den Start des gebauten Servers.
+- **AK-1.7:** WENN der gebaute Server mit ausdrücklich gesetztem `NODE_ENV=development` (oder `test`) startet, DANN verhält er sich wie bisher in diesem Modus und schreibt beim Start eine Warnung, die den Modus nennt.
 
 ## Nicht im Umfang
 
@@ -40,4 +41,4 @@ Ein gebauter Server verhält sich immer wie Production, egal ob `NODE_ENV` geset
 
 ## Offene Fragen
 
-- Soll ein ausdrücklich gesetztes `NODE_ENV=development` beim gebauten Server weiterhin erlaubt sein (z.B. zum Debuggen), oder gilt der Build immer als Production? Vorschlag: Build immer Production, `NODE_ENV` nur noch informativ.
+- keine. *Entschieden (2026-10-23):* Ein ausdrücklich gesetztes `NODE_ENV` bleibt beim gebauten Server wirksam (AK-1.7); nur der Standard ohne Angabe wird Production.

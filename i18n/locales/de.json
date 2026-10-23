@@ -150,6 +150,27 @@
     "version": "Version {version}",
     "showIngredient": "Zutat anzeigen"
   },
+  "catalog": {
+    "fields": {
+      "locale": "Sprache",
+      "name": "Name",
+      "description": "Beschreibung",
+      "caffeine": "Koffein",
+      "brewTempC": "Temperatur (°C)",
+      "brewTime": "Ziehzeit (Min:Sek)",
+      "note": "Änderungsnotiz",
+      "noteHint": "Optional, erscheint in der Historie."
+    },
+    "caffeineOptions": {
+      "yes": "Ja",
+      "no": "Nein",
+      "unknown": "Unbekannt"
+    },
+    "tabs": {
+      "source": "Original",
+      "missing": "Übersetzung fehlt"
+    }
+  },
   "ingredients": {
     "title": "Zutaten",
     "search": "Zutaten suchen",
@@ -169,26 +190,11 @@
       "no": "Koffeinfrei",
       "unknown": "Koffein unbekannt"
     },
-    "caffeineOptions": {
-      "yes": "Ja",
-      "no": "Nein",
-      "unknown": "Unbekannt"
-    },
     "brew": {
       "title": "Zubereitung",
       "temp": "{temp} °C",
       "time": "{time} min",
       "none": "Kein Zubereitungshinweis"
-    },
-    "fields": {
-      "locale": "Sprache",
-      "name": "Name",
-      "description": "Beschreibung",
-      "caffeine": "Koffein",
-      "brewTempC": "Temperatur (°C)",
-      "brewTime": "Ziehzeit (Min:Sek)",
-      "note": "Änderungsnotiz",
-      "noteHint": "Optional, erscheint in der Historie."
     },
     "similar": {
       "title": "Ähnliche Zutaten – gibt es sie schon?"
@@ -198,8 +204,6 @@
     },
     "editPage": {
       "title": "{name} bearbeiten",
-      "source": "Original",
-      "missing": "Übersetzung fehlt",
       "save": "Speichern",
       "noChanges": "Keine Änderungen – es wurde keine neue Version angelegt.",
       "conflict": "Jemand anderes hat die Zutat inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein.",

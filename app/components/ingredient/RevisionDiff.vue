@@ -8,7 +8,7 @@ function format(change: SnapshotChange, value: unknown): string {
   if (value === null || value === undefined || value === '') return '–'
   switch (change.field) {
     case 'caffeine':
-      return t(`ingredients.caffeineOptions.${value}`)
+      return t(`catalog.caffeineOptions.${value}`)
     case 'brewTempC':
       return t('ingredients.brew.temp', { temp: value as number })
     case 'brewSeconds':

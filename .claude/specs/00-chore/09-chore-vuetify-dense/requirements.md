@@ -1,6 +1,6 @@
 # 09 – Veraltetes `dense` in IngredientForm
 
-> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **Entwurf – wartet auf Freigabe**
+> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **erledigt (2026-10-23)** mit `04-tees`, Aufgabe 2 – `<v-row dense>` ist beim Herauslösen von `BrewFields` durch `density="compact"` ersetzt worden, die Warnung tritt nicht mehr auf
 
 ## Befund
 
