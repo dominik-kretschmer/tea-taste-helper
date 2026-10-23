@@ -2,6 +2,7 @@
 definePageMeta({ middleware: 'admin' })
 
 const { t, locale } = useI18n()
+const localePath = useLocalePath()
 const route = useRoute()
 
 useHead({ title: () => `${t('admin.tabs.audit')} – ${t('admin.title')}` })
@@ -41,6 +42,12 @@ const headers = computed(() => [
   { title: t('audit.headers.details'), key: 'details', sortable: false },
   { title: t('audit.headers.ip'), key: 'ip', sortable: false },
 ])
+
+/** Zutat-Ereignisse tragen die Zutat in `details` (targetId verweist nur auf Nutzer). */
+function ingredientId(entry: AuditEntry): string | null {
+  const isIngredientEvent = entry.event === 'INGREDIENT_CREATED' || entry.event === 'INGREDIENT_UPDATED'
+  return isIngredientEvent && typeof entry.details?.ingredientId === 'string' ? entry.details.ingredientId : null
+}
 
 function describe(entry: AuditEntry): string {
   const details = entry.details ?? {}
@@ -106,7 +113,15 @@ function describe(entry: AuditEntry): string {
         {{ item.target?.displayName ?? '–' }}
       </template>
       <template #[`item.details`]="{ item }">
-        {{ describe(item) }}
+        <template v-if="ingredientId(item)">
+          {{ t('audit.version', { version: item.details?.version }) }} ·
+          <NuxtLink :to="localePath({ name: 'ingredients-id', params: { id: ingredientId(item) } })">
+            {{ t('audit.showIngredient') }}
+          </NuxtLink>
+        </template>
+        <template v-else>
+          {{ describe(item) }}
+        </template>
       </template>
     </v-data-table-server>
   </div>

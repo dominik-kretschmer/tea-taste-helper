@@ -117,13 +117,14 @@ Reihenfolge:
     - 360 px ohne horizontales Scrollen, keine CSP-Verstöße.
   - Ergebnis: Alles per Playwright geprüft, auf Deutsch und Englisch. Ähnliche Zutaten zu „Pfeferminze“; Duplikat mit Link; Feldfehler übersetzt („Mindestens 2 Zeichen“, „Höchstens 100“, Min:Sek-Hinweis, „At least 40“); Anlegen mit 5:30 → Detail „5:30 min“; Tabs mit „Original“ und „+“; `?lang=en` öffnet den Tab, die Übersetzung erscheint unter `/en/ingredients/…` ohne Fallback-Hinweis; zwei Tabs → Konflikt „jetzt Version 3“, Rückfrage, danach geladen und erfolgreich gespeichert; „Keine Änderungen“; Gast → `/login?redirect=…`; 360 px ohne Überlauf; Konsole nur mit den erwarteten 409. Gefunden und behoben: Der Slot „Ähnliche Zutaten“ und die Feldfehler erschienen auch im versteckten zweiten Sprachblock. `useFormErrors` schlüsselt Feldfehler jetzt nach vollem Pfad (`translations.en.name`), meldet Zahlengrenzen ohne „Zeichen“ und liefert Code und Details an die Seite zurück. Formularzustand und Umwandlung liegen in `app/utils/ingredientForm.ts`.
 
-- [ ] 11. Seiten: Historie und Vergleich, Audit-Anzeige
+- [x] 11. Seiten: Historie und Vergleich, Audit-Anzeige
   - Dateien: `app/pages/ingredients/[id]/history.vue`, `app/components/ingredient/RevisionDiff.vue`, `app/pages/admin/audit.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-5.1, AK-5.2 (UI), AK-6.1 (UI), AK-7.3
   - Prüfung im Browser:
     - Versionsliste, Standardvergleich neueste gegen vorletzte, Auswahl „von“/„bis“ ändert die Tabelle.
     - Bei 360 px werden die Vergleichszeilen gestapelt.
     - Audit-Seite zeigt bei Zutat-Ereignissen „Version n“ und einen Link zur Zutat.
+  - Ergebnis: Per Playwright geprüft: Versionsliste neueste zuerst mit Datum, Autor und Notiz; Standard 3 → 4 zeigt „Temperatur 90 °C → 85 °C“; „von Version 1“ zeigt Temperatur sowie englischen Namen und Beschreibung als neu; englische Seite übersetzt; bei nur einer Version kein Vergleich; unbekannte ID → 404; 360 px gestapelt ohne Überlauf; Audit-Zeile „Version 2 · Zutat anzeigen“ führt zur Zutat (Testnutzer dafür in der Dev-DB kurz Admin). Gefunden und behoben: Vuetifys `grid-area: control` legte beide Radios in eine Zelle (jetzt eigene Zellen); `RevisionDiff` muss wegen des Ordnerpräfixes `IngredientRevisionDiff` heißen. Suite 207 Tests.
 
 - [ ] 12. Dokumentation
   - Dateien: `README.md` (Migrationen mit `--create-only`, SQL-Indizes), `.claude/skills/nuxt-dev/SKILL.md` (dasselbe als Hinweis)
