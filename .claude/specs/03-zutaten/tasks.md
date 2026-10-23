@@ -48,7 +48,7 @@ Reihenfolge:
     - `<script>` im Namen kommt unverändert als Text zurück.
   - Ergebnis: 9 API-Tests grün, Suite 177 Tests. Zusätzlich geprüft: Feldfehler für Name und Temperatur (AK-7.1). Der Audit-Eintrag hat keinen `targetId`, weil dieser auf `User` verweist; die Zutat steht in `details`.
 
-- [ ] 5. API: Liste und Suche
+- [x] 5. API: Liste und Suche
   - Dateien: `server/api/ingredients/index.get.ts`, `test/api/ingredients.test.ts`
   - Erfüllt: AK-1.1 (API), AK-1.2, AK-1.3 (API)
   - Prüfung (API-Tests):
@@ -56,6 +56,7 @@ Reihenfolge:
     - Suche findet über die englische Übersetzung auch bei `locale=de`; `%` und `_` im Suchbegriff werden wörtlich gesucht.
     - Ohne Übersetzung: Name in Originalsprache und `translated: false`.
     - Namen alter Versionen werden nicht gefunden.
+  - Ergebnis: 6 API-Tests grün (16 in der Datei). Die ICU-Sortierung ordnet „apfel, Äpfel, Birne, Zimt“. Alte Versionen und Übersetzungen werden für diese Tests per SQL angelegt, weil PATCH erst in Aufgabe 6 kommt.
 
 - [ ] 6. API: Bearbeiten und Übersetzen
   - Dateien: `server/api/ingredients/[id]/index.patch.ts`, `test/api/ingredients.test.ts`

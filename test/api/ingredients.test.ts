@@ -33,6 +33,7 @@ describe('Zutaten-API', async () => {
 
       const ingredient = await create(anna, { name: `Öffentlich ${marker()}` })
       expect((await guest.get(`/api/ingredients/${ingredient.id}`)).status).toBe(200)
+      expect((await guest.get('/api/ingredients?locale=de')).status).toBe(200)
     })
   })
 
@@ -108,6 +109,92 @@ describe('Zutaten-API', async () => {
         expect(response.status).toBe(404)
         expect(response.body.error.code).toBe('NOT_FOUND')
       }
+    })
+  })
+
+  describe('Liste und Suche (AK-1.1–AK-1.3)', () => {
+    const list = (query: string) => anna.get<Page<IngredientListItem>>(`/api/ingredients?${query}`)
+
+    it('sortiert alphabetisch mit Umlauten', async () => {
+      const m = marker()
+      for (const name of ['Zimt', 'Birne', 'Äpfel', 'apfel']) await create(anna, { name: `${name} ${m}` })
+      const response = await list(`locale=de&q=${m}`)
+      expect(response.status).toBe(200)
+      expect(response.body.items.map(item => item.name)).toEqual(['apfel', 'Äpfel', 'Birne', 'Zimt'].map(name => `${name} ${m}`))
+      expect(response.body).toMatchObject({ total: 4, page: 1, pageSize: 24 })
+    })
+
+    it('teilt in Seiten zu 24 Einträgen', async () => {
+      const m = marker()
+      await db(
+        `WITH i AS (
+           INSERT INTO "Ingredient" (id, "sourceLocale") SELECT gen_random_uuid(), 'de' FROM generate_series(1, 30) RETURNING id
+         ), v AS (
+           INSERT INTO "IngredientVersion" (id, "ingredientId", version, "isCurrent") SELECT gen_random_uuid(), id, 1, true FROM i RETURNING id
+         )
+         INSERT INTO "IngredientVersionTranslation" ("versionId", locale, name, "nameKey")
+         SELECT id, 'de', 'Seite ' || $1 || ' ' || row_number() OVER (), 'seite' FROM v`,
+        [m],
+      )
+      const first = await list(`locale=de&q=${m}`)
+      const second = await list(`locale=de&q=${m}&page=2`)
+      expect(first.body.items).toHaveLength(24)
+      expect(second.body.items).toHaveLength(6)
+      expect(second.body.total).toBe(30)
+      expect(new Set([...first.body.items, ...second.body.items].map(item => item.id)).size).toBe(30)
+    })
+
+    it('sucht über alle Sprachen und zeigt den Namen der aktuellen Sprache, sonst den Originalnamen', async () => {
+      const m = marker()
+      const mint = await create(anna, { name: `Pfefferminze ${m}`, caffeine: 'no' })
+      await db(
+        `INSERT INTO "IngredientVersionTranslation" ("versionId", locale, name, "nameKey")
+         SELECT id, 'en', $2::text, lower($2::text) FROM "IngredientVersion" WHERE "ingredientId" = $1 AND "isCurrent"`,
+        [mint.id, `Peppermint ${m}`],
+      )
+      const matcha = await create(anna, { name: `Matcha ${m}`, locale: 'en' })
+
+      const de = await list(`locale=de&q=${encodeURIComponent(`PEPPERMINT ${m}`)}`)
+      expect(de.body.items).toEqual([{ id: mint.id, name: `Pfefferminze ${m}`, translated: true, caffeine: 'no' }])
+
+      const en = await list(`locale=en&q=${m}`)
+      expect(en.body.items).toEqual([
+        { id: matcha.id, name: `Matcha ${m}`, translated: true, caffeine: 'unknown' },
+        { id: mint.id, name: `Peppermint ${m}`, translated: true, caffeine: 'no' },
+      ])
+
+      const fallback = await list(`locale=de&q=${encodeURIComponent(`Matcha ${m}`)}`)
+      expect(fallback.body.items).toEqual([{ id: matcha.id, name: `Matcha ${m}`, translated: false, caffeine: 'unknown' }])
+    })
+
+    it('sucht % und _ wörtlich', async () => {
+      const m = marker()
+      const percent = await create(anna, { name: `Tee 100% ${m}` })
+      await create(anna, { name: `Tee 1000 ${m}` })
+      const response = await list(`locale=de&q=${encodeURIComponent(`100% ${m}`)}`)
+      expect(response.body.items.map(item => item.id)).toEqual([percent.id])
+      expect((await list(`locale=de&q=${encodeURIComponent(`_ ${m}`)}`)).body.total).toBe(0)
+    })
+
+    it('findet keine Namen alter Versionen', async () => {
+      const m = marker()
+      const ingredient = await create(anna, { name: `Altname ${m}` })
+      await db(
+        `WITH old AS (
+           UPDATE "IngredientVersion" SET "isCurrent" = false WHERE "ingredientId" = $1 RETURNING "ingredientId"
+         ), v AS (
+           INSERT INTO "IngredientVersion" (id, "ingredientId", version, "isCurrent") SELECT gen_random_uuid(), "ingredientId", 2, true FROM old RETURNING id
+         )
+         INSERT INTO "IngredientVersionTranslation" ("versionId", locale, name, "nameKey") SELECT id, 'de', $2::text, lower($2::text) FROM v`,
+        [ingredient.id, `Neuname ${m}`],
+      )
+      expect((await list(`locale=de&q=${encodeURIComponent(`Altname ${m}`)}`)).body.total).toBe(0)
+      expect((await list(`locale=de&q=${encodeURIComponent(`Neuname ${m}`)}`)).body.items.map(item => item.id)).toEqual([ingredient.id])
+    })
+
+    it('verlangt eine gültige Sprache', async () => {
+      expect((await list('locale=fr')).status).toBe(400)
+      expect((await list('')).status).toBe(400)
     })
   })
 
