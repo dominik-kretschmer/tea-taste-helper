@@ -171,7 +171,20 @@
       "TEA_CREATED": "Tea created",
       "TEA_UPDATED": "Tea updated",
       "TEA_PUBLISHED": "Tea published",
-      "TEA_DELETED": "Tea deleted"
+      "TEA_DELETED": "Tea deleted",
+      "INGREDIENT_REVERTED": "Ingredient reverted",
+      "TEA_REVERTED": "Tea reverted",
+      "REPORT_CREATED": "Entry reported",
+      "REPORT_RESOLVED": "Reports closed",
+      "INGREDIENT_MERGED": "Ingredients merged",
+      "TEA_MERGED": "Teas merged",
+      "INGREDIENT_HIDDEN": "Ingredient hidden",
+      "INGREDIENT_RESTORED": "Ingredient restored",
+      "TEA_HIDDEN": "Tea hidden",
+      "TEA_RESTORED": "Tea restored",
+      "USER_BLOCKED": "User blocked",
+      "USER_UNBLOCKED": "User unblocked",
+      "BULK_REVERT": "Bulk revert"
     },
     "via": {
       "registration": "at registration",

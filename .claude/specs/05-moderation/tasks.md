@@ -22,7 +22,7 @@ Reihenfolge:
   - Prüfung im Browser: Beide Historien verhalten sich wie vorher (Radio-Auswahl, Vergleich, Seiten, 360 px); keine Konsolenwarnungen.
   - Ergebnis: Playwright auf dem Dev-Server: Tee mit 3 Versionen (de 1280 px, en 360 px) und Zutat mit 1 Version. Radio-Auswahl wechselt den Vergleich („Version 2 → 1“), kein horizontales Scrollen, keine Warnungen oder Fehler in der Konsole. Die Seiten verlieren je 61 Zeilen, das Styling liegt jetzt in der Komponente.
 
-- [ ] 3. Datenmodell und Migration
+- [x] 3. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma`, `prisma/migrations/0006_moderation/` (per `--create-only`, ergänzt um `Report_open_key` und die beiden CHECK-Constraints), `shared/utils/roles.ts`, `shared/types/auth.ts` (13 Audit-Ereignisse), `i18n/locales/*.json` (Audit-Texte)
   - Erfüllt: Grundlage für alle AKs, AK-8.1 (Ereignistypen)
   - Prüfung:
@@ -30,6 +30,7 @@ Reihenfolge:
     - `prisma migrate diff` gegen die DB ist leer; `migrate dev` meldet „Already in sync“.
     - Die Migration enthält kein `DROP`. Partieller Index und CHECK-Constraints sind vorhanden, die Indizes aus 0003/0004 unangetastet.
     - Bestehende Tests grün.
+  - Ergebnis: Ordner `0006_moderation` (von Prisma erzeugt, umbenannt wie 0001–0005, ergänzt um `Report_open_key`, `Ingredient_merged_not_hidden`, `Tea_merged_not_hidden`). Kein `DROP`. Dev-DB: `migrate status` aktuell, `migrate diff` leer, alle partiellen Indizes und GIN-Indizes aus 0003/0004 sowie die neuen Objekte vorhanden; die Test-DB migriert `globalSetup` per `migrate deploy`. 336 Tests grün.
 
 - [ ] 4. Typen, Regeln und Schemas
   - Dateien: `shared/types/moderation.ts`, `shared/types/catalog.ts` (`RevisionEntry`-Felder, `ModerationState`), `shared/utils/moderation.ts` (`BLOCK_DURATIONS`, `blockedUntil`, `isBlocked`, `combineIngredients`), `shared/schemas/moderation.ts`, `shared/schemas/catalog.ts` (`revertSchema`), `app/composables/useFormErrors.ts` (falls neue Codes nötig), `test/unit/moderation.test.ts`

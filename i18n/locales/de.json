@@ -171,7 +171,20 @@
       "TEA_CREATED": "Tee angelegt",
       "TEA_UPDATED": "Tee geändert",
       "TEA_PUBLISHED": "Tee veröffentlicht",
-      "TEA_DELETED": "Tee gelöscht"
+      "TEA_DELETED": "Tee gelöscht",
+      "INGREDIENT_REVERTED": "Zutat zurückgesetzt",
+      "TEA_REVERTED": "Tee zurückgesetzt",
+      "REPORT_CREATED": "Eintrag gemeldet",
+      "REPORT_RESOLVED": "Meldungen abgeschlossen",
+      "INGREDIENT_MERGED": "Zutaten zusammengeführt",
+      "TEA_MERGED": "Tees zusammengeführt",
+      "INGREDIENT_HIDDEN": "Zutat ausgeblendet",
+      "INGREDIENT_RESTORED": "Zutat wiederhergestellt",
+      "TEA_HIDDEN": "Tee ausgeblendet",
+      "TEA_RESTORED": "Tee wiederhergestellt",
+      "USER_BLOCKED": "Nutzer gesperrt",
+      "USER_UNBLOCKED": "Nutzer entsperrt",
+      "BULK_REVERT": "Massen-Zurücksetzung"
     },
     "via": {
       "registration": "bei Registrierung",

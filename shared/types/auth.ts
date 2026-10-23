@@ -15,6 +15,19 @@ export type AuditEventType =
   | 'TEA_UPDATED'
   | 'TEA_PUBLISHED'
   | 'TEA_DELETED'
+  | 'INGREDIENT_REVERTED'
+  | 'TEA_REVERTED'
+  | 'REPORT_CREATED'
+  | 'REPORT_RESOLVED'
+  | 'INGREDIENT_MERGED'
+  | 'TEA_MERGED'
+  | 'INGREDIENT_HIDDEN'
+  | 'INGREDIENT_RESTORED'
+  | 'TEA_HIDDEN'
+  | 'TEA_RESTORED'
+  | 'USER_BLOCKED'
+  | 'USER_UNBLOCKED'
+  | 'BULK_REVERT'
 
 /** Nutzer, wie ihn der Nutzer selbst und Admins sehen (enthält die E-Mail – nicht für öffentliche Ansichten). */
 export interface PublicUser {

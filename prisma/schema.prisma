@@ -21,23 +21,36 @@ enum Role {
 }
 
 model User {
-  id                 String              @id @default(uuid(7)) @db.Uuid
+  id                    String              @id @default(uuid(7)) @db.Uuid
   /// immer kleingeschrieben gespeichert
-  email              String              @unique
-  displayName        String              @db.VarChar(40)
-  passwordHash       String
-  role               Role                @default(user)
-  mustChangePassword Boolean             @default(false)
-  /// wird in Slice 05 (Moderation) gesetzt
-  blockedAt          DateTime?
-  createdAt          DateTime            @default(now())
-  lastLoginAt        DateTime?
-  sessions           Session[]
-  auditAsActor       AuditLog[]          @relation("AuditActor")
-  auditAsTarget      AuditLog[]          @relation("AuditTarget")
-  ingredientVersions IngredientVersion[] @relation("IngredientVersionAuthor")
-  teasOwned          Tea[]               @relation("TeaOwner")
-  teaVersions        TeaVersion[]        @relation("TeaVersionAuthor")
+  email                 String              @unique
+  displayName           String              @db.VarChar(40)
+  passwordHash          String
+  role                  Role                @default(user)
+  mustChangePassword    Boolean             @default(false)
+  /// gesperrt seit (05); gesperrt ist, wer blockedAt hat und dessen blockedUntil fehlt oder in der Zukunft liegt
+  blockedAt             DateTime?
+  /// null bei gesetztem blockedAt = unbefristet
+  blockedUntil          DateTime?
+  blockReason           String?             @db.VarChar(500)
+  blockedById           String?             @db.Uuid
+  blockedBy             User?               @relation("UserBlockedBy", fields: [blockedById], references: [id], onDelete: SetNull)
+  blockedUsers          User[]              @relation("UserBlockedBy")
+  createdAt             DateTime            @default(now())
+  lastLoginAt           DateTime?
+  sessions              Session[]
+  auditAsActor          AuditLog[]          @relation("AuditActor")
+  auditAsTarget         AuditLog[]          @relation("AuditTarget")
+  ingredientVersions    IngredientVersion[] @relation("IngredientVersionAuthor")
+  teasOwned             Tea[]               @relation("TeaOwner")
+  teaVersions           TeaVersion[]        @relation("TeaVersionAuthor")
+  hiddenIngredients     Ingredient[]        @relation("IngredientHiddenBy")
+  hiddenTeas            Tea[]               @relation("TeaHiddenBy")
+  ingredientBulkReverts IngredientVersion[] @relation("IngredientVersionBulkRevert")
+  teaBulkReverts        TeaVersion[]        @relation("TeaVersionBulkRevert")
+  reports               Report[]            @relation("ReportReporter")
+  reportsResolved       Report[]            @relation("ReportResolver")
+  catalogEvents         CatalogEvent[]      @relation("CatalogEventActor")
 
   @@index([displayName])
 }
@@ -71,6 +84,19 @@ enum AuditEvent {
   TEA_UPDATED
   TEA_PUBLISHED
   TEA_DELETED
+  INGREDIENT_REVERTED
+  TEA_REVERTED
+  REPORT_CREATED
+  REPORT_RESOLVED
+  INGREDIENT_MERGED
+  TEA_MERGED
+  INGREDIENT_HIDDEN
+  INGREDIENT_RESTORED
+  TEA_HIDDEN
+  TEA_RESTORED
+  USER_BLOCKED
+  USER_UNBLOCKED
+  BULK_REVERT
 }
 
 model AuditLog {
@@ -105,32 +131,52 @@ enum Caffeine {
 
 /// Identität einer Zutat; alle Inhalte stehen in den Versionen.
 model Ingredient {
-  id           String                 @id @default(uuid(7)) @db.Uuid
+  id                String                 @id @default(uuid(7)) @db.Uuid
   /// 'de' | 'en' (zod-geprüft), ändert sich nie
-  sourceLocale String                 @db.VarChar(5)
-  createdAt    DateTime               @default(now())
-  versions     IngredientVersion[]
-  teaUses      TeaVersionIngredient[]
+  sourceLocale      String                 @db.VarChar(5)
+  createdAt         DateTime               @default(now())
+  versions          IngredientVersion[]
+  teaUses           TeaVersionIngredient[]
+  // 05 – Moderation: aktiv ist eine Zutat nur ohne hiddenAt und ohne mergedIntoId (ACTIVE in server/utils/ingredients.ts)
+  hiddenAt          DateTime?
+  hiddenById        String?                @db.Uuid
+  hiddenBy          User?                  @relation("IngredientHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  hiddenReason      String?                @db.VarChar(500)
+  /// gesetzt = in diese Zutat zusammengeführt; endgültig
+  mergedIntoId      String?                @db.Uuid
+  mergedInto        Ingredient?            @relation("IngredientMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
+  mergedFrom        Ingredient[]           @relation("IngredientMerge")
+  mergedAt          DateTime?
+  /// Teeversionen, die durch das Zusammenführen dieser Zutat entstanden sind
+  teaVersionsMerged TeaVersion[]           @relation("TeaVersionMergedIngredient")
+
+  @@index([mergedIntoId])
+  @@index([hiddenAt])
 }
 
 /// Eine vollständige Version; genau eine pro Zutat ist aktuell (isCurrent).
 model IngredientVersion {
-  id           String                         @id @default(uuid(7)) @db.Uuid
-  ingredientId String                         @db.Uuid
-  ingredient   Ingredient                     @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  id             String                         @id @default(uuid(7)) @db.Uuid
+  ingredientId   String                         @db.Uuid
+  ingredient     Ingredient                     @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
   /// 1, 2, 3 … je Zutat
-  version      Int
-  isCurrent    Boolean                        @default(false)
-  caffeine     Caffeine                       @default(unknown)
+  version        Int
+  isCurrent      Boolean                        @default(false)
+  caffeine       Caffeine                       @default(unknown)
   /// 40–100
-  brewTempC    Int?                           @db.SmallInt
+  brewTempC      Int?                           @db.SmallInt
   /// 10–1800
-  brewSeconds  Int?                           @db.SmallInt
-  authorId     String?                        @db.Uuid
-  author       User?                          @relation("IngredientVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  note         String?                        @db.VarChar(200)
-  createdAt    DateTime                       @default(now())
-  translations IngredientVersionTranslation[]
+  brewSeconds    Int?                           @db.SmallInt
+  authorId       String?                        @db.Uuid
+  author         User?                          @relation("IngredientVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note           String?                        @db.VarChar(200)
+  createdAt      DateTime                       @default(now())
+  translations   IngredientVersionTranslation[]
+  /// Inhalt entspricht dieser früheren Version (Zurücksetzen, 05)
+  revertedTo     Int?                           @db.SmallInt
+  /// Massen-Zurücksetzung der Änderungen dieses Nutzers (05)
+  bulkRevertOfId String?                        @db.Uuid
+  bulkRevertOf   User?                          @relation("IngredientVersionBulkRevert", fields: [bulkRevertOfId], references: [id], onDelete: SetNull)
 
   @@unique([ingredientId, version])
 }
@@ -178,34 +224,52 @@ model Tea {
   owner        User?        @relation("TeaOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt    DateTime     @default(now())
   versions     TeaVersion[]
+  // 05 – Moderation: wie bei Ingredient
+  hiddenAt     DateTime?
+  hiddenById   String?      @db.Uuid
+  hiddenBy     User?        @relation("TeaHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  hiddenReason String?      @db.VarChar(500)
+  mergedIntoId String?      @db.Uuid
+  mergedInto   Tea?         @relation("TeaMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
+  mergedFrom   Tea[]        @relation("TeaMerge")
+  mergedAt     DateTime?
 
   @@index([ownerId])
+  @@index([mergedIntoId])
+  @@index([hiddenAt])
 }
 
 /// Eine vollständige Version inkl. Zutatenliste; genau eine pro Tee ist aktuell (isCurrent).
 model TeaVersion {
-  id           String                  @id @default(uuid(7)) @db.Uuid
-  teaId        String                  @db.Uuid
-  tea          Tea                     @relation(fields: [teaId], references: [id], onDelete: Cascade)
-  version      Int
-  isCurrent    Boolean                 @default(false)
-  visibility   Visibility              @default(private)
-  kind         TeaKind
+  id                 String                  @id @default(uuid(7)) @db.Uuid
+  teaId              String                  @db.Uuid
+  tea                Tea                     @relation(fields: [teaId], references: [id], onDelete: Cascade)
+  version            Int
+  isCurrent          Boolean                 @default(false)
+  visibility         Visibility              @default(private)
+  kind               TeaKind
   /// nur bei kind = bought
-  brand        String?                 @db.VarChar(80)
+  brand              String?                 @db.VarChar(80)
   /// normalizeName(brand) bzw. '' – Teil der Duplikatregel
-  brandKey     String                  @default("")
-  caffeine     Caffeine                @default(unknown)
+  brandKey           String                  @default("")
+  caffeine           Caffeine                @default(unknown)
   /// 40–100
-  brewTempC    Int?                    @db.SmallInt
+  brewTempC          Int?                    @db.SmallInt
   /// 10–1800
-  brewSeconds  Int?                    @db.SmallInt
-  authorId     String?                 @db.Uuid
-  author       User?                   @relation("TeaVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  note         String?                 @db.VarChar(200)
-  createdAt    DateTime                @default(now())
-  translations TeaVersionTranslation[]
-  ingredients  TeaVersionIngredient[]
+  brewSeconds        Int?                    @db.SmallInt
+  authorId           String?                 @db.Uuid
+  author             User?                   @relation("TeaVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note               String?                 @db.VarChar(200)
+  createdAt          DateTime                @default(now())
+  translations       TeaVersionTranslation[]
+  ingredients        TeaVersionIngredient[]
+  /// wie bei IngredientVersion (05)
+  revertedTo         Int?                    @db.SmallInt
+  bulkRevertOfId     String?                 @db.Uuid
+  bulkRevertOf       User?                   @relation("TeaVersionBulkRevert", fields: [bulkRevertOfId], references: [id], onDelete: SetNull)
+  /// Version entstand durch Zusammenführen dieser Zutat (Quelle) in eine andere (05)
+  mergedIngredientId String?                 @db.Uuid
+  mergedIngredient   Ingredient?             @relation("TeaVersionMergedIngredient", fields: [mergedIngredientId], references: [id], onDelete: Restrict)
 
   @@unique([teaId, version])
 }
@@ -238,4 +302,76 @@ model TeaVersionIngredient {
   @@id([versionId, position])
   @@unique([versionId, ingredientId])
   @@index([ingredientId])
+}
+
+// ---------------------------------------------------------------------------
+// 05 – Moderation
+// Zusätzlich als SQL in 0006_moderation (Prisma kennt sie nicht): partieller Unique-Index
+// "Report_open_key", CHECK-Constraints "Ingredient_merged_not_hidden" und "Tea_merged_not_hidden".
+// ---------------------------------------------------------------------------
+
+enum CatalogType {
+  ingredient
+  tea
+}
+
+enum ReportReason {
+  duplicate
+  wrong_info
+  spam
+  inappropriate
+  other
+}
+
+enum ReportStatus {
+  open
+  /// erledigt
+  resolved
+  /// abgelehnt
+  rejected
+}
+
+enum CatalogEventKind {
+  hidden
+  restored
+  merged
+}
+
+model Report {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  entityType     CatalogType
+  /// Zutat oder öffentlicher Tee; kein FK, weil zwei Tabellen (beide werden nie gelöscht)
+  entityId       String       @db.Uuid
+  reporterId     String?      @db.Uuid
+  reporter       User?        @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  reason         ReportReason
+  comment        String?      @db.VarChar(500)
+  /// nur bei reason = duplicate, gleicher entityType
+  duplicateOfId  String?      @db.Uuid
+  status         ReportStatus @default(open)
+  resolvedById   String?      @db.Uuid
+  resolvedBy     User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt     DateTime?
+  resolutionNote String?      @db.VarChar(500)
+  createdAt      DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([entityType, entityId, status])
+}
+
+/// Ereignisse ohne neue Version, für die Historie und die Liste „Ausgeblendet“
+model CatalogEvent {
+  id         BigInt           @id @default(autoincrement())
+  entityType CatalogType
+  entityId   String           @db.Uuid
+  kind       CatalogEventKind
+  actorId    String?          @db.Uuid
+  actor      User?            @relation("CatalogEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  /// Grund beim Ausblenden; nur Moderatoren sehen ihn
+  reason     String?          @db.VarChar(500)
+  /// Ziel beim Zusammenführen
+  targetId   String?          @db.Uuid
+  createdAt  DateTime         @default(now())
+
+  @@index([entityType, entityId, createdAt])
 }
