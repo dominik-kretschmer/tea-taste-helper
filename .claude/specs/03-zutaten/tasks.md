@@ -102,7 +102,7 @@ Reihenfolge:
     - 360 px ohne horizontales Scrollen, keine CSP-Verstöße.
   - Ergebnis: Alles per Playwright geprüft (Dev-Server, Testdaten mit Kennung `pw03`). Sortierung „Äpfel, Birne, Matcha, Pfefferminze“; Seite 2 per Pagination und nach Neuladen; Suche schreibt `?q` nach 300 ms, Neuladen füllt das Suchfeld; „nicht übersetzt“ bei Matcha auf Deutsch; Fallback-Hinweis de/en; `<b>` wörtlich, Zeilenumbruch erhalten; „Zuletzt geändert … von PW Tester“; Gast ohne „Bearbeiten“/„Anlegen“, angemeldet mit; Übersetzen-Link mit `?lang=`; unbekannte und ungültige ID → 404-Seite; 360 px ohne Überlauf; keine CSP- oder Konsolenfehler außer den erwarteten 404. Gefunden und behoben: Die 404-Seite zeigte „Server Error“, jetzt „Nicht gefunden.“. Dazu `formatDuration`/`parseDuration` in `app/utils/format.ts` mit Unit-Tests; „Anlegen“, „Bearbeiten“ und „Historie“ sind vorerst Platzhalter. Suite 207 Tests.
 
-- [ ] 10. Seiten: Anlegen und Bearbeiten
+- [x] 10. Seiten: Anlegen und Bearbeiten
   - Dateien: `app/components/ingredient/IngredientForm.vue`, `app/pages/ingredients/new.vue`, `app/pages/ingredients/[id]/edit.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-2.1–AK-2.3 (UI), AK-3.1–AK-3.4 (UI), AK-4.1, AK-4.2 (UI), AK-7.1, AK-7.3
   - Prüfung im Browser, auf Deutsch und Englisch:
@@ -115,6 +115,7 @@ Reihenfolge:
     - Ziehzeit wird als Minuten:Sekunden angezeigt und korrekt gespeichert.
     - Gast auf `/zutaten/neu` bzw. `/bearbeiten` landet auf `/login`.
     - 360 px ohne horizontales Scrollen, keine CSP-Verstöße.
+  - Ergebnis: Alles per Playwright geprüft, auf Deutsch und Englisch. Ähnliche Zutaten zu „Pfeferminze“; Duplikat mit Link; Feldfehler übersetzt („Mindestens 2 Zeichen“, „Höchstens 100“, Min:Sek-Hinweis, „At least 40“); Anlegen mit 5:30 → Detail „5:30 min“; Tabs mit „Original“ und „+“; `?lang=en` öffnet den Tab, die Übersetzung erscheint unter `/en/ingredients/…` ohne Fallback-Hinweis; zwei Tabs → Konflikt „jetzt Version 3“, Rückfrage, danach geladen und erfolgreich gespeichert; „Keine Änderungen“; Gast → `/login?redirect=…`; 360 px ohne Überlauf; Konsole nur mit den erwarteten 409. Gefunden und behoben: Der Slot „Ähnliche Zutaten“ und die Feldfehler erschienen auch im versteckten zweiten Sprachblock. `useFormErrors` schlüsselt Feldfehler jetzt nach vollem Pfad (`translations.en.name`), meldet Zahlengrenzen ohne „Zeichen“ und liefert Code und Details an die Seite zurück. Formularzustand und Umwandlung liegen in `app/utils/ingredientForm.ts`.
 
 - [ ] 11. Seiten: Historie und Vergleich, Audit-Anzeige
   - Dateien: `app/pages/ingredients/[id]/history.vue`, `app/components/ingredient/RevisionDiff.vue`, `app/pages/admin/audit.vue`, `i18n/locales/*.json`
