@@ -91,7 +91,7 @@ Reihenfolge:
     - Das Rate-Limit zählt erst nach der Existenzprüfung, damit 404 nicht verbraucht.
     - Die Listen nehmen `locale` für die Namen. `loadEntryInfos` benennt Einträge beider Arten, auch inaktive.
 
-- [ ] 8. API: Ausblenden und Wiederherstellen
+- [x] 8. API: Ausblenden und Wiederherstellen
   - Dateien: `server/api/admin/[type]/[id]/{hide,restore}.post.ts`, `server/api/admin/hidden.get.ts`, `server/utils/moderation.ts` (`hideEntry`, `restoreEntry`), `server/utils/ingredients.ts` (`countTeasUsing`), Revisions-Routen (`events`), Tests in `moderation.test.ts`
   - Erfüllt: AK-0.2 (Routen), AK-3.4 (Ausblenden), AK-5.1, AK-5.2, AK-5.4–AK-5.7, AK-8.1 (`*_HIDDEN`, `*_RESTORED`)
   - Prüfung (API-Tests):
@@ -105,6 +105,10 @@ Reihenfolge:
     - Gleichzeitig Ausblenden und Tee-Speichern mit dieser Zutat → genau eines gelingt.
     - Löschen privater Tees unverändert.
     - Gast 401, Nutzer 403.
+  - Ergebnis: 8 neue API-Tests (`moderation.test.ts` jetzt 24), gesamt 395 grün.
+    - Der Wettlauf läuft über 3 Runden: Es endet immer mit 204/400 oder 201/409, nie mit beiden Erfolgen (`FOR UPDATE` beim Ausblenden, `FOR SHARE` in `assertIngredientsExist`).
+    - `countTeasUsing` zählt aktuelle Versionen aller nicht zusammengeführten Tees, also auch ausgeblendete: Sie könnten wiederhergestellt werden.
+    - Die Historie liefert `RevisionPage` mit `events`.
 
 - [ ] 9. API: Zusammenführen
   - Dateien: `server/api/admin/[type]/[id]/merge.{get,post}.ts`, `server/utils/moderation.ts` (`mergeIngredients`, `mergeTeas`), Tee-Vergleich (`mergedInto` je Zutat), Tests in `moderation.test.ts`

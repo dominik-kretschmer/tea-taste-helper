@@ -2,7 +2,7 @@ import { revisionsQuerySchema } from '#shared/schemas/tea'
 
 const PAGE_SIZE = 50
 
-export default defineEventHandler(async (event): Promise<Page<RevisionEntry>> => {
+export default defineEventHandler(async (event): Promise<RevisionPage> => {
   const id = getTeaIdParam(event)
   const { page } = await getValidatedQuery(event, revisionsQuerySchema.parse)
 
@@ -20,5 +20,6 @@ export default defineEventHandler(async (event): Promise<Page<RevisionEntry>> =>
     }),
     prisma.teaVersion.count({ where: { teaId: id } }),
   ])
-  return { items: rows.map(toRevisionEntry), total, page, pageSize: PAGE_SIZE }
+  const events = await loadCatalogEvents(prisma, 'tea', id, event.context.user)
+  return { items: rows.map(toRevisionEntry), total, page, pageSize: PAGE_SIZE, events }
 })

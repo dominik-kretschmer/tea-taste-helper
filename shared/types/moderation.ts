@@ -1,6 +1,6 @@
 // Typen der Moderation (05): Meldungen, Ausblenden, Zusammenführen, Sperren, Massen-Zurücksetzen.
 import type { Role } from './auth'
-import type { AuthorRef, ContentLocale } from './catalog'
+import type { AuthorRef, ContentLocale, RevisionEntry } from './catalog'
 import type { IngredientDetail } from './ingredient'
 import type { TeaDetail } from './tea'
 
@@ -96,4 +96,13 @@ export interface CatalogEventEntry {
   reason?: string | null
   /** ID des Ziels beim Zusammenführen */
   mergedInto?: string
+}
+
+/** Antwort der Historie: Versionen seitenweise, Ereignisse vollständig (es sind wenige). */
+export interface RevisionPage {
+  items: RevisionEntry[]
+  total: number
+  page: number
+  pageSize: number
+  events: CatalogEventEntry[]
 }

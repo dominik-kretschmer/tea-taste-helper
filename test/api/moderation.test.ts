@@ -283,4 +283,124 @@ describe('Moderation', async () => {
       }
     })
   })
+
+  describe('Ausblenden und Wiederherstellen (Aufgabe 8)', () => {
+    const hideVia = (client: TestClient, type: 'ingredients' | 'teas', id: string, reason = 'Spam-Eintrag') =>
+      client.post(`/api/admin/${type}/${id}/hide`, { reason })
+    const restoreVia = (client: TestClient, type: 'ingredients' | 'teas', id: string) => client.post(`/api/admin/${type}/${id}/restore`)
+
+    it('blendet eine Zutat aus, schließt Meldungen und hält das Ereignis fest (AK-5.1, AK-3.4, AK-5.6)', async () => {
+      const id = await insertIngredient(`Werbekraut ${marker()}`)
+      expect((await anna.post('/api/reports', { entityType: 'ingredient', entityId: id, reason: 'spam' })).status).toBe(201)
+
+      expect((await hideVia(mod, 'ingredients', id, '  ')).status).toBe(400)
+      const hidden = await hideVia(mod, 'ingredients', id)
+      expect(hidden.status, hidden.text).toBe(204)
+      expect((await guest.get(`/api/ingredients/${id}`)).status).toBe(404)
+      expect((await hideVia(mod, 'ingredients', id)).status).toBe(404)
+
+      const [reportRow] = await db(`SELECT status, "resolvedById" FROM "Report" WHERE "entityId" = $1`, [id])
+      expect(reportRow).toEqual({ status: 'resolved', resolvedById: modId })
+
+      const forMod = (await mod.get(`/api/ingredients/${id}/revisions`)).body as RevisionPage
+      expect(forMod.events).toEqual([expect.objectContaining({ kind: 'hidden', actor: { displayName: 'Moni' }, reason: 'Spam-Eintrag' })])
+
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'INGREDIENT_HIDDEN' AND details->>'ingredientId' = $1`, [id])
+      expect(entry.details).toEqual({ ingredientId: id, reason: 'Spam-Eintrag' })
+    })
+
+    it('lehnt das Ausblenden verwendeter Zutaten ab (AK-5.2)', async () => {
+      const id = await insertIngredient(`Gebraucht ${marker()}`)
+      await createTea(anna, { name: `Öffentlich ${marker()}`, ingredients: [{ ingredientId: id }] })
+      await createTea(anna, { name: `Privat ${marker()}`, visibility: 'private', ingredients: [{ ingredientId: id }] })
+      const response = await hideVia(mod, 'ingredients', id)
+      expect(response.status).toBe(409)
+      expect(response.body.error).toMatchObject({ code: 'INGREDIENT_IN_USE', details: { teas: 2 } })
+    })
+
+    it('blendet öffentliche Tees aus, private nicht (AK-5.1)', async () => {
+      const ingredientId = await insertIngredient(`Tee-Zutat ${marker()}`)
+      const publicTea = await createTea(anna, { name: `Ausblendtee ${marker()}`, ingredients: [{ ingredientId }] })
+      const privateTea = await createTea(anna, { name: `Privattee ${marker()}`, visibility: 'private', ingredients: [{ ingredientId }] })
+      expect((await hideVia(mod, 'teas', privateTea.id)).status).toBe(404)
+      expect((await hideVia(mod, 'teas', publicTea.id)).status).toBe(204)
+      expect((await anna.get(`/api/teas/${publicTea.id}`)).status).toBe(404)
+      expect((await hideVia(mod, 'unknown' as 'teas', publicTea.id)).status).toBe(404)
+      // Das Löschen eigener privater Tees bleibt endgültig und unberührt (AK-5.7)
+      expect((await anna.request('DELETE', `/api/teas/${privateTea.id}`)).status).toBe(204)
+    })
+
+    it('listet Ausgeblendetes zuletzt ausgeblendet zuerst (AK-5.4)', async () => {
+      const first = await insertIngredient(`Erstes ${marker()}`)
+      const second = await insertIngredient(`Zweites ${marker()}`)
+      await hideVia(mod, 'ingredients', first, 'Grund eins')
+      await hideVia(mod, 'ingredients', second, 'Grund zwei')
+      const response = await mod.get('/api/admin/hidden?type=ingredient&locale=de')
+      expect(response.status).toBe(200)
+      const items = (response.body as Page<HiddenEntry>).items
+      const ids = items.map(item => item.entityId)
+      expect(ids.indexOf(second)).toBeLessThan(ids.indexOf(first))
+      expect(items.find(item => item.entityId === second)).toMatchObject({ entityType: 'ingredient', hiddenReason: 'Grund zwei', hiddenBy: { displayName: 'Moni' }, name: expect.stringContaining('Zweites') })
+      expect(((await mod.get('/api/admin/hidden?type=tea')).body as Page<HiddenEntry>).items.every(item => item.entityType === 'tea')).toBe(true)
+    })
+
+    it('stellt unverändert wieder her und prüft Duplikate (AK-5.5, AK-5.6)', async () => {
+      const name = `Wiederkraut ${marker()}`
+      const id = await insertIngredient(name)
+      await hideVia(mod, 'ingredients', id)
+      expect((await restoreVia(mod, 'ingredients', id)).status).toBe(204)
+      const detail = await guest.get(`/api/ingredients/${id}`)
+      expect(detail.status).toBe(200)
+      expect(detail.body.ingredient).toMatchObject({ version: 1, translations: { de: { name } } })
+      expect((await restoreVia(mod, 'ingredients', id)).status).toBe(404)
+
+      const forGuest = (await guest.get(`/api/ingredients/${id}/revisions`)).body as RevisionPage
+      expect(forGuest.events.map(event => event.kind)).toEqual(['hidden', 'restored'])
+      expect(forGuest.events[0]).not.toHaveProperty('reason')
+
+      // Während der Ausblendung wurde der Name neu vergeben
+      await hideVia(mod, 'ingredients', id)
+      const other = await anna.post('/api/ingredients', { locale: 'de', name })
+      expect(other.status).toBe(201)
+      const duplicate = await restoreVia(mod, 'ingredients', id)
+      expect(duplicate.status).toBe(409)
+      expect(duplicate.body.error).toMatchObject({ code: 'DUPLICATE_NAME', details: { ingredientId: other.body.ingredient.id } })
+    })
+
+    it('stellt Tees wieder her (AK-5.5)', async () => {
+      const ingredientId = await insertIngredient(`Wiederteezutat ${marker()}`)
+      const tea = await createTea(anna, { name: `Wiedertee ${marker()}`, ingredients: [{ ingredientId }] })
+      await hideVia(mod, 'teas', tea.id)
+      expect((await restoreVia(mod, 'teas', tea.id)).status).toBe(204)
+      expect((await guest.get(`/api/teas/${tea.id}`)).status).toBe(200)
+      const [entry] = await db(`SELECT event FROM "AuditLog" WHERE event = 'TEA_RESTORED' AND details->>'teaId' = $1`, [tea.id])
+      expect(entry).toBeTruthy()
+    })
+
+    it('lässt Ausblenden und Tee-Speichern derselben Zutat nicht beide gelingen (AK-5.2)', async () => {
+      for (let round = 0; round < 3; round++) {
+        const { client } = await registerUser()
+        const id = await insertIngredient(`Wettlauf ${round} ${marker()}`)
+        const [hideResult, teaResult] = await Promise.all([
+          hideVia(mod, 'ingredients', id),
+          client.post('/api/teas', { locale: 'de', kind: 'blended', name: `Wettlauftee ${marker()}`, ingredients: [{ ingredientId: id }] }),
+        ])
+        const outcomes = [hideResult.status, teaResult.status].sort()
+        expect([[204, 400], [201, 409]]).toContainEqual(outcomes)
+      }
+    })
+
+    it('schützt die Routen (AK-0.2)', async () => {
+      const id = await insertIngredient(`Schutzkraut ${marker()}`)
+      for (const [method, path] of [
+        ['POST', `/api/admin/ingredients/${id}/hide`],
+        ['POST', `/api/admin/ingredients/${id}/restore`],
+        ['GET', '/api/admin/hidden'],
+      ] as const) {
+        const body = method === 'POST' ? { reason: 'x' } : undefined
+        expect((await guest.request(method, path, body)).status, path).toBe(401)
+        expect((await anna.request(method, path, body)).status, path).toBe(403)
+      }
+    })
+  })
 })

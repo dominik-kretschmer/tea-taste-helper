@@ -91,3 +91,42 @@ export function assertReadable(
   }
   return {}
 }
+
+const ROUTE_TYPES: Record<string, CatalogTypeValue> = { ingredients: 'ingredient', teas: 'tea' }
+
+/** Art und ID aus `/api/admin/:type/:id/…`; unbekannte Arten und ungültige IDs gelten als nicht gefunden. */
+export function getEntryParams(event: H3Event): { entityType: CatalogTypeValue, id: string } {
+  const entityType = ROUTE_TYPES[getRouterParam(event, 'type') ?? '']
+  const notFound = () => new AppError(404, 'NOT_FOUND', 'Entry not found')
+  if (!entityType) throw notFound()
+  return { entityType, id: getUuidParam(event, notFound) }
+}
+
+/** Hält ein Ereignis ohne neue Version für die Historie fest (05 AK-5.6). */
+export async function recordCatalogEvent(db: Db, input: {
+  entityType: CatalogTypeValue
+  entityId: string
+  kind: 'hidden' | 'restored' | 'merged'
+  actorId: string
+  reason?: string | null
+  targetId?: string | null
+}): Promise<void> {
+  await db.catalogEvent.create({ data: { ...input, reason: input.reason ?? null, targetId: input.targetId ?? null } })
+}
+
+/** Ereignisse eines Eintrags für die Historie, älteste zuerst; den Grund sehen nur Moderatoren (AK-5.6). */
+export async function loadCatalogEvents(db: Db, entityType: CatalogTypeValue, entityId: string, viewer: PublicUser | null | undefined): Promise<CatalogEventEntry[]> {
+  const moderator = hasRole(viewer, 'moderator')
+  const rows = await db.catalogEvent.findMany({
+    where: { entityType, entityId },
+    include: { actor: { select: { displayName: true } } },
+    orderBy: { createdAt: 'asc' },
+  })
+  return rows.map(row => ({
+    kind: row.kind,
+    createdAt: row.createdAt.toISOString(),
+    actor: row.actor,
+    ...(moderator ? { reason: row.reason } : {}),
+    ...(row.targetId ? { mergedInto: row.targetId } : {}),
+  }))
+}
