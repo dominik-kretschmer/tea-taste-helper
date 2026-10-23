@@ -1,6 +1,6 @@
 # 05 – npm audit meldet 11 Lücken mit Schweregrad „high“
 
-> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **Entwurf – wartet auf Freigabe**
+> Chore-Issue zu [00-chore](../README.md). Phase 1: Anforderungen. Status: **geschlossen (2026-10-23)** – die Meldung zu `node-forge` wird ignoriert, Begründung in [begruendung.md](begruendung.md)
 
 ## Befund
 

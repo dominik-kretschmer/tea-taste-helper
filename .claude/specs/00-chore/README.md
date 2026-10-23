@@ -1,7 +1,7 @@
 # 00 – Chore: Projektanalyse nach Slice 03
 
 > Analyse vom 2026-10-23, Stand `5bc54f9`. Jedes Issue ist ein eigener Ordner und läuft nach dem Skill `spec-driven` (Anforderungen → Design → Aufgaben → Umsetzung), sofern nicht anders vereinbart.
-> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt; 05 (npm audit) hat bewusst noch kein Design. Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
+> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt. 05 (npm audit) ist geschlossen: Die einzige verbliebene Meldung (`node-forge`, nur Dev-Server, kein Patch) wird ignoriert, siehe [Begründung](05-chore-npm-audit/begruendung.md). Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
 
 ## Vorgehen
 
@@ -24,7 +24,7 @@ Sortiert nach Dringlichkeit; Aufwand: XS < 1 h, S ≈ halber Tag, M ≈ ein Tag.
 | 02 | [`02-sicherheit-docker-ports`](02-sicherheit-docker-ports/requirements.md) | Sicherheit | hoch | XS | Postgres, Ollama (ohne Auth) und Adminer lauschen auf allen Netzwerkschnittstellen |
 | 03 | [`03-fehler-request-log`](03-fehler-request-log/requirements.md) | Fehler | mittel | XS | Fehlerantworten unter `/api` (4xx/5xx) bekommen keine Request-Logzeile (verletzt AK-4.1 aus 01) |
 | 04 | [`04-fehler-zutat-namenslaenge`](04-fehler-zutat-namenslaenge/requirements.md) | Fehler | mittel | XS | Namen, die beim Kleinschreiben länger werden (z.B. „İ“), führen zu 500 |
-| 05 | [`05-chore-npm-audit`](05-chore-npm-audit/requirements.md) | Wartung, Sicherheit | mittel | S | `npm audit`: 11 × high (braces, micromatch, node-forge über nitropack/listhen); npm schlägt ein Downgrade auf Nuxt 4.1.3 vor |
+| 05 | [`05-chore-npm-audit`](05-chore-npm-audit/requirements.md) – **geschlossen**, [Begründung](05-chore-npm-audit/begruendung.md) | Wartung, Sicherheit | mittel | S | `npm audit`: 11 × high (braces, micromatch, node-forge über nitropack/listhen); npm schlägt ein Downgrade auf Nuxt 4.1.3 vor |
 | 06 | [`06-fehler-dunkelmodus`](06-fehler-dunkelmodus/requirements.md) | Fehler | mittel | S–M | `theme: 'system'` mit SSR: Hydration-Warnungen im dunklen Modus, die App bleibt trotzdem hell |
 | 07 | [`07-fehlerseite`](07-fehlerseite/requirements.md) | UX | mittel | M | Keine eigene Fehlerseite (englisch, ohne Layout); die Zutatenliste verschluckt API-Fehler |
 | 08 | [`08-chore-zod-csp`](08-chore-zod-csp/requirements.md) | Wartung | niedrig | XS | zod testet `new Function` → CSP-Verstoß `script-src eval` auf jeder Seite mit Formular |
