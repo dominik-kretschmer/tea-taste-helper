@@ -107,7 +107,7 @@ Reihenfolge:
     - Fremder Tee → 404.
   - Ergebnis: 5 API-Tests grün (37 in der Datei). Abweichung: ohne Notiz keine feste Notiz „veröffentlicht“ (siehe Design). Ein gescheitertes Veröffentlichen (Duplikat) lässt den Tee unverändert privat in Version 1; Gäste → 401; Admin → 404.
 
-- [ ] 10. API: Historie und Vergleich
+- [x] 10. API: Historie und Vergleich
   - Dateien: `server/api/teas/[id]/revisions.get.ts`, `server/api/teas/[id]/compare.get.ts`, `test/api/teas.test.ts`
   - Erfüllt: AK-6.1, AK-6.2
   - Prüfung (API-Tests):
@@ -115,6 +115,7 @@ Reihenfolge:
     - Vergleich mit Zutaten hinzugefügt/entfernt/verschoben/Anteil, Sichtbarkeit, Marke, inkl. Zutatennamen.
     - Fremd-privat → 404.
     - Keine Änderungsrouten auf `/revisions`.
+  - Ergebnis: 3 API-Tests grün (40 in der Datei). Der Vergleich 1 → 4 zeigt Art, Marke, Sichtbarkeit und zwei verschobene Zutaten mit neuem Anteil; 3 → 4 zeigt eine entfernte Zutat, deren Name über `ingredients` mitkommt. Fremd-private Historie und Vergleich → 404 (auch Admin, Gast).
 
 - [ ] 11. Sichtbarkeits-Matrix
   - Dateien: `test/api/teas.test.ts`

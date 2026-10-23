@@ -493,6 +493,66 @@ describe('Tee-API', async () => {
     })
   })
 
+  describe('Historie und Vergleich (AK-6)', () => {
+    it('listet Versionen neueste zuerst und vergleicht inkl. Zutaten, Marke und Sichtbarkeit', async () => {
+      const tea = await createAs(anna, { name: `Verlauf ${marker()}`, ingredients: [{ ingredientId: greenTea, percent: 60 }, { ingredientId: mint }] })
+      await anna.patch(`/api/teas/${tea.id}`, {
+        version: 1,
+        kind: 'bought',
+        brand: 'Teehaus',
+        ingredients: [{ ingredientId: mint, percent: 20 }, { ingredientId: greenTea, percent: 70 }, { ingredientId: lemongrass }],
+        note: 'umgebaut',
+      })
+      await anna.post(`/api/teas/${tea.id}/publish`, { version: 2 })
+      await ben.patch(`/api/teas/${tea.id}`, { version: 3, ingredients: [{ ingredientId: mint, percent: 20 }, { ingredientId: greenTea, percent: 70 }] })
+
+      const guest = await createClient()
+      const revisions = await guest.get(`/api/teas/${tea.id}/revisions`)
+      expect(revisions.status).toBe(200)
+      expect(revisions.body.items.map(({ createdAt, ...rest }: RevisionEntry) => rest)).toEqual([
+        { version: 4, isCurrent: true, author: { displayName: 'Ben' }, note: null },
+        { version: 3, isCurrent: false, author: { displayName: 'Anna' }, note: null },
+        { version: 2, isCurrent: false, author: { displayName: 'Anna' }, note: 'umgebaut' },
+        { version: 1, isCurrent: false, author: { displayName: 'Anna' }, note: null },
+      ])
+
+      const compare = await guest.get(`/api/teas/${tea.id}/compare?from=1&to=4`)
+      expect(compare.status).toBe(200)
+      expect(compare.body.changes).toEqual([
+        { field: 'kind', from: 'blended', to: 'bought' },
+        { field: 'brand', from: null, to: 'Teehaus' },
+        { field: 'visibility', from: 'private', to: 'public' },
+        { field: 'ingredient', ingredientId: mint, from: { position: 1, percent: null }, to: { position: 0, percent: 20 } },
+        { field: 'ingredient', ingredientId: greenTea, from: { position: 0, percent: 60 }, to: { position: 1, percent: 70 } },
+      ])
+      const removed = await guest.get(`/api/teas/${tea.id}/compare?from=3&to=4`)
+      expect(removed.body.changes).toEqual([
+        { field: 'ingredient', ingredientId: lemongrass, from: { position: 2, percent: null }, to: null },
+      ])
+      expect(Object.keys(removed.body.ingredients).sort()).toEqual([greenTea, lemongrass, mint].sort())
+      expect(removed.body.ingredients[lemongrass].translations.de.name).toMatch(/^Zitronengras/)
+    })
+
+    it('Historie und Vergleich privater Tees nur für den Ersteller', async () => {
+      const tea = await createAs(anna, { name: `Private Historie ${marker()}` })
+      for (const client of [ben, admin, await createClient()]) {
+        expect((await client.get(`/api/teas/${tea.id}/revisions`)).status).toBe(404)
+        expect((await client.get(`/api/teas/${tea.id}/compare?from=1&to=1`)).status).toBe(404)
+      }
+      expect((await anna.get(`/api/teas/${tea.id}/revisions`)).status).toBe(200)
+    })
+
+    it('404 für unbekannte Versionen, 400 für ungültige, keine Änderungsrouten', async () => {
+      const tea = await create({ name: `Unveränderlich ${marker()}`, visibility: 'public' })
+      expect((await ben.get(`/api/teas/${tea.id}/compare?from=1&to=9`)).status).toBe(404)
+      expect((await ben.get(`/api/teas/${tea.id}/compare?from=a&to=1`)).status).toBe(400)
+      for (const method of ['PATCH', 'PUT', 'DELETE']) {
+        expect((await ben.request(method, `/api/teas/${tea.id}/revisions`, {})).status).toBe(404)
+      }
+      expect((await ben.request('PUT', `/api/teas/${tea.id}`, {})).status).toBe(404)
+    })
+  })
+
   describe('Ähnliche Tees (AK-2.3)', () => {
     it('findet Tippfehler, aber nur öffentliche Tees', async () => {
       const m = marker()
