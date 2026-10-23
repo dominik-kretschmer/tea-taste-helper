@@ -1,12 +1,18 @@
 <script setup lang="ts">
-// Vergleichstabelle Feld | Sprache | vorher | nachher; auf schmalen Bildschirmen gestapelt (AK-5.2).
-defineProps<{ changes: SnapshotChange[] }>()
+// Vergleichstabelle Feld | Sprache | vorher | nachher; auf schmalen Bildschirmen gestapelt (03 AK-5.2, 04 AK-6.1).
+type DiffRow = Omit<SnapshotChange, 'field'> & { field: SnapshotChange['field'] | 'kind' | 'brand' | 'visibility' }
+
+defineProps<{ changes: DiffRow[] }>()
 
 const { t } = useI18n()
 
-function format(change: SnapshotChange, value: unknown): string {
+function format(change: DiffRow, value: unknown): string {
   if (value === null || value === undefined || value === '') return '–'
   switch (change.field) {
+    case 'kind':
+      return t(`teas.kind.${value}`)
+    case 'visibility':
+      return t(`teas.visibility.${value}`)
     case 'caffeine':
       return t(`catalog.caffeineOptions.${value}`)
     case 'brewTempC':

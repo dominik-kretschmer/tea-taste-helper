@@ -49,6 +49,16 @@ function ingredientId(entry: AuditEntry): string | null {
   return isIngredientEvent && typeof entry.details?.ingredientId === 'string' ? entry.details.ingredientId : null
 }
 
+/**
+ * Tee-Ereignisse: Link nur bei öffentlichen Tees; private sehen Admins nicht (04, AK-9.1),
+ * gelöschte gibt es nicht mehr.
+ */
+function teaLink(entry: AuditEntry): { id: string | null, version: unknown } | null {
+  if (!entry.event.startsWith('TEA_') || typeof entry.details?.teaId !== 'string') return null
+  const linkable = !entry.details.private && entry.event !== 'TEA_DELETED'
+  return { id: linkable ? entry.details.teaId : null, version: entry.details.version }
+}
+
 function describe(entry: AuditEntry): string {
   const details = entry.details ?? {}
   if (entry.event === 'ROLE_CHANGED') {
@@ -118,6 +128,15 @@ function describe(entry: AuditEntry): string {
           <NuxtLink :to="localePath({ name: 'ingredients-id', params: { id: ingredientId(item) } })">
             {{ t('audit.showIngredient') }}
           </NuxtLink>
+        </template>
+        <template v-else-if="teaLink(item)">
+          <template v-if="teaLink(item)!.version">
+            {{ t('audit.version', { version: teaLink(item)!.version }) }} ·
+          </template>
+          <NuxtLink v-if="teaLink(item)!.id" :to="localePath({ name: 'teas-id', params: { id: teaLink(item)!.id } })">
+            {{ t('audit.showTea') }}
+          </NuxtLink>
+          <span v-else class="text-medium-emphasis">{{ t('audit.privateTea') }}</span>
         </template>
         <template v-else>
           {{ describe(item) }}

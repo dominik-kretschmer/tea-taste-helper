@@ -158,7 +158,9 @@
     },
     "blocked": "blocked",
     "version": "Version {version}",
-    "showIngredient": "Show ingredient"
+    "showIngredient": "Show ingredient",
+    "showTea": "Show tea",
+    "privateTea": "private tea"
   },
   "catalog": {
     "fields": {

@@ -174,13 +174,20 @@ Reihenfolge:
     - Gefunden und behoben: Duplikat- und Konflikttext sprachen von „Zutat“; Tees haben jetzt eigene Texte (`teas.errors.duplicate`, `teas.editPage.conflict`), der Zutaten-Konflikttext liegt wieder unter `ingredients.*`.
     - Suite 278 Tests grün.
 
-- [ ] 15. Historie, Zutatenseite, Audit-Anzeige
+- [x] 15. Historie, Zutatenseite, Audit-Anzeige
   - Dateien: `app/pages/teas/[id]/history.vue`, `app/components/tea/TeaRevisionDiff.vue`, `app/pages/ingredients/[id]/index.vue` („Enthalten in“), `app/pages/admin/audit.vue`
   - Erfüllt: AK-6.1 (UI), AK-8.1, AK-9.1 (UI)
   - Prüfung im Browser:
     - Historie mit Zutaten-Diff („+ Minze 20 %“, „Grüntee 60 % → 70 %“, Position), Standardvergleich, 360 px gestapelt.
     - Zutatenseite zeigt bis 10 öffentliche Tees und „alle anzeigen“ → gefilterte Liste; private erscheinen nicht.
     - Audit-Zeilen für alle vier Ereignisse, Link nur bei öffentlichen Tees.
+  - Ergebnis: Per Playwright geprüft (de/en, 360 px).
+    - Historie zeigt „Marke: Teehaus pw04 → Teehaus pw04 Neu“ und die Zutaten als „Pfefferminze: 20 % → 30 %, Position 2 → 1“, „+ Äpfel (5 %)“, „− Birne“.
+    - „Enthalten in“ zeigt 10 Tees und „Alle 18 anzeigen“ → gefilterte Liste mit Chip.
+    - Ein frisch angelegter privater Tee ist für Gäste nicht vorhanden (Detail und Historie 404, nicht auf der Zutatenseite).
+    - Audit: alle vier Ereignisse mit Version; „Tee anzeigen“ nur bei öffentlichen, „privater Tee“ ohne Link bei gelöschten bzw. privaten.
+    - `CatalogRevisionDiff` formatiert dafür auch Art, Marke und Sichtbarkeit.
+    - Suite 284 Tests grün (unter der gemeinsamen Test-Sperre).
 
 - [ ] 16. Dokumentation
   - Dateien: `README.md` (Tees, SQL-Objekt `TeaVersion_current_key`, neue Fehlercodes), `.claude/skills/nuxt-dev/SKILL.md`

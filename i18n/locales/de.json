@@ -158,7 +158,9 @@
     },
     "blocked": "gesperrt",
     "version": "Version {version}",
-    "showIngredient": "Zutat anzeigen"
+    "showIngredient": "Zutat anzeigen",
+    "showTea": "Tee anzeigen",
+    "privateTea": "privater Tee"
   },
   "catalog": {
     "fields": {
