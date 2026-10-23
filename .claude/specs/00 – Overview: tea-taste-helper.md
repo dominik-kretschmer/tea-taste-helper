@@ -23,8 +23,8 @@ Hintergrund: Zutaten allein sagen den Geschmack nur grob voraus (Anteile, Wechse
 ## 3. Nutzer & Rollen
 
 - Öffentliches Mehrnutzer-Produkt.
-- **Nutzer:** Katalog anlegen/bearbeiten, Einträge melden, eigener Vorrat, Bewertungen, private Tees.
-- **Moderator:** Änderungen zurücksetzen, Nutzer sperren, Duplikate zusammenführen.
+- **Nutzer:** Katalog anlegen/bearbeiten, auf ältere Versionen zurücksetzen, Einträge melden, eigener Vorrat, Bewertungen, private Tees.
+- **Moderator:** Meldungen bearbeiten, alle Änderungen eines Nutzers zurücksetzen, Nutzer sperren (befristet/unbefristet), Duplikate zusammenführen, Einträge ausblenden (weich löschen) und wiederherstellen.
 - **Admin:** Rollen vergeben, Systemlisten (Eigenschaften, Stimmungen, Wirkungen) und Einstellungen pflegen.
 - Admin-/Moderationsbereich unter `/admin`. Rechte werden **immer serverseitig** geprüft, nicht nur im UI versteckt.
 
