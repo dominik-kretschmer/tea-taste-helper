@@ -1,7 +1,7 @@
 # 03 – Zutaten
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 03 (§2 Begriffe, §4 Katalog, §8 Mehrsprachigkeit, §13 Audit-Log). Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-22)**
+> Status: **umgesetzt (2026-10-23)**
 
 ## Ziel
 

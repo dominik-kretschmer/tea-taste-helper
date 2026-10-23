@@ -1,6 +1,6 @@
 # Aufgaben: 03 – Zutaten
 
-> Phase 3 zu [design.md](design.md). Status: **freigegeben (2026-10-23)**
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-23)**
 
 Reihenfolge:
 - Datenmodell → gemeinsame Regeln → Server-Bausteine → API → UI → Dokumentation → Endabnahme.
@@ -132,7 +132,7 @@ Reihenfolge:
   - Prüfung: README und Skill erklären, warum neue Migrationen vor dem Anwenden geprüft werden und welche Indizes erhalten bleiben müssen.
   - Ergebnis: README hat die Abschnitte „Zutaten“ und „Migrationen“ (Tabelle der SQL-Objekte, Ablauf mit `--create-only`, angewendete Migrationen nicht ändern) und die neuen Fehlercodes. Im Skill `nuxt-dev` stehen der Befehl und zwei Hinweise: die SQL-Objekte und das Ordnerpräfix bei Komponenten.
 
-- [ ] 13. Abschluss
+- [x] 13. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
   - Ablauf:
     1. `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei.
@@ -140,3 +140,31 @@ Reihenfolge:
     3. Jedes AK einzeln prüfen und als Tabelle (AK | Ergebnis | Nachweis) melden.
     4. Status von `requirements.md`, `design.md` und `tasks.md` auf „umgesetzt“ setzen.
     5. Push nur nach Rücksprache.
+  - Endabnahme (2026-10-23): `lint`, `typecheck`, 207 Tests und `build` sind grün. Production-Server (`.output`) mit Login (`__Host-session`), CSP und HSTS geprüft. Testdaten in der Dev-DB wieder gelöscht.
+  - CSP: Auf allen neuen Seiten (de/en, Dev und Production) meldet der Browser nur `script-src eval` aus zod. zod prüft beim Laden mit `new Function`, ob JIT erlaubt ist, fängt die Ablehnung ab und arbeitet ohne JIT weiter. Das passiert genauso auf `/login` und `/register` aus 02, ist also kein Verstoß durch 03 und blockiert nichts. Abschalten ließe es sich mit `z.config({ jitless: true })`; offen für eine eigene Änderung.
+
+    | AK | Ergebnis | Nachweis |
+    |---|---|---|
+    | 0.1, 0.2 | ✅ | Migration `0003_ingredients`, Schemas; API-Test „Anlegen“ (Felder, `sourceLocale`) |
+    | 1.1 | ✅ | API-Test Sortierung mit Umlauten und 24/Seite; Browser `/zutaten` und `/en/ingredients`, Seite 2, Neuladen |
+    | 1.2 | ✅ | API-Tests Suche über Sprachen, `%`/`_` wörtlich, keine alten Namen; Browser Suche mit `?q` |
+    | 1.3 | ✅ | Unit `pickTranslation`; API `translated`; Browser „nicht übersetzt“ und Fallback-Hinweis de/en |
+    | 1.4 | ✅ | API `updatedBy` ohne E-Mail; Browser „Zuletzt geändert … von …“ |
+    | 1.5 | ✅ | UUID-Pfade; API 404 für unbekannte/ungültige ID; Browser 404-Seite |
+    | 2.1 | ✅ | API Version 1 mit Autor; Browser Anlegen → Detailseite |
+    | 2.2 | ✅ | API Tippfehler/Teilwort, max. 5; Browser „Ähnliche Zutaten“ beim Tippen |
+    | 2.3 | ✅ | API 409 mit ID, andere Schreibweise, 5 gleichzeitige → eine 201; Browser Meldung mit Link |
+    | 2.4 | ✅ | API Gast 401; Browser Anmelde-Hinweis statt Button, Gast → `/login` |
+    | 3.1 | ✅ | API Version 2 mit Autor und Notiz; Browser Bearbeiten → Detail, Notiz in Historie |
+    | 3.2 | ✅ | API `EDIT_CONFLICT` mit `currentVersion`, 3 gleichzeitige → eine 200; Browser zwei Tabs, Rückfrage, „Aktuelle Fassung laden“ |
+    | 3.3 | ✅ | API `changed: false` ohne Version/Audit; Browser „Keine Änderungen“ |
+    | 3.4 | ✅ | API Umbenennen in Duplikat → 409, eigene Schreibweise erlaubt |
+    | 3.5 | ✅ | API 31. Änderung → 429 mit `Retry-After`, gilt auch fürs Anlegen |
+    | 3.6 | ✅ | API `PUT`/`DELETE` auf Zutat → 404 |
+    | 4.1–4.3 | ✅ | API Übersetzung hinzufügen, Duplikat in neuer Sprache; Unit: Schema ohne Entfernen; Browser Tabs, `?lang=en` |
+    | 5.1–5.3 | ✅ | API Historie, Vergleich, keine Änderungsrouten, Index „eine aktuelle Version“; Browser Historie mit Vergleich, 360 px gestapelt |
+    | 6.1 | ✅ | API Audit `INGREDIENT_CREATED`/`UPDATED` mit ID, Version, Sprachen; Browser Audit-Zeile mit Link |
+    | 7.1 | ✅ | Unit-Grenzwerte; Browser übersetzte Feldfehler de/en |
+    | 7.2 | ✅ | API `<script>` unverändert; Browser `<b>` wörtlich, Zeilenumbrüche erhalten |
+    | 7.3 | ✅ | Unit-Test Sprachdateien; Browser de/en, 360 px ohne Überlauf; CSP siehe oben |
+    | 7.4 | ✅ | 53 Unit-Tests `ingredient.test.ts`, 30 API-Tests `ingredients.test.ts` |
