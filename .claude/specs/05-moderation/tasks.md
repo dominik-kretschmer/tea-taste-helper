@@ -32,7 +32,7 @@ Reihenfolge:
     - Bestehende Tests grün.
   - Ergebnis: Ordner `0006_moderation` (von Prisma erzeugt, umbenannt wie 0001–0005, ergänzt um `Report_open_key`, `Ingredient_merged_not_hidden`, `Tea_merged_not_hidden`). Kein `DROP`. Dev-DB: `migrate status` aktuell, `migrate diff` leer, alle partiellen Indizes und GIN-Indizes aus 0003/0004 sowie die neuen Objekte vorhanden; die Test-DB migriert `globalSetup` per `migrate deploy`. 336 Tests grün.
 
-- [ ] 4. Typen, Regeln und Schemas
+- [x] 4. Typen, Regeln und Schemas
   - Dateien: `shared/types/moderation.ts`, `shared/types/catalog.ts` (`RevisionEntry`-Felder, `ModerationState`), `shared/utils/moderation.ts` (`BLOCK_DURATIONS`, `blockedUntil`, `isBlocked`, `combineIngredients`), `shared/schemas/moderation.ts`, `shared/schemas/catalog.ts` (`revertSchema`), `app/composables/useFormErrors.ts` (falls neue Codes nötig), `test/unit/moderation.test.ts`
   - Erfüllt: AK-2.1, AK-2.2 (Regel), AK-4.3 (Regel), AK-6.1, AK-6.3 (Regel), AK-9.1
   - Prüfung (Unit-Tests):
@@ -40,6 +40,7 @@ Reihenfolge:
     - `blockSchema`, `hideSchema` (leerer Grund → Fehler), `revertSchema`.
     - `blockedUntil` für alle Dauern; `isBlocked` (nie gesperrt, unbefristet, läuft noch, abgelaufen).
     - `combineIngredients`: nur Quelle, beide mit beiden/einem/keinem Anteil, Position des Ziels bleibt, Reihenfolge der übrigen.
+  - Ergebnis: 24 Unit-Tests grün (Unit gesamt 222), Lint und Typecheck grün. Zusätzlich Schemas für die Listenabfragen (`reportListQuerySchema`, `hiddenListQuerySchema`, `moderationUsersQuerySchema`, `mergePreviewQuerySchema`); `bulkRevertSchema` lehnt Daten in der Zukunft ab. Abweichung: Die neuen `RevisionEntry`-Felder kommen erst mit Aufgabe 6, zusammen mit den Revisions-Routen, die sie füllen – sonst wäre der Typ zwischendurch falsch. `useFormErrors` braucht keine neuen Codes (`required` gibt es schon).
 
 - [ ] 5. Zustand „aktiv“ in allen bestehenden Abfragen
   - Dateien: `server/utils/ingredients.ts`, `server/utils/teas.ts` (`ACTIVE`, `activeSql`; Liste, Suche, `similar`, Detail, Duplikatregel, „Enthalten in“; `assertIngredientsExist` nur aktive, mit `FOR SHARE`), `server/utils/catalog.ts` (`CatalogType`, `assertEntryActive`, `lockEntry`, `recordCatalogEvent`), `server/api/{ingredients,teas}/[id]/{index.get,revisions.get,compare.get,index.patch}.ts`

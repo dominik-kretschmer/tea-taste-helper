@@ -42,3 +42,10 @@ export interface SnapshotChange {
   from: unknown
   to: unknown
 }
+
+/** Nur für Moderatoren an Detail-Antworten ausgeblendeter Einträge (05 AK-5.4) */
+export interface ModerationState {
+  hiddenAt: string
+  hiddenBy: AuthorRef | null
+  hiddenReason: string
+}

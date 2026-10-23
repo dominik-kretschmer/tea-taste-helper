@@ -55,3 +55,10 @@ export const compareQuerySchema = z.object({
   from: z.coerce.number().int().min(1),
   to: z.coerce.number().int().min(1),
 })
+
+/** Zurücksetzen auf `to`; `version` ist die geladene aktuelle Version (Konfliktschutz, 05 AK-1.1, AK-1.3). */
+export const revertSchema = z.object({
+  version: z.number().int().min(1),
+  to: z.number().int().min(1),
+  note: noteSchema,
+})
