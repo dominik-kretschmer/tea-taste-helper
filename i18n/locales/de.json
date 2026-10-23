@@ -14,7 +14,8 @@
     "home": "Start",
     "ingredients": "Zutaten",
     "menu": "Menü öffnen",
-    "main": "Hauptnavigation"
+    "main": "Hauptnavigation",
+    "teas": "Tees"
   },
   "home": {
     "title": "Willkommen",
@@ -82,7 +83,10 @@
     "PASSWORD_CHANGE_REQUIRED": "Bitte lege zuerst ein neues Passwort fest.",
     "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "DUPLICATE_NAME": "In dieser Sprache gibt es schon eine Zutat mit diesem Namen.",
-    "EDIT_CONFLICT": "Jemand anderes hat die Zutat inzwischen geändert."
+    "EDIT_CONFLICT": "Jemand anderes hat die Zutat inzwischen geändert.",
+    "INGREDIENT_NOT_FOUND": "Eine der Zutaten gibt es nicht (mehr).",
+    "ALREADY_PUBLIC": "Der Tee ist bereits öffentlich.",
+    "TEA_PUBLIC": "Öffentliche Tees können nicht gelöscht werden."
   },
   "common": {
     "cancel": "Abbrechen",
@@ -175,6 +179,34 @@
     "tabs": {
       "source": "Original",
       "missing": "Übersetzung fehlt"
+    },
+    "caffeine": {
+      "yes": "Mit Koffein",
+      "no": "Koffeinfrei",
+      "unknown": "Koffein unbekannt"
+    },
+    "brew": {
+      "title": "Zubereitung",
+      "temp": "{temp} °C",
+      "time": "{time} min",
+      "none": "Kein Zubereitungshinweis"
+    },
+    "diff": {
+      "field": "Feld",
+      "locale": "Sprache",
+      "before": "vorher",
+      "after": "nachher"
+    },
+    "diffFields": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "caffeine": "Koffein",
+      "brewTempC": "Temperatur",
+      "brewSeconds": "Ziehzeit",
+      "kind": "Art",
+      "brand": "Marke",
+      "visibility": "Sichtbarkeit",
+      "ingredient": "Zutat"
     }
   },
   "ingredients": {
@@ -191,17 +223,6 @@
     "lastChanged": "Zuletzt geändert am {date} von {name}",
     "deletedAccount": "gelöschtes Konto",
     "noDescription": "Noch keine Beschreibung.",
-    "caffeine": {
-      "yes": "Mit Koffein",
-      "no": "Koffeinfrei",
-      "unknown": "Koffein unbekannt"
-    },
-    "brew": {
-      "title": "Zubereitung",
-      "temp": "{temp} °C",
-      "time": "{time} min",
-      "none": "Kein Zubereitungshinweis"
-    },
     "similar": {
       "title": "Ähnliche Zutaten – gibt es sie schon?"
     },
@@ -227,19 +248,83 @@
       "compare": "Vergleich: Version {from} → {to}",
       "noChanges": "Keine Unterschiede.",
       "noNote": "ohne Notiz"
+    }
+  },
+  "teas": {
+    "title": "Tees",
+    "tabs": {
+      "all": "Alle",
+      "mine": "Meine"
+    },
+    "search": "Tees suchen",
+    "create": "Tee anlegen",
+    "loginToCreate": "Melde dich an, um Tees anzulegen oder zu bearbeiten.",
+    "empty": "Keine Tees gefunden.",
+    "filterIngredient": "Enthält: {name}",
+    "kind": {
+      "bought": "Gekauft",
+      "blended": "Selbst gemischt"
+    },
+    "visibility": {
+      "private": "Privat",
+      "public": "Öffentlich"
+    },
+    "fields": {
+      "kind": "Art",
+      "brand": "Marke",
+      "ingredients": "Zutaten",
+      "percent": "Anteil (%)",
+      "visibility": "Öffentlich zeigen",
+      "visibilityHint": "Öffentliche Tees können alle bearbeiten. Das lässt sich nicht rückgängig machen."
+    },
+    "ingredients": {
+      "search": "Zutat suchen und hinzufügen",
+      "noPercent": "ohne Angabe",
+      "sum": "Summe: {sum} %",
+      "rest": "Rest unbekannt: {rest} %",
+      "moveUp": "{name} nach oben",
+      "moveDown": "{name} nach unten",
+      "remove": "{name} entfernen",
+      "missing": "Zutat fehlt? Neu anlegen",
+      "empty": "Noch keine Zutaten ausgewählt."
+    },
+    "caffeineHint": "laut Zutaten koffeinhaltig",
+    "createdBy": "Erstellt von {name}",
+    "similar": {
+      "title": "Ähnliche öffentliche Tees – gibt es ihn schon?"
+    },
+    "new": {
+      "title": "Tee anlegen"
+    },
+    "publish": {
+      "action": "Veröffentlichen",
+      "title": "Tee veröffentlichen?",
+      "text": "Danach sehen ihn alle, und alle Angemeldeten können ihn bearbeiten. Das lässt sich nicht rückgängig machen.",
+      "done": "Der Tee ist jetzt öffentlich."
+    },
+    "delete": {
+      "action": "Löschen",
+      "title": "Tee löschen?",
+      "text": "Der Tee und alle seine Versionen werden endgültig gelöscht."
+    },
+    "editPage": {
+      "title": "{name} bearbeiten"
+    },
+    "duplicateLink": "Zum bestehenden Tee",
+    "historyPage": {
+      "title": "Historie: {name}",
+      "back": "Zurück zum Tee"
     },
     "diff": {
-      "field": "Feld",
-      "locale": "Sprache",
-      "before": "vorher",
-      "after": "nachher"
+      "added": "+ {name}",
+      "removed": "− {name}",
+      "percent": "{percent} %",
+      "position": "Position {position}"
     },
-    "diffFields": {
-      "name": "Name",
-      "description": "Beschreibung",
-      "caffeine": "Koffein",
-      "brewTempC": "Temperatur",
-      "brewSeconds": "Ziehzeit"
+    "containedIn": {
+      "title": "Enthalten in",
+      "empty": "Noch in keinem öffentlichen Tee.",
+      "all": "Alle {total} anzeigen"
     }
   }
 }

@@ -14,7 +14,8 @@
     "home": "Home",
     "ingredients": "Ingredients",
     "menu": "Open menu",
-    "main": "Main navigation"
+    "main": "Main navigation",
+    "teas": "Teas"
   },
   "home": {
     "title": "Welcome",
@@ -82,7 +83,10 @@
     "PASSWORD_CHANGE_REQUIRED": "Please choose a new password first.",
     "UNKNOWN": "Something went wrong. Please try again.",
     "DUPLICATE_NAME": "An ingredient with this name already exists in this language.",
-    "EDIT_CONFLICT": "Someone else has changed this ingredient in the meantime."
+    "EDIT_CONFLICT": "Someone else has changed this ingredient in the meantime.",
+    "INGREDIENT_NOT_FOUND": "One of the ingredients does not exist (anymore).",
+    "ALREADY_PUBLIC": "The tea is already public.",
+    "TEA_PUBLIC": "Public teas cannot be deleted."
   },
   "common": {
     "cancel": "Cancel",
@@ -175,6 +179,34 @@
     "tabs": {
       "source": "Original",
       "missing": "Translation missing"
+    },
+    "caffeine": {
+      "yes": "Contains caffeine",
+      "no": "Caffeine-free",
+      "unknown": "Caffeine unknown"
+    },
+    "brew": {
+      "title": "Preparation",
+      "temp": "{temp} °C",
+      "time": "{time} min",
+      "none": "No preparation notes"
+    },
+    "diff": {
+      "field": "Field",
+      "locale": "Language",
+      "before": "before",
+      "after": "after"
+    },
+    "diffFields": {
+      "name": "Name",
+      "description": "Description",
+      "caffeine": "Caffeine",
+      "brewTempC": "Temperature",
+      "brewSeconds": "Steeping time",
+      "kind": "Type",
+      "brand": "Brand",
+      "visibility": "Visibility",
+      "ingredient": "Ingredient"
     }
   },
   "ingredients": {
@@ -191,17 +223,6 @@
     "lastChanged": "Last changed on {date} by {name}",
     "deletedAccount": "deleted account",
     "noDescription": "No description yet.",
-    "caffeine": {
-      "yes": "Contains caffeine",
-      "no": "Caffeine-free",
-      "unknown": "Caffeine unknown"
-    },
-    "brew": {
-      "title": "Preparation",
-      "temp": "{temp} °C",
-      "time": "{time} min",
-      "none": "No preparation notes"
-    },
     "similar": {
       "title": "Similar ingredients – does it already exist?"
     },
@@ -227,19 +248,83 @@
       "compare": "Comparison: version {from} → {to}",
       "noChanges": "No differences.",
       "noNote": "no note"
+    }
+  },
+  "teas": {
+    "title": "Teas",
+    "tabs": {
+      "all": "All",
+      "mine": "Mine"
+    },
+    "search": "Search teas",
+    "create": "Add tea",
+    "loginToCreate": "Sign in to add or edit teas.",
+    "empty": "No teas found.",
+    "filterIngredient": "Contains: {name}",
+    "kind": {
+      "bought": "Bought",
+      "blended": "Own blend"
+    },
+    "visibility": {
+      "private": "Private",
+      "public": "Public"
+    },
+    "fields": {
+      "kind": "Type",
+      "brand": "Brand",
+      "ingredients": "Ingredients",
+      "percent": "Share (%)",
+      "visibility": "Make public",
+      "visibilityHint": "Everyone can edit public teas. This cannot be undone."
+    },
+    "ingredients": {
+      "search": "Search and add an ingredient",
+      "noPercent": "not specified",
+      "sum": "Total: {sum} %",
+      "rest": "Unknown rest: {rest} %",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "remove": "Remove {name}",
+      "missing": "Ingredient missing? Add it",
+      "empty": "No ingredients selected yet."
+    },
+    "caffeineHint": "contains caffeine according to its ingredients",
+    "createdBy": "Created by {name}",
+    "similar": {
+      "title": "Similar public teas – does it already exist?"
+    },
+    "new": {
+      "title": "Add tea"
+    },
+    "publish": {
+      "action": "Publish",
+      "title": "Publish tea?",
+      "text": "Everyone will see it, and every signed-in user can edit it. This cannot be undone.",
+      "done": "The tea is now public."
+    },
+    "delete": {
+      "action": "Delete",
+      "title": "Delete tea?",
+      "text": "The tea and all of its versions will be deleted permanently."
+    },
+    "editPage": {
+      "title": "Edit {name}"
+    },
+    "duplicateLink": "Go to the existing tea",
+    "historyPage": {
+      "title": "History: {name}",
+      "back": "Back to tea"
     },
     "diff": {
-      "field": "Field",
-      "locale": "Language",
-      "before": "before",
-      "after": "after"
+      "added": "+ {name}",
+      "removed": "− {name}",
+      "percent": "{percent} %",
+      "position": "Position {position}"
     },
-    "diffFields": {
-      "name": "Name",
-      "description": "Description",
-      "caffeine": "Caffeine",
-      "brewTempC": "Temperature",
-      "brewSeconds": "Steeping time"
+    "containedIn": {
+      "title": "Contained in",
+      "empty": "Not part of any public tea yet.",
+      "all": "Show all {total}"
     }
   }
 }

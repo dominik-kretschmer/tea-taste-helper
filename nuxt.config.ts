@@ -55,6 +55,11 @@ export default defineNuxtConfig({
       'ingredients-id': { de: '/zutaten/[id]', en: '/ingredients/[id]' },
       'ingredients-id-edit': { de: '/zutaten/[id]/bearbeiten', en: '/ingredients/[id]/edit' },
       'ingredients-id-history': { de: '/zutaten/[id]/historie', en: '/ingredients/[id]/history' },
+      'teas': { de: '/tees', en: '/teas' },
+      'teas-new': { de: '/tees/neu', en: '/teas/new' },
+      'teas-id': { de: '/tees/[id]', en: '/teas/[id]' },
+      'teas-id-edit': { de: '/tees/[id]/bearbeiten', en: '/teas/[id]/edit' },
+      'teas-id-history': { de: '/tees/[id]/historie', en: '/teas/[id]/history' },
     },
     detectBrowserLanguage: {
       useCookie: true,

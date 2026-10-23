@@ -21,17 +21,17 @@ const caffeineChip = computed(() => ({
 <template>
   <div class="d-flex flex-wrap ga-2 align-center">
     <v-chip :prepend-icon="caffeineChip.icon" :color="caffeineChip.color" size="small" variant="tonal">
-      {{ t(`ingredients.caffeine.${caffeine}`) }}
+      {{ t(`catalog.caffeine.${caffeine}`) }}
     </v-chip>
     <template v-if="!compact">
       <v-chip v-if="brewTempC != null" :prepend-icon="mdiThermometer" size="small" variant="tonal">
-        {{ t('ingredients.brew.temp', { temp: brewTempC }) }}
+        {{ t('catalog.brew.temp', { temp: brewTempC }) }}
       </v-chip>
       <v-chip v-if="brewSeconds != null" :prepend-icon="mdiTimerOutline" size="small" variant="tonal">
-        {{ t('ingredients.brew.time', { time: formatDuration(brewSeconds) }) }}
+        {{ t('catalog.brew.time', { time: formatDuration(brewSeconds) }) }}
       </v-chip>
       <span v-if="brewTempC == null && brewSeconds == null" class="text-body-2 text-medium-emphasis">
-        {{ t('ingredients.brew.none') }}
+        {{ t('catalog.brew.none') }}
       </span>
     </template>
   </div>

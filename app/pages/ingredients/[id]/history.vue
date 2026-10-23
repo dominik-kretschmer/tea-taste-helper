@@ -96,7 +96,7 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
           {{ t('ingredients.historyPage.compare', { from: compareFrom, to: compareTo }) }}
         </h2>
         <v-progress-linear v-if="comparing" indeterminate class="mb-2" />
-        <IngredientRevisionDiff v-if="comparison?.changes.length" :changes="comparison.changes" />
+        <CatalogRevisionDiff v-if="comparison?.changes.length" :changes="comparison.changes" />
         <p v-else-if="comparison" class="text-body-1 text-medium-emphasis">
           {{ t('ingredients.historyPage.noChanges') }}
         </p>

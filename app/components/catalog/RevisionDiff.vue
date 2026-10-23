@@ -10,9 +10,9 @@ function format(change: SnapshotChange, value: unknown): string {
     case 'caffeine':
       return t(`catalog.caffeineOptions.${value}`)
     case 'brewTempC':
-      return t('ingredients.brew.temp', { temp: value as number })
+      return t('catalog.brew.temp', { temp: value as number })
     case 'brewSeconds':
-      return t('ingredients.brew.time', { time: formatDuration(value as number) })
+      return t('catalog.brew.time', { time: formatDuration(value as number) })
     default:
       return String(value)
   }
@@ -20,19 +20,19 @@ function format(change: SnapshotChange, value: unknown): string {
 </script>
 
 <template>
-  <div class="diff" role="table" :aria-label="t('ingredients.diff.field')">
+  <div class="diff" role="table" :aria-label="t('catalog.diff.field')">
     <div class="diff-row diff-head" role="row">
-      <span role="columnheader">{{ t('ingredients.diff.field') }}</span>
-      <span role="columnheader">{{ t('ingredients.diff.locale') }}</span>
-      <span role="columnheader">{{ t('ingredients.diff.before') }}</span>
-      <span role="columnheader">{{ t('ingredients.diff.after') }}</span>
+      <span role="columnheader">{{ t('catalog.diff.field') }}</span>
+      <span role="columnheader">{{ t('catalog.diff.locale') }}</span>
+      <span role="columnheader">{{ t('catalog.diff.before') }}</span>
+      <span role="columnheader">{{ t('catalog.diff.after') }}</span>
     </div>
     <div v-for="(change, index) in changes" :key="index" class="diff-row" role="row">
-      <span role="cell" class="font-weight-medium">{{ t(`ingredients.diffFields.${change.field}`) }}</span>
-      <span role="cell" :data-label="t('ingredients.diff.locale')">{{ change.locale ? t(`language.${change.locale}`) : '–' }}</span>
+      <span role="cell" class="font-weight-medium">{{ t(`catalog.diffFields.${change.field}`) }}</span>
+      <span role="cell" :data-label="t('catalog.diff.locale')">{{ change.locale ? t(`language.${change.locale}`) : '–' }}</span>
       <!-- Nur Text-Interpolation (AK-7.2) -->
-      <span role="cell" class="value before" :data-label="t('ingredients.diff.before')">{{ format(change, change.from) }}</span>
-      <span role="cell" class="value after" :data-label="t('ingredients.diff.after')">{{ format(change, change.to) }}</span>
+      <span role="cell" class="value before" :data-label="t('catalog.diff.before')">{{ format(change, change.from) }}</span>
+      <span role="cell" class="value after" :data-label="t('catalog.diff.after')">{{ format(change, change.to) }}</span>
     </div>
   </div>
 </template>

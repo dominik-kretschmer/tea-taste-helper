@@ -40,7 +40,7 @@ useHead({ title: () => text.value?.text.name ?? t('ingredients.title') })
         </template>
       </v-alert>
 
-      <IngredientFacts :caffeine="ingredient.caffeine" :brew-temp-c="ingredient.brewTempC" :brew-seconds="ingredient.brewSeconds" class="mb-4" />
+      <CatalogFactChips :caffeine="ingredient.caffeine" :brew-temp-c="ingredient.brewTempC" :brew-seconds="ingredient.brewSeconds" class="mb-4" />
 
       <!-- Nur Text-Interpolation, nie v-html (AK-7.2); Zeilenumbrüche per CSS -->
       <p v-if="text.text.description" class="text-body-1 description mb-4">

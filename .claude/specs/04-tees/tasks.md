@@ -126,10 +126,11 @@ Reihenfolge:
     - Für A selbst funktioniert alles.
   - Ergebnis: Grün. Gast bekommt auf Schreibrouten 401 (Anmeldung wird zuerst geprüft), sonst 404; Nutzer, Moderator und Admin bekommen überall 404; Liste, Zutatenfilter, `similar` und „Meine“ enthalten den Tee nicht. Für die Erstellerin funktionieren Detail, Historie, „Meine“, Bearbeiten und Löschen.
 
-- [ ] 12. Sprachpfade, Navigation, Texte
+- [x] 12. Sprachpfade, Navigation, Texte
   - Dateien: `nuxt.config.ts` (`i18n.pages`), `app/components/AppNav.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-10.3 (Navigation, Texte)
   - Prüfung im Browser: `/tees` und `/en/teas` erreichbar; Sprachumschalter; „Tees“ in App-Bar und Drawer (360 px); bestehende Seiten unverändert.
+  - Ergebnis: Per Playwright geprüft: App-Bar „Tees, Zutaten“, Drawer „Start, Tees, Zutaten“, `/tees` ↔ `/en/teas` per Sprachumschalter, Zutaten- und Login-Seiten unverändert, 360 px ohne Überlauf, keine Konsolenfehler. Alle UI-Texte für 04 stehen in den Sprachdateien. Dazu sind `IngredientFacts` und `RevisionDiff` als `CatalogFactChips` und `CatalogRevisionDiff` nach `components/catalog/` umgezogen (Texte unter `catalog.*`), weil Tees sie mitnutzen; die Tee-Seiten sind vorerst Platzhalter.
 
 - [ ] 13. Seiten: Liste und Detail
   - Dateien: `app/pages/teas/index.vue`, `app/pages/teas/[id]/index.vue`, `app/components/tea/TeaIngredientsList.vue`

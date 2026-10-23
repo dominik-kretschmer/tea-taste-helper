@@ -81,7 +81,7 @@ const pageCount = computed(() => (data.value ? Math.ceil(data.value.total / data
             <v-chip v-if="!item.translated" size="small" variant="outlined">
               {{ t('ingredients.notTranslated') }}
             </v-chip>
-            <IngredientFacts :caffeine="item.caffeine" compact />
+            <CatalogFactChips :caffeine="item.caffeine" compact />
           </div>
         </template>
       </v-list-item>
