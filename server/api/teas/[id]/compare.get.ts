@@ -5,8 +5,7 @@ export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, compareQuerySchema.parse)
 
   const prisma = usePrisma()
-  const current = await loadCurrentTea(prisma, id, event.context.user)
-  if (!current) throw teaNotFound()
+  const current = await loadReadableTea(prisma, id, event.context.user, { allowMerged: true })
   const [from, to] = await Promise.all([loadTeaVersion(prisma, id, query.from), loadTeaVersion(prisma, id, query.to)])
   if (!from || !to) throw new AppError(404, 'NOT_FOUND', 'Version not found')
 

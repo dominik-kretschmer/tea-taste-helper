@@ -7,6 +7,8 @@ export default defineEventHandler(async (event): Promise<Page<RevisionEntry>> =>
   const { page } = await getValidatedQuery(event, revisionsQuerySchema.parse)
 
   const prisma = usePrisma()
+  // Zusammengeführte Zutaten bleiben lesbar, ausgeblendete nur für Moderatoren (05 AK-4.2, AK-5.4)
+  await loadReadableIngredient(prisma, id, event.context.user)
   const [rows, total] = await prisma.$transaction([
     prisma.ingredientVersion.findMany({
       where: { ingredientId: id },

@@ -125,3 +125,21 @@ export async function db<T extends pg.QueryResultRow = any>(sql: string, params:
 }
 
 export const findCookie = (setCookies: string[], name: string) => setCookies.find(c => c.startsWith(`${name}=`))
+
+/** Legt eine Zutat direkt in der DB an (Version 1, ohne Autor); schont das Rate-Limit der Testnutzer. */
+export async function insertIngredient(name: string, options: { caffeine?: 'yes' | 'no' | 'unknown', locale?: string } = {}): Promise<string> {
+  const [{ id }] = await db<{ id: string }>(
+    `WITH i AS (INSERT INTO "Ingredient" (id, "sourceLocale") VALUES (gen_random_uuid(), $1::text) RETURNING id),
+          v AS (INSERT INTO "IngredientVersion" (id, "ingredientId", version, "isCurrent", caffeine)
+                SELECT gen_random_uuid(), id, 1, true, $3::"Caffeine" FROM i RETURNING id, "ingredientId")
+     INSERT INTO "IngredientVersionTranslation" ("versionId", locale, name, "nameKey")
+     SELECT id, $1::text, $2::text, lower($2::text) FROM v RETURNING (SELECT "ingredientId" FROM v) AS id`,
+    [options.locale ?? 'de', name, options.caffeine ?? 'unknown'],
+  )
+  return id
+}
+
+/** Setzt die Rolle direkt in der DB; sie gilt ab der nächsten Anfrage. */
+export async function setRole(userId: string, role: 'user' | 'moderator' | 'admin'): Promise<void> {
+  await db(`UPDATE "User" SET role = $2::"Role" WHERE id = $1`, [userId, role])
+}

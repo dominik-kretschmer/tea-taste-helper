@@ -49,3 +49,10 @@ export interface ModerationState {
   hiddenBy: AuthorRef | null
   hiddenReason: string
 }
+
+/** Zusatzangaben an Detail-Antworten (05): Ziel einer Zusammenführung bzw. Ausblendung für Moderatoren */
+export interface EntryModerationInfo {
+  /** nur mit `?merged=1` (Historie der Quelle, AK-4.2) */
+  mergedInto?: string
+  moderation?: ModerationState
+}

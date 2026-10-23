@@ -1,4 +1,4 @@
-import type { AuthorRef, CaffeineValue, CatalogFacts, CatalogText, CatalogTranslations, ContentLocale } from './catalog'
+import type { AuthorRef, CaffeineValue, CatalogFacts, CatalogText, CatalogTranslations, ContentLocale, EntryModerationInfo } from './catalog'
 
 export type IngredientText = CatalogText
 
@@ -8,7 +8,7 @@ export interface IngredientSnapshot extends CatalogFacts {
   translations: CatalogTranslations
 }
 
-export interface IngredientDetail extends IngredientSnapshot {
+export interface IngredientDetail extends IngredientSnapshot, EntryModerationInfo {
   id: string
   version: number
   updatedAt: string

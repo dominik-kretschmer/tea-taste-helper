@@ -1,4 +1,4 @@
-import type { AuthorRef, CaffeineValue, CatalogFacts, CatalogTranslations, ContentLocale, SnapshotChange } from './catalog'
+import type { AuthorRef, CaffeineValue, CatalogFacts, CatalogTranslations, ContentLocale, EntryModerationInfo, SnapshotChange } from './catalog'
 
 export type TeaKindValue = 'bought' | 'blended'
 export type VisibilityValue = 'private' | 'public'
@@ -26,7 +26,7 @@ export interface TeaIngredientView extends TeaIngredientRef {
   caffeine: CaffeineValue
 }
 
-export interface TeaDetail extends Omit<TeaSnapshot, 'ingredients'> {
+export interface TeaDetail extends Omit<TeaSnapshot, 'ingredients'>, EntryModerationInfo {
   id: string
   version: number
   updatedAt: string

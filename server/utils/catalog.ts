@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import { z } from 'zod'
-import type { Prisma } from '../generated/prisma/client'
+import { Prisma } from '../generated/prisma/client'
 
 // Gemeinsame Server-Bausteine für Katalog-Einträge (Zutaten, Tees).
 
@@ -32,4 +32,49 @@ export function assertCatalogRateLimit(event: H3Event, user: PublicUser): void {
  */
 export async function lockName(db: Db, key: string): Promise<void> {
   await db.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtext(${key}))`
+}
+
+// --- 05 – Moderation: Zustand eines Katalog-Eintrags ---
+
+/** Moderationsfelder an `Ingredient` und `Tea`. */
+export interface ModerationFields {
+  hiddenAt: Date | null
+  hiddenReason: string | null
+  mergedIntoId: string | null
+  hiddenBy?: { displayName: string } | null
+}
+
+/** Prisma-Bedingung „aktiv“: weder ausgeblendet noch zusammengeführt (gilt für Ingredient und Tea). */
+export const ENTRY_ACTIVE = { hiddenAt: null, mergedIntoId: null } as const
+
+/** Dieselbe Bedingung als SQL für den Tabellen-Alias `alias` (`i` bzw. `t`). */
+export const activeSql = (alias: 'i' | 't') =>
+  Prisma.sql`${Prisma.raw(alias)}."hiddenAt" IS NULL AND ${Prisma.raw(alias)}."mergedIntoId" IS NULL`
+
+export function isEntryActive(row: Pick<ModerationFields, 'hiddenAt' | 'mergedIntoId'>): boolean {
+  return !row.hiddenAt && !row.mergedIntoId
+}
+
+/**
+ * Lesbarkeit eines Eintrags für Detail, Historie und Vergleich (AK-4.2, AK-5.1, AK-5.4):
+ * - zusammengeführt: 404 mit `mergedInto`, außer mit `allowMerged` (Historie der Quelle);
+ * - ausgeblendet: 404, außer für Moderatoren – dann mit `moderation`.
+ */
+export function assertReadable(
+  row: ModerationFields,
+  viewer: PublicUser | null | undefined,
+  notFound: (details?: unknown) => Error,
+  options: { allowMerged?: boolean } = {},
+): { mergedInto?: string, moderation?: ModerationState } {
+  if (row.mergedIntoId) {
+    if (!options.allowMerged) throw notFound({ mergedInto: row.mergedIntoId })
+    return { mergedInto: row.mergedIntoId }
+  }
+  if (row.hiddenAt) {
+    if (!hasRole(viewer, 'moderator')) throw notFound()
+    return {
+      moderation: { hiddenAt: row.hiddenAt.toISOString(), hiddenBy: row.hiddenBy ?? null, hiddenReason: row.hiddenReason ?? '' },
+    }
+  }
+  return {}
 }

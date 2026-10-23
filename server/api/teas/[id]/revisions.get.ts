@@ -7,8 +7,8 @@ export default defineEventHandler(async (event): Promise<Page<RevisionEntry>> =>
   const { page } = await getValidatedQuery(event, revisionsQuerySchema.parse)
 
   const prisma = usePrisma()
-  // Historie privater Tees nur für den Ersteller (AK-6.2)
-  if (!(await loadCurrentTea(prisma, id, event.context.user))) throw teaNotFound()
+  // Historie privater Tees nur für den Ersteller (AK-6.2); zusammengeführte lesbar, ausgeblendete nur für Moderatoren (05)
+  await loadReadableTea(prisma, id, event.context.user, { allowMerged: true })
 
   const [rows, total] = await prisma.$transaction([
     prisma.teaVersion.findMany({

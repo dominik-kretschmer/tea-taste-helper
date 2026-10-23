@@ -5,8 +5,7 @@ export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, compareQuerySchema.parse)
 
   const prisma = usePrisma()
-  const ingredient = await prisma.ingredient.findUnique({ where: { id } })
-  if (!ingredient) throw notFound()
+  const { ingredient } = await loadReadableIngredient(prisma, id, event.context.user)
   const [from, to] = await Promise.all([loadVersion(prisma, id, query.from), loadVersion(prisma, id, query.to)])
   if (!from || !to) throw new AppError(404, 'NOT_FOUND', 'Version not found')
 

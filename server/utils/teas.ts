@@ -24,7 +24,7 @@ export type LoadedTeaVersion = TeaVersion & {
   author: { displayName: string } | null
 }
 
-export const teaNotFound = () => new AppError(404, 'NOT_FOUND', 'Tea not found')
+export const teaNotFound = (details?: unknown) => new AppError(404, 'NOT_FOUND', 'Tea not found', details)
 
 /** Tee-ID aus dem Routenparameter `id`; ungültige IDs gelten als nicht gefunden. */
 export function getTeaIdParam(event: H3Event): string {
@@ -36,15 +36,27 @@ export function canViewTea(tea: Pick<Tea, 'ownerId'>, version: Pick<TeaVersion, 
   return version.visibility === 'public' || (!!viewer && tea.ownerId === viewer.id)
 }
 
-/** Aktuelle Version samt Tee, oder `null`, wenn es den Tee nicht gibt oder der Betrachter ihn nicht sehen darf. */
-export async function loadCurrentTea(db: Db, id: string, viewer: Viewer) {
+/**
+ * Aktuelle Version samt Tee, oder `null`, wenn es den Tee nicht gibt oder der Betrachter ihn nicht sehen
+ * darf. Ausgeblendete und zusammengeführte Tees gelten als nicht vorhanden, außer mit `includeInactive`
+ * (05 AK-4.2, AK-5.1); dann entscheidet der Aufrufer über `assertReadable`.
+ */
+export async function loadCurrentTea(db: Db, id: string, viewer: Viewer, options: { includeInactive?: boolean } = {}) {
   const tea = await db.tea.findUnique({
     where: { id },
-    include: { versions: { where: { isCurrent: true }, include: teaVersionInclude } },
+    include: { versions: { where: { isCurrent: true }, include: teaVersionInclude }, hiddenBy: { select: { displayName: true } } },
   })
   const version = tea?.versions[0]
   if (!tea || !version || !canViewTea(tea, version, viewer)) return null
+  if (!options.includeInactive && !isEntryActive(tea)) return null
   return { tea, version }
+}
+
+/** Tee für Detail, Historie und Vergleich: sichtbar (AK-1.7) und lesbar (05 AK-4.2, AK-5.4), sonst 404. */
+export async function loadReadableTea(db: Db, id: string, viewer: PublicUser | null | undefined, options: { allowMerged?: boolean } = {}) {
+  const current = await loadCurrentTea(db, id, viewer, { includeInactive: true })
+  if (!current) throw teaNotFound()
+  return { ...current, ...assertReadable(current.tea, viewer, teaNotFound, options) }
 }
 
 /** Eine bestimmte Version (alt oder aktuell); die Sichtbarkeit prüft der Aufrufer über die aktuelle Version. */
@@ -97,18 +109,23 @@ export async function toTeaDetail(db: Db, tea: Tea, version: LoadedTeaVersion, v
   }
 }
 
-export async function loadTeaDetail(db: Db, id: string, viewer: Viewer): Promise<TeaDetail> {
-  const current = await loadCurrentTea(db, id, viewer)
-  if (!current) throw teaNotFound()
-  return toTeaDetail(db, current.tea, current.version, viewer)
+export async function loadTeaDetail(db: Db, id: string, viewer: PublicUser | null | undefined, options: { allowMerged?: boolean } = {}): Promise<TeaDetail> {
+  const { tea, version, mergedInto, moderation } = await loadReadableTea(db, id, viewer, options)
+  return { ...(await toTeaDetail(db, tea, version, viewer)), ...(mergedInto ? { mergedInto } : {}), ...(moderation ? { moderation } : {}) }
 }
 
-/** Alle Zutaten müssen existieren, sonst 400 mit der Position der ersten fehlenden (AK-2.5). */
+/**
+ * Alle Zutaten müssen existieren und aktiv sein, sonst 400 mit der Position der ersten fehlenden
+ * (AK-2.5, 05 AK-5.1). `FOR SHARE` hält sie bis zum Ende der Transaktion fest: Ausblenden oder
+ * Zusammenführen derselben Zutat wartet, bzw. diese Prüfung wartet auf sie (05 AK-4.7, AK-5.2).
+ */
 export async function assertIngredientsExist(db: Db, ingredients: TeaIngredientRef[]): Promise<void> {
-  const found = await db.ingredient.findMany({
-    where: { id: { in: ingredients.map(item => item.ingredientId) } },
-    select: { id: true },
-  })
+  const wanted = ingredients.map(item => item.ingredientId)
+  const found = await db.$queryRaw<{ id: string }[]>`
+    SELECT i.id FROM "Ingredient" i
+    WHERE i.id = ANY(${wanted}::uuid[]) AND ${activeSql('i')}
+    ORDER BY i.id
+    FOR SHARE`
   const ids = new Set(found.map(row => row.id))
   const index = ingredients.findIndex(item => !ids.has(item.ingredientId))
   if (index >= 0) {
@@ -133,6 +150,8 @@ export async function assertTeaNameAvailable(db: Db, locale: ContentLocale, name
         isCurrent: true,
         visibility: 'public',
         brandKey,
+        // Ausgeblendete und zusammengeführte Tees zählen nicht (05 AK-5.3)
+        tea: ENTRY_ACTIVE,
         ...(ignoreTeaId ? { teaId: { not: ignoreTeaId } } : {}),
       },
     },
@@ -245,14 +264,14 @@ export async function listTeas(db: Db, query: TeaListQuery, viewer: Viewer): Pro
       FROM "Tea" t
       JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
       ${teaDisplayJoins(query.locale)}
-      WHERE ${scope} ${search} ${ingredient}
+      WHERE ${scope} AND ${activeSql('t')} ${search} ${ingredient}
       ORDER BY lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu", lower(COALESCE(v.brand, '')) COLLATE "de-x-icu", t.id
       LIMIT ${TEA_LIST_PAGE_SIZE} OFFSET ${(query.page - 1) * TEA_LIST_PAGE_SIZE}`,
     db.$queryRaw<{ total: number }[]>`
       SELECT count(*)::int AS total
       FROM "Tea" t
       JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
-      WHERE ${scope} ${search} ${ingredient}`,
+      WHERE ${scope} AND ${activeSql('t')} ${search} ${ingredient}`,
   ])
   return { items, total, page: query.page, pageSize: TEA_LIST_PAGE_SIZE }
 }
@@ -269,7 +288,7 @@ export async function findSimilarTeas(db: Db, name: string, locale: ContentLocal
     )
     SELECT t.id, COALESCE(own.name, src.name) AS name, v.brand
     FROM hits h
-    JOIN "Tea" t ON t.id = h.id
+    JOIN "Tea" t ON t.id = h.id AND ${activeSql('t')}
     JOIN "TeaVersion" v ON v."teaId" = t.id AND v."isCurrent"
     ${teaDisplayJoins(locale)}
     ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"

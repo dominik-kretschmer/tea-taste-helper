@@ -62,3 +62,7 @@ export const revertSchema = z.object({
   to: z.number().int().min(1),
   note: noteSchema,
 })
+
+export const detailQuerySchema = z.object({
+  merged: z.stringbool().default(false),
+})

@@ -26,7 +26,7 @@ export function getIngredientIdParam(event: H3Event): string {
   return getUuidParam(event, notFound)
 }
 
-export const notFound = () => new AppError(404, 'NOT_FOUND', 'Ingredient not found')
+export const notFound = (details?: unknown) => new AppError(404, 'NOT_FOUND', 'Ingredient not found', details)
 
 export function toSnapshot(sourceLocale: string, version: LoadedVersion): IngredientSnapshot {
   const translations: IngredientSnapshot['translations'] = {}
@@ -53,14 +53,18 @@ export function toRevisionEntry(version: { version: number, isCurrent: boolean, 
   }
 }
 
-/** Aktuelle Version samt Übersetzungen, oder `null`, wenn es die Zutat nicht gibt. */
-export async function loadCurrent(db: Db, id: string) {
+/**
+ * Aktuelle Version samt Übersetzungen, oder `null`, wenn es die Zutat nicht gibt. Ausgeblendete und
+ * zusammengeführte Zutaten gelten als nicht vorhanden, außer mit `includeInactive` (05 AK-4.2, AK-5.1).
+ */
+export async function loadCurrent(db: Db, id: string, options: { includeInactive?: boolean } = {}) {
   const ingredient = await db.ingredient.findUnique({
     where: { id },
-    include: { versions: { where: CURRENT, include: versionInclude } },
+    include: { versions: { where: CURRENT, include: versionInclude }, hiddenBy: { select: { displayName: true } } },
   })
   const version = ingredient?.versions[0]
-  return ingredient && version ? { ingredient, version } : null
+  if (!ingredient || !version || (!options.includeInactive && !isEntryActive(ingredient))) return null
+  return { ingredient, version }
 }
 
 /** Eine bestimmte Version (alt oder aktuell). */
@@ -81,10 +85,22 @@ export function toDetail(id: string, sourceLocale: string, version: LoadedVersio
   }
 }
 
-export async function loadDetail(db: Db, id: string): Promise<IngredientDetail> {
-  const current = await loadCurrent(db, id)
+/**
+ * Detail für die Detailseite: zusammengeführt → 404 mit `mergedInto` (mit `allowMerged` lesbar),
+ * ausgeblendet → 404, für Moderatoren mit `moderation` (05 AK-4.2, AK-5.4).
+ */
+export async function loadDetail(db: Db, id: string, viewer?: PublicUser | null, options: { allowMerged?: boolean } = {}): Promise<IngredientDetail> {
+  const current = await loadCurrent(db, id, { includeInactive: true })
   if (!current) throw notFound()
-  return toDetail(id, current.ingredient.sourceLocale, current.version)
+  const state = assertReadable(current.ingredient, viewer, notFound, options)
+  return { ...toDetail(id, current.ingredient.sourceLocale, current.version), ...state }
+}
+
+/** Zutat für Historie und Vergleich: wie `loadDetail`, zusammengeführte sind lesbar (AK-4.2). */
+export async function loadReadableIngredient(db: Db, id: string, viewer: PublicUser | null | undefined) {
+  const ingredient = await db.ingredient.findUnique({ where: { id }, include: { hiddenBy: { select: { displayName: true } } } })
+  if (!ingredient) throw notFound()
+  return { ingredient, ...assertReadable(ingredient, viewer, notFound, { allowMerged: true }) }
 }
 
 /**
@@ -99,7 +115,8 @@ export async function assertNameAvailable(db: Db, locale: ContentLocale, nameKey
     where: {
       locale,
       nameKey,
-      version: { ...CURRENT, ...(ignoreIngredientId ? { ingredientId: { not: ignoreIngredientId } } : {}) },
+      // Ausgeblendete und zusammengeführte Zutaten zählen nicht (05 AK-5.3)
+      version: { ...CURRENT, ingredient: ENTRY_ACTIVE, ...(ignoreIngredientId ? { ingredientId: { not: ignoreIngredientId } } : {}) },
     },
     select: { version: { select: { ingredientId: true } } },
   })
@@ -161,14 +178,14 @@ export async function listIngredients(db: Db, query: { q?: string, page: number,
       FROM "Ingredient" i
       JOIN "IngredientVersion" v ON v."ingredientId" = i.id AND v."isCurrent"
       ${displayJoins(query.locale)}
-      WHERE true ${search}
+      WHERE ${activeSql('i')} ${search}
       ORDER BY lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu", i.id
       LIMIT ${LIST_PAGE_SIZE} OFFSET ${(query.page - 1) * LIST_PAGE_SIZE}`,
     db.$queryRaw<{ total: number }[]>`
       SELECT count(*)::int AS total
       FROM "Ingredient" i
       JOIN "IngredientVersion" v ON v."ingredientId" = i.id AND v."isCurrent"
-      WHERE true ${search}`,
+      WHERE ${activeSql('i')} ${search}`,
   ])
   return { items, total, page: query.page, pageSize: LIST_PAGE_SIZE }
 }
@@ -186,7 +203,7 @@ export async function findSimilar(db: Db, name: string, locale: ContentLocale): 
     )
     SELECT i.id, COALESCE(own.name, src.name) AS name
     FROM hits h
-    JOIN "Ingredient" i ON i.id = h.id
+    JOIN "Ingredient" i ON i.id = h.id AND ${activeSql('i')}
     JOIN "IngredientVersion" v ON v."ingredientId" = i.id AND v."isCurrent"
     ${displayJoins(locale)}
     ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"

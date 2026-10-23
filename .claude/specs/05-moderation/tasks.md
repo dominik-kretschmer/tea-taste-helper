@@ -42,7 +42,7 @@ Reihenfolge:
     - `combineIngredients`: nur Quelle, beide mit beiden/einem/keinem Anteil, Position des Ziels bleibt, Reihenfolge der übrigen.
   - Ergebnis: 24 Unit-Tests grün (Unit gesamt 222), Lint und Typecheck grün. Zusätzlich Schemas für die Listenabfragen (`reportListQuerySchema`, `hiddenListQuerySchema`, `moderationUsersQuerySchema`, `mergePreviewQuerySchema`); `bulkRevertSchema` lehnt Daten in der Zukunft ab. Abweichung: Die neuen `RevisionEntry`-Felder kommen erst mit Aufgabe 6, zusammen mit den Revisions-Routen, die sie füllen – sonst wäre der Typ zwischendurch falsch. `useFormErrors` braucht keine neuen Codes (`required` gibt es schon).
 
-- [ ] 5. Zustand „aktiv“ in allen bestehenden Abfragen
+- [x] 5. Zustand „aktiv“ in allen bestehenden Abfragen
   - Dateien: `server/utils/ingredients.ts`, `server/utils/teas.ts` (`ACTIVE`, `activeSql`; Liste, Suche, `similar`, Detail, Duplikatregel, „Enthalten in“; `assertIngredientsExist` nur aktive, mit `FOR SHARE`), `server/utils/catalog.ts` (`CatalogType`, `assertEntryActive`, `lockEntry`, `recordCatalogEvent`), `server/api/{ingredients,teas}/[id]/{index.get,revisions.get,compare.get,index.patch}.ts`
   - Erfüllt: AK-4.2, AK-5.1, AK-5.3 (Abfragen), AK-5.4 (Detail für Moderatoren)
   - Prüfung (API-Tests, Zustand per Prisma in der Test-DB gesetzt):
@@ -52,6 +52,12 @@ Reihenfolge:
     - Zusammengeführt: Detail 404 mit `mergedInto`, mit `?merged=1` 200; Historie lesbar.
     - Tee speichern mit ausgeblendeter Zutat → 400 `INGREDIENT_NOT_FOUND`.
     - Bestehende Tests grün.
+  - Ergebnis: 7 neue API-Tests in `moderation.test.ts`, gesamt 367 grün; Lint und Typecheck grün. Umsetzung:
+    - `loadCurrent`/`loadCurrentTea` liefern inaktive Einträge nur mit `includeInactive`. Dadurch sind PATCH, Veröffentlichen und Löschen ohne weitere Änderung 404 – auch für Moderatoren.
+    - Lesende Routen gehen über `assertReadable` (`server/utils/catalog.ts`) bzw. `loadReadableIngredient`/`loadReadableTea`.
+    - Die Bedingung heißt `ENTRY_ACTIVE` (Prisma) bzw. `activeSql('i' | 't')` (SQL) und gilt für Zutaten und Tees gemeinsam, weil `server/utils` global importiert wird und zwei `ACTIVE` kollidieren würden.
+    - `?merged=1` prüft `detailQuerySchema`.
+    - `insertIngredient` und `setRole` liegen jetzt in `test/api/helpers.ts`.
 
 - [ ] 6. API: Zurücksetzen
   - Dateien: `server/api/ingredients/[id]/revert.post.ts`, `server/api/teas/[id]/revert.post.ts`, `server/utils/teas.ts` (`revertedTeaSnapshot`), `server/utils/ingredients.ts` (`resolveMerged`), Revisions-Routen (Felder `revertedTo`, `bulkRevertOf`, `mergedIngredient`), `test/api/revert.test.ts`
