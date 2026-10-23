@@ -57,4 +57,5 @@ export const moderationUsersQuerySchema = z.object({
 export const bulkRevertSchema = z.object({
   since: z.iso.datetime({ offset: true }).transform(value => new Date(value))
     .refine(date => date.getTime() <= Date.now(), { message: 'future' }),
+  locale: contentLocaleSchema.default('de'),
 })
