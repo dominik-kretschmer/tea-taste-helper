@@ -427,6 +427,72 @@ describe('Tee-API', async () => {
     })
   })
 
+  describe('Veröffentlichen und Löschen (AK-3.5, AK-3.6, AK-4)', () => {
+    const publish = (client: TestClient, id: string, body: Record<string, unknown>) => client.post(`/api/teas/${id}/publish`, body)
+
+    it('veröffentlicht einen privaten Tee als neue Version und nimmt ihn in den Katalog auf', async () => {
+      const m = marker()
+      const tea = await createAs(anna, { name: `Bald öffentlich ${m}` })
+      const response = await publish(anna, tea.id, { version: 1 })
+      expect(response.status).toBe(200)
+      expect(response.body.tea).toMatchObject({ visibility: 'public', version: 2 })
+      expect((await ben.get(`/api/teas?locale=de&q=${m}`)).body.items.map((item: TeaListItem) => item.id)).toEqual([tea.id])
+      expect((await ben.get(`/api/teas/${tea.id}`)).status).toBe(200)
+      const [entry] = await db(`SELECT "actorId", details FROM "AuditLog" WHERE event = 'TEA_PUBLISHED' AND details->>'teaId' = $1`, [tea.id])
+      expect(entry).toEqual({ actorId: annaId, details: { teaId: tea.id, version: 2, private: false } })
+
+      const again = await publish(anna, tea.id, { version: 2 })
+      expect(again.status).toBe(400)
+      expect(again.body.error.code).toBe('ALREADY_PUBLIC')
+    })
+
+    it('nur der Ersteller veröffentlicht; Konflikt bei veralteter Version', async () => {
+      const tea = await createAs(anna, { name: `Nur Anna ${marker()}` })
+      expect((await publish(ben, tea.id, { version: 1 })).status).toBe(404)
+      expect((await publish(admin, tea.id, { version: 1 })).status).toBe(404)
+      expect((await anna.patch(`/api/teas/${tea.id}`, { version: 1, brewTempC: 75 })).status).toBe(200)
+      const stale = await publish(anna, tea.id, { version: 1 })
+      expect(stale.status).toBe(409)
+      expect(stale.body.error).toMatchObject({ code: 'EDIT_CONFLICT', details: { currentVersion: 2 } })
+    })
+
+    it('prüft beim Veröffentlichen die Duplikatregel', async () => {
+      const name = `Doppelt ${marker()}`
+      const existing = await create({ name, visibility: 'public' })
+      const tea = await createAs(anna, { name })
+      const response = await publish(anna, tea.id, { version: 1 })
+      expect(response.status).toBe(409)
+      expect(response.body.error.details).toEqual({ teaId: existing.id, locale: 'de' })
+      expect((await anna.get(`/api/teas/${tea.id}`)).body.tea).toMatchObject({ visibility: 'private', version: 1 })
+    })
+
+    it('löscht eigene private Tees samt Versionen, aber keine öffentlichen oder fremden', async () => {
+      const tea = await createAs(anna, { name: `Weg damit ${marker()}` })
+      await anna.patch(`/api/teas/${tea.id}`, { version: 1, brewTempC: 80 })
+      expect((await ben.request('DELETE', `/api/teas/${tea.id}`)).status).toBe(404)
+      expect((await admin.request('DELETE', `/api/teas/${tea.id}`)).status).toBe(404)
+
+      const deleted = await anna.request('DELETE', `/api/teas/${tea.id}`)
+      expect(deleted.status).toBe(204)
+      expect((await anna.get(`/api/teas/${tea.id}`)).status).toBe(404)
+      expect(await db(`SELECT 1 FROM "TeaVersion" WHERE "teaId" = $1`, [tea.id])).toEqual([])
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'TEA_DELETED' AND details->>'teaId' = $1`, [tea.id])
+      expect(entry.details).toEqual({ teaId: tea.id, private: true })
+
+      const open = await createAs(anna, { name: `Bleibt ${marker()}`, visibility: 'public' })
+      const blocked = await anna.request('DELETE', `/api/teas/${open.id}`)
+      expect(blocked.status).toBe(409)
+      expect(blocked.body.error.code).toBe('TEA_PUBLIC')
+    })
+
+    it('Gäste → 401', async () => {
+      const guest = await createClient()
+      const tea = await create({ name: `Gastschutz ${marker()}`, visibility: 'public' })
+      expect((await publish(guest, tea.id, { version: 1 })).status).toBe(401)
+      expect((await guest.request('DELETE', `/api/teas/${tea.id}`)).status).toBe(401)
+    })
+  })
+
   describe('Ähnliche Tees (AK-2.3)', () => {
     it('findet Tippfehler, aber nur öffentliche Tees', async () => {
       const m = marker()

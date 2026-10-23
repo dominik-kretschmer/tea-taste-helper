@@ -93,11 +93,11 @@ Reihenfolge:
     - Rate-Limit gemeinsam mit Zutaten (Anlegen von Zutaten und Tees gemischt, 31. → 429).
   - Ergebnis: 11 API-Tests grün (32 in der Datei, Suite 269). Zusätzlich: 3 gleichzeitige Speicherungen → eine 200, zwei 409; Ändern der Marke in ein Duplikat → 409; unbekannte Zutat in der neuen Liste → 400; eigene Schreibweise erlaubt; Admin bekommt bei fremden privaten Tees ebenfalls 404.
 
-- [ ] 9. API: Veröffentlichen und Löschen
+- [x] 9. API: Veröffentlichen und Löschen
   - Dateien: `server/api/teas/[id]/publish.post.ts`, `server/api/teas/[id]/index.delete.ts`, `test/api/teas.test.ts`
   - Erfüllt: AK-3.5, AK-3.6, AK-4.1–AK-4.4, AK-9.1
   - Prüfung (API-Tests):
-    - Veröffentlichen → neue Version `public` mit Notiz „veröffentlicht“, Audit; erscheint in der Liste.
+    - Veröffentlichen → neue Version `public`, Audit; erscheint in der Liste.
     - Zweites Mal → 400 `ALREADY_PUBLIC`.
     - Duplikat beim Veröffentlichen → 409.
     - Nicht-Ersteller → 404.
@@ -105,6 +105,7 @@ Reihenfolge:
     - Löschen privat → 204, Versionen weg, Audit `TEA_DELETED`.
     - Löschen öffentlich → 409 `TEA_PUBLIC`.
     - Fremder Tee → 404.
+  - Ergebnis: 5 API-Tests grün (37 in der Datei). Abweichung: ohne Notiz keine feste Notiz „veröffentlicht“ (siehe Design). Ein gescheitertes Veröffentlichen (Duplikat) lässt den Tee unverändert privat in Version 1; Gäste → 401; Admin → 404.
 
 - [ ] 10. API: Historie und Vergleich
   - Dateien: `server/api/teas/[id]/revisions.get.ts`, `server/api/teas/[id]/compare.get.ts`, `test/api/teas.test.ts`

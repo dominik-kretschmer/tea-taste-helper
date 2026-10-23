@@ -318,7 +318,7 @@ Schreibende Routen brauchen Anmeldung und CSRF-Token. Lesende Routen sind öffen
 1. Ersteller prüfen (sonst 404). Ist der Tee schon öffentlich → 400 `ALREADY_PUBLIC`.
 2. Optimistisches Sperren über `version`.
 3. Duplikatregel für **alle** Übersetzungen (AK-4.2).
-4. Neue Version mit `visibility = public` und der Standardnotiz „veröffentlicht“, falls keine Notiz mitkommt.
+4. Neue Version mit `visibility = public`. *Umsetzung:* Ohne mitgeschickte Notiz bleibt die Notiz leer, statt „veröffentlicht“ fest auf Deutsch zu speichern; die Historie zeigt den Wechsel übersetzt aus dem Vergleich.
 5. Audit `TEA_PUBLISHED`.
 
 **Löschen:** Nur der Ersteller (sonst 404), nur private Tees (sonst 409 `TEA_PUBLIC`). `DELETE FROM "Tea"` löscht die Versionen per Kaskade mit. Danach Audit `TEA_DELETED { teaId, private: true }`.
