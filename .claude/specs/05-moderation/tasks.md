@@ -10,15 +10,17 @@ Reihenfolge:
 - Zum Abschluss jeder Aufgabe laufen `npm run lint`, `npm run typecheck` und `npm test` grün.
 - Browserprüfungen mit Testdaten unter der Kennung `pw05`, danach wieder aus der Dev-DB löschen.
 
-- [ ] 1. `save*Version` aus den PATCH-Routen herauslösen
+- [x] 1. `save*Version` aus den PATCH-Routen herauslösen
   - Dateien: `server/utils/ingredients.ts` (`saveIngredientVersion`), `server/utils/teas.ts` (`saveTeaVersion`), `server/api/ingredients/[id]/index.patch.ts`, `server/api/teas/[id]/index.patch.ts`
   - Erfüllt: Grundlage für AK-1.3, AK-4.3, AK-7.2
   - Prüfung: Keine Verhaltensänderung. Diff, optimistisches Sperren, Duplikatregel und P2002 → `EDIT_CONFLICT` sitzen in der Funktion; die PATCH-Routen behalten Rechte, Rate-Limit und Audit. Alle bisherigen Tests bleiben unverändert grün.
+  - Ergebnis: 336 Tests unverändert grün, Lint und Typecheck grün. `saveTeaVersion` prüft die Zutaten, sobald der Diff eine Zutatenänderung enthält (statt „Zutaten wurden mitgeschickt“). Beides ist gleichwertig, weil unveränderte Zutaten schon existieren. Bei einem Konflikt lesen beide Funktionen die aktuelle Versionsnummer neu, damit `details.currentVersion` stimmt.
 
-- [ ] 2. `RevisionList` aus den Historie-Seiten herauslösen
+- [x] 2. `RevisionList` aus den Historie-Seiten herauslösen
   - Dateien: `app/components/catalog/RevisionList.vue`, `app/pages/ingredients/[id]/history.vue`, `app/pages/teas/[id]/history.vue`
   - Erfüllt: Grundlage für AK-1.1, AK-5.6
   - Prüfung im Browser: Beide Historien verhalten sich wie vorher (Radio-Auswahl, Vergleich, Seiten, 360 px); keine Konsolenwarnungen.
+  - Ergebnis: Playwright auf dem Dev-Server: Tee mit 3 Versionen (de 1280 px, en 360 px) und Zutat mit 1 Version. Radio-Auswahl wechselt den Vergleich („Version 2 → 1“), kein horizontales Scrollen, keine Warnungen oder Fehler in der Konsole. Die Seiten verlieren je 61 Zeilen, das Styling liegt jetzt in der Komponente.
 
 - [ ] 3. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma`, `prisma/migrations/0006_moderation/` (per `--create-only`, ergänzt um `Report_open_key` und die beiden CHECK-Constraints), `shared/utils/roles.ts`, `shared/types/auth.ts` (13 Audit-Ereignisse), `i18n/locales/*.json` (Audit-Texte)
