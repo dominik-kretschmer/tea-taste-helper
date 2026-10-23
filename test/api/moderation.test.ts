@@ -546,4 +546,59 @@ describe('Moderation', async () => {
       }
     })
   })
+
+  describe('Rechte-Matrix (Aufgabe 12)', () => {
+    it('lässt Moderationsrouten nur Moderatoren und Admins, Admin-Routen nur Admins (AK-0.1, AK-0.2)', async () => {
+      const [{ client: admin, user: adminUser }, { user: target }] = await Promise.all([registerUser({ displayName: 'Admina' }), registerUser()])
+      await setRole(adminUser.id, 'admin')
+      const id = randomUUID()
+      const other = randomUUID()
+      const since = encodeURIComponent(new Date(Date.now() - 3600_000).toISOString())
+
+      const moderation: [string, string, unknown?][] = [
+        ['GET', '/api/admin/reports'],
+        ['GET', '/api/admin/reports/count'],
+        ['POST', '/api/admin/reports/resolve', {}],
+        ['GET', '/api/admin/hidden'],
+        ['GET', '/api/admin/moderation/users'],
+        ['POST', `/api/admin/users/${target.id}/block`, {}],
+        ['DELETE', `/api/admin/users/${target.id}/block`],
+        ['GET', `/api/admin/users/${target.id}/bulk-revert?since=${since}`],
+        ['POST', `/api/admin/users/${target.id}/bulk-revert`, {}],
+        ...(['ingredients', 'teas'] as const).flatMap((type): [string, string, unknown?][] => [
+          ['POST', `/api/admin/${type}/${id}/hide`, {}],
+          ['POST', `/api/admin/${type}/${id}/restore`, {}],
+          ['GET', `/api/admin/${type}/${id}/merge?target=${other}`],
+          ['POST', `/api/admin/${type}/${id}/merge`, {}],
+        ]),
+      ]
+      const adminOnly: [string, string, unknown?][] = [
+        ['GET', '/api/admin/users'],
+        ['GET', '/api/admin/audit'],
+        ['PATCH', `/api/admin/users/${target.id}/role`, { role: 'user' }],
+        ['POST', `/api/admin/users/${target.id}/password-reset`, {}],
+      ]
+      const userRoutes: [string, string, unknown?][] = [
+        ['POST', '/api/reports', {}],
+        ['POST', `/api/ingredients/${id}/revert`, {}],
+        ['POST', `/api/teas/${id}/revert`, {}],
+      ]
+
+      const status = async (client: TestClient, [method, path, body]: [string, string, unknown?]) => (await client.request(method, path, body)).status
+      for (const route of moderation) {
+        expect(await status(guest, route), `Gast ${route[1]}`).toBe(401)
+        expect(await status(anna, route), `Nutzer ${route[1]}`).toBe(403)
+        expect([401, 403], `Moderator ${route[1]}`).not.toContain(await status(mod, route))
+        expect([401, 403], `Admin ${route[1]}`).not.toContain(await status(admin, route))
+      }
+      for (const route of adminOnly) {
+        expect(await status(mod, route), `Moderator ${route[1]}`).toBe(403)
+        expect([401, 403], `Admin ${route[1]}`).not.toContain(await status(admin, route))
+      }
+      for (const route of userRoutes) {
+        expect(await status(guest, route), `Gast ${route[1]}`).toBe(401)
+        expect([401, 403], `Nutzer ${route[1]}`).not.toContain(await status(anna, route))
+      }
+    })
+  })
 })

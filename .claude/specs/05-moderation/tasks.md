@@ -157,10 +157,11 @@ Reihenfolge:
     - Die Vorschau sagt `in_use` voraus und berücksichtigt dabei Tees, die im selben Lauf ausgeblendet werden. Duplikate und Konflikte erkennt erst die Ausführung (Gründe `duplicate`, `conflict`, `ingredient_unavailable`).
     - Ergänzung: Für das Massen-Zurücksetzen gelten dieselben Rollenregeln wie für das Sperren (`assertCanBlock`).
 
-- [ ] 12. Rechte-Matrix
+- [x] 12. Rechte-Matrix
   - Dateien: `test/api/moderation.test.ts`
   - Erfüllt: AK-0.1 (API-Seite), AK-0.2
   - Prüfung: Für jede neue Route Gast 401, Nutzer 403 (bzw. 401 bei Nutzer-Routen für Gäste), Moderator und Admin erlaubt; `/api/admin/users`, `/api/admin/audit`, Rolle ändern und Passwort-Reset für Moderatoren weiter 403.
+  - Ergebnis: ein Matrix-Test in `moderation.test.ts` über 17 Moderationsrouten (Gast 401, Nutzer 403, Moderator und Admin weder 401 noch 403), 4 Admin-Routen (Moderator 403) und 3 Nutzer-Routen (Gast 401). Grün; die Einzeltests je Route bleiben zusätzlich bestehen.
 
 - [ ] 13. Zugang, Navigation, Texte
   - Dateien: `app/middleware/moderator.ts`, `app/composables/useAuth.ts` (`isModerator`), `app/composables/useOpenReports.ts`, `app/components/UserMenu.vue`, `app/components/AdminNav.vue`, `app/pages/admin/index.vue`, `i18n/locales/*.json`
