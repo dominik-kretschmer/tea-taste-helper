@@ -122,7 +122,9 @@ CREATE INDEX "IngredientVersionTranslation_name_trgm"
   ON "IngredientVersionTranslation" USING gin (name gin_trgm_ops);
 ```
 
-**Haken:** Prisma kennt diese beiden Indizes nicht und würde sie in künftigen Migrationen löschen wollen. Neue Migrationen werden deshalb mit `prisma migrate dev --create-only` erzeugt und vor dem Anwenden geprüft. Das kommt in die README und in den Skill `nuxt-dev`. Ein API-Test prüft, dass der Index „eine aktuelle Version“ greift.
+**Haken:** Prisma kennt diese beiden Indizes nicht und würde sie in künftigen Migrationen löschen wollen.
+
+> **Ergebnis Aufgabe 1:** `prisma migrate diff` gegen die DB wollte nur den GIN-Index löschen; der partielle Unique-Index und `pg_trgm` werden ignoriert. Der GIN-Index steht deshalb auch im Schema (`@@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: …)`), danach ist der Diff leer. Das Anlegen bleibt im SQL nach `CREATE EXTENSION`. Vorher fragte `prisma migrate dev` nach dem Anwenden nach einem Namen für eine neue Migration (eben diesem `DROP INDEX`); jetzt meldet es „Already in sync“. Neue Migrationen werden deshalb mit `prisma migrate dev --create-only` erzeugt und vor dem Anwenden geprüft. Das kommt in die README und in den Skill `nuxt-dev`. Ein API-Test prüft, dass der Index „eine aktuelle Version“ greift.
 
 `AuditEvent` bekommt `INGREDIENT_CREATED` und `INGREDIENT_UPDATED`.
 

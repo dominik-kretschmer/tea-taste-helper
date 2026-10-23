@@ -20,4 +20,6 @@ export const AUDIT_EVENTS = [
   'PASSWORD_RESET_BY_ADMIN',
   'ROLE_CHANGED',
   'ADMIN_BOOTSTRAPPED',
+  'INGREDIENT_CREATED',
+  'INGREDIENT_UPDATED',
 ] as const satisfies readonly AuditEventType[]

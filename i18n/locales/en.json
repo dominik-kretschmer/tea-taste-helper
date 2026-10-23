@@ -129,7 +129,9 @@
       "PASSWORD_CHANGED": "Password changed",
       "PASSWORD_RESET_BY_ADMIN": "Password reset",
       "ROLE_CHANGED": "Role changed",
-      "ADMIN_BOOTSTRAPPED": "Admin via ADMIN_EMAIL"
+      "ADMIN_BOOTSTRAPPED": "Admin via ADMIN_EMAIL",
+      "INGREDIENT_CREATED": "Ingredient created",
+      "INGREDIENT_UPDATED": "Ingredient updated"
     },
     "via": {
       "registration": "at registration",

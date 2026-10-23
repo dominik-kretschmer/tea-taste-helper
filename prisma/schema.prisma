@@ -21,20 +21,21 @@ enum Role {
 }
 
 model User {
-  id                 String     @id @default(uuid(7)) @db.Uuid
+  id                 String              @id @default(uuid(7)) @db.Uuid
   /// immer kleingeschrieben gespeichert
-  email              String     @unique
-  displayName        String     @db.VarChar(40)
+  email              String              @unique
+  displayName        String              @db.VarChar(40)
   passwordHash       String
-  role               Role       @default(user)
-  mustChangePassword Boolean    @default(false)
+  role               Role                @default(user)
+  mustChangePassword Boolean             @default(false)
   /// wird in Slice 05 (Moderation) gesetzt
   blockedAt          DateTime?
-  createdAt          DateTime   @default(now())
+  createdAt          DateTime            @default(now())
   lastLoginAt        DateTime?
   sessions           Session[]
-  auditAsActor       AuditLog[] @relation("AuditActor")
-  auditAsTarget      AuditLog[] @relation("AuditTarget")
+  auditAsActor       AuditLog[]          @relation("AuditActor")
+  auditAsTarget      AuditLog[]          @relation("AuditTarget")
+  ingredientVersions IngredientVersion[] @relation("IngredientVersionAuthor")
 
   @@index([displayName])
 }
@@ -62,6 +63,8 @@ enum AuditEvent {
   PASSWORD_RESET_BY_ADMIN
   ROLE_CHANGED
   ADMIN_BOOTSTRAPPED
+  INGREDIENT_CREATED
+  INGREDIENT_UPDATED
 }
 
 model AuditLog {
@@ -80,4 +83,62 @@ model AuditLog {
   @@index([createdAt])
   @@index([event, createdAt])
   @@index([targetId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// 03 – Zutaten
+// Zusätzlich als SQL in 0003_ingredients (Prisma kennt sie nicht, neue Migrationen mit --create-only
+// erzeugen und prüfen): Erweiterung pg_trgm, partieller Unique-Index "IngredientVersion_current_key".
+// ---------------------------------------------------------------------------
+
+enum Caffeine {
+  yes
+  no
+  unknown
+}
+
+/// Identität einer Zutat; alle Inhalte stehen in den Versionen.
+model Ingredient {
+  id           String              @id @default(uuid(7)) @db.Uuid
+  /// 'de' | 'en' (zod-geprüft), ändert sich nie
+  sourceLocale String              @db.VarChar(5)
+  createdAt    DateTime            @default(now())
+  versions     IngredientVersion[]
+}
+
+/// Eine vollständige Version; genau eine pro Zutat ist aktuell (isCurrent).
+model IngredientVersion {
+  id           String                         @id @default(uuid(7)) @db.Uuid
+  ingredientId String                         @db.Uuid
+  ingredient   Ingredient                     @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3 … je Zutat
+  version      Int
+  isCurrent    Boolean                        @default(false)
+  caffeine     Caffeine                       @default(unknown)
+  /// 40–100
+  brewTempC    Int?                           @db.SmallInt
+  /// 10–1800
+  brewSeconds  Int?                           @db.SmallInt
+  authorId     String?                        @db.Uuid
+  author       User?                          @relation("IngredientVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note         String?                        @db.VarChar(200)
+  createdAt    DateTime                       @default(now())
+  translations IngredientVersionTranslation[]
+
+  @@unique([ingredientId, version])
+}
+
+model IngredientVersionTranslation {
+  versionId   String            @db.Uuid
+  version     IngredientVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  locale      String            @db.VarChar(5)
+  name        String            @db.VarChar(80)
+  /// normalizeName(name) – für die Duplikatregel
+  nameKey     String            @db.VarChar(80)
+  description String?           @db.VarChar(2000)
+
+  @@id([versionId, locale])
+  @@index([locale, nameKey])
+  /// Suche und Ähnlichkeit (pg_trgm) über alle Namen; die Abfragen filtern per Join auf aktuelle Versionen
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "IngredientVersionTranslation_name_trgm", type: Gin)
 }

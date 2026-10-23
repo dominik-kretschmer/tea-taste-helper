@@ -9,6 +9,8 @@ export type AuditEventType =
   | 'PASSWORD_RESET_BY_ADMIN'
   | 'ROLE_CHANGED'
   | 'ADMIN_BOOTSTRAPPED'
+  | 'INGREDIENT_CREATED'
+  | 'INGREDIENT_UPDATED'
 
 /** Nutzer, wie ihn der Nutzer selbst und Admins sehen (enthält die E-Mail – nicht für öffentliche Ansichten). */
 export interface PublicUser {

@@ -9,7 +9,7 @@ Reihenfolge:
 - Gepusht wird nur nach Rücksprache.
 - Zum Abschluss jeder Aufgabe laufen `npm run lint`, `npm run typecheck` und `npm test` grün.
 
-- [ ] 1. Datenmodell und Migration
+- [x] 1. Datenmodell und Migration
   - Dateien: `prisma/schema.prisma` (`Caffeine`, `Ingredient`, `IngredientVersion`, `IngredientVersionTranslation`, `AuditEvent` + 2 Werte, Relation an `User`), `prisma/migrations/0003_ingredients/` (per `--create-only`, ergänzt um `pg_trgm`, partiellen Unique-Index und GIN-Index), `test/setup/global-api.ts` (neue Tabellen leeren)
   - Erfüllt: AK-0.1, AK-0.2, AK-3.6 (Grundlage)
   - Prüfung:
@@ -17,6 +17,7 @@ Reihenfolge:
     - `\d "IngredientVersion"` zeigt `IngredientVersion_current_key` mit `WHERE "isCurrent"`, `\d "IngredientVersionTranslation"` den Trigram-Index.
     - `prisma migrate diff` von der Migration zum Schema schlägt kein Löschen der beiden Indizes vor, oder das Ergebnis wird im Design vermerkt.
     - Die API-Tests aus 01 und 02 bleiben grün.
+  - Ergebnis: Beide DBs haben die Indizes, `de-x-icu` ist vorhanden. Prisma wollte nur den GIN-Index löschen; er steht jetzt auch im Schema (`type: Gin`), der Diff ist leer (siehe Design). `global-api.ts` leert bereits alle Tabellen und blieb unverändert. Die Audit-Ereignisse in `shared/` und ihre Texte sind vorgezogen, weil Typecheck und Enum-Test sie brauchen. 124 Tests grün.
 
 - [ ] 2. Gemeinsame Typen, Regeln und Schemas
   - Dateien: `shared/types/ingredient.ts`, `shared/utils/ingredient.ts` (`CONTENT_LOCALES`, `normalizeName`, `pickTranslation`, `diffSnapshots`), `shared/schemas/ingredient.ts`, `shared/utils/roles.ts`, `shared/types/auth.ts` (Audit-Ereignisse), `test/unit/ingredient.test.ts`
