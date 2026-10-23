@@ -64,7 +64,7 @@ Reihenfolge:
     - `<script>` als Text.
   - Ergebnis: 13 API-Tests grün. Testzutaten werden per SQL angelegt, damit das Rate-Limit nicht greift; das Rate-Limit selbst prüft Aufgabe 8.
 
-- [ ] 7. API: Liste, Suche, Zutatenfilter, Meine
+- [x] 7. API: Liste, Suche, Zutatenfilter, Meine
   - Dateien: `server/api/teas/index.get.ts`, `test/api/teas.test.ts`
   - Erfüllt: AK-1.1–AK-1.4, AK-7.1, AK-8.1 (API)
   - Prüfung (API-Tests):
@@ -75,6 +75,7 @@ Reihenfolge:
     - Fallback-Flag.
     - `mine=1` zeigt eigene private und öffentliche; Gast → 401.
     - Namen und Zutaten alter Versionen werden nicht gefunden.
+  - Ergebnis: 8 API-Tests grün (21 in der Datei). Sortierung „apfel, Äpfel, Birne, Zimt“; private Tees fehlen in „Alle“, auch für den Ersteller; Suche über die englische Übersetzung und die Marke; Zutatenfilter ohne fremd-private und ohne alte Versionen; „Meine“ mit Sichtbarkeit; Gast mit `mine` → 401.
 
 - [ ] 8. API: Bearbeiten und Übersetzen
   - Dateien: `server/api/teas/[id]/index.patch.ts`, `test/api/teas.test.ts`

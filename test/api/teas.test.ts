@@ -202,6 +202,105 @@ describe('Tee-API', async () => {
     })
   })
 
+  describe('Liste, Suche, Filter (AK-1.1–AK-1.4, AK-7.1)', () => {
+    const list = (client: TestClient, query: string) => client.get<Page<TeaListItem>>(`/api/teas?${query}`)
+
+    it('zeigt nur öffentliche Tees – auch dem Ersteller –, sortiert mit Umlauten', async () => {
+      const m = marker()
+      for (const name of ['Zimt', 'Birne', 'Äpfel', 'apfel']) await create({ name: `${name} ${m}`, visibility: 'public' })
+      const secret = await createAs(anna, { name: `Abend ${m}` })
+      const response = await list(anna, `locale=de&q=${m}`)
+      expect(response.status).toBe(200)
+      expect(response.body.items.map(item => item.name)).toEqual(['apfel', 'Äpfel', 'Birne', 'Zimt'].map(name => `${name} ${m}`))
+      expect(response.body.items.map(item => item.id)).not.toContain(secret.id)
+      expect(response.body).toMatchObject({ total: 4, page: 1, pageSize: 24 })
+      expect(response.body.items[0]).toEqual({
+        id: expect.any(String), name: `apfel ${m}`, translated: true, brand: null, kind: 'blended', caffeine: 'unknown', visibility: 'public',
+      })
+    })
+
+    it('teilt in Seiten zu 24', async () => {
+      const m = marker()
+      const { client } = await registerUser()
+      for (let i = 0; i < 26; i++) {
+        // direkt per SQL wäre schneller, prüft aber nicht den Weg über die API; 26 < 30 (Rate-Limit)
+        await createAs(client, { name: `Seite ${m} ${String(i).padStart(2, '0')}`, visibility: 'public' })
+      }
+      const first = await list(anna, `locale=de&q=${m}`)
+      const second = await list(anna, `locale=de&q=${m}&page=2`)
+      expect(first.body.items).toHaveLength(24)
+      expect(second.body.items).toHaveLength(2)
+      expect(second.body.total).toBe(26)
+    })
+
+    it('sucht über Namen aller Sprachen und über die Marke', async () => {
+      const m = marker()
+      const tea = await create({ name: `Morgentau ${m}`, visibility: 'public', kind: 'bought', brand: `Teehaus ${m}` })
+      await db(
+        `INSERT INTO "TeaVersionTranslation" ("versionId", locale, name, "nameKey")
+         SELECT id, 'en', $2::text, lower($2::text) FROM "TeaVersion" WHERE "teaId" = $1 AND "isCurrent"`,
+        [tea.id, `Morning dew ${m}`],
+      )
+      for (const q of [`MORNING DEW ${m}`, `teehaus ${m}`]) {
+        const response = await list(ben, `locale=de&q=${encodeURIComponent(q)}`)
+        expect(response.body.items.map(item => item.id)).toEqual([tea.id])
+      }
+      const english = await list(ben, `locale=en&q=${m}`)
+      expect(english.body.items[0]).toMatchObject({ name: `Morning dew ${m}`, translated: true, brand: `Teehaus ${m}` })
+    })
+
+    it('zeigt den Originalnamen mit Fallback-Flag, wenn die Übersetzung fehlt', async () => {
+      const m = marker()
+      await create({ name: `Abendruhe ${m}`, visibility: 'public' })
+      const response = await list(ben, `locale=en&q=${m}`)
+      expect(response.body.items[0]).toMatchObject({ name: `Abendruhe ${m}`, translated: false })
+    })
+
+    it('filtert nach Zutat, ohne fremde private Tees', async () => {
+      const rooibos = await ingredient(`Rooibos ${marker()}`)
+      const open = await create({ name: `Rot ${marker()}`, visibility: 'public', ingredients: [{ ingredientId: mint }, { ingredientId: rooibos }] })
+      await create({ name: `Rot geheim ${marker()}`, ingredients: [{ ingredientId: rooibos }] })
+      await create({ name: `Ohne ${marker()}`, visibility: 'public' })
+      const response = await list(ben, `locale=de&ingredient=${rooibos}`)
+      expect(response.body.items.map(item => item.id)).toEqual([open.id])
+    })
+
+    it('findet keine Namen und Zutaten alter Versionen', async () => {
+      const m = marker()
+      const old = await ingredient(`Altzutat ${m}`)
+      const tea = await create({ name: `Altname ${m}`, visibility: 'public', ingredients: [{ ingredientId: old }] })
+      await db(
+        `WITH prev AS (UPDATE "TeaVersion" SET "isCurrent" = false WHERE "teaId" = $1 RETURNING "teaId", kind, visibility),
+              v AS (INSERT INTO "TeaVersion" (id, "teaId", version, "isCurrent", kind, visibility)
+                    SELECT gen_random_uuid(), "teaId", 2, true, kind, visibility FROM prev RETURNING id),
+              x AS (INSERT INTO "TeaVersionTranslation" ("versionId", locale, name, "nameKey") SELECT id, 'de', $2::text, lower($2::text) FROM v)
+         INSERT INTO "TeaVersionIngredient" ("versionId", position, "ingredientId") SELECT id, 0, $3::uuid FROM v`,
+        [tea.id, `Neuname ${m}`, mint],
+      )
+      expect((await list(ben, `locale=de&q=${encodeURIComponent(`Altname ${m}`)}`)).body.total).toBe(0)
+      expect((await list(ben, `locale=de&ingredient=${old}`)).body.total).toBe(0)
+      expect((await list(ben, `locale=de&q=${encodeURIComponent(`Neuname ${m}`)}`)).body.items.map(item => item.id)).toEqual([tea.id])
+    })
+
+    it('„Meine“ zeigt eigene private und öffentliche Tees, Gäste bekommen 401', async () => {
+      const { client } = await registerUser()
+      const m = marker()
+      const mine = [
+        await createAs(client, { name: `Eigen privat ${m}` }),
+        await createAs(client, { name: `Eigen öffentlich ${m}`, visibility: 'public' }),
+      ]
+      await create({ name: `Fremd ${m}`, visibility: 'public' })
+      const response = await list(client, `locale=de&mine=1&q=${m}`)
+      expect(response.body.items.map(item => [item.id, item.visibility]).sort()).toEqual(mine.map(tea => [tea.id, tea.visibility]).sort())
+      expect((await list(await createClient(), 'locale=de&mine=1')).status).toBe(401)
+    })
+
+    it('verlangt eine gültige Sprache und Zutat-ID', async () => {
+      expect((await list(ben, 'locale=fr')).status).toBe(400)
+      expect((await list(ben, 'locale=de&ingredient=abc')).status).toBe(400)
+    })
+  })
+
   describe('Ähnliche Tees (AK-2.3)', () => {
     it('findet Tippfehler, aber nur öffentliche Tees', async () => {
       const m = marker()
