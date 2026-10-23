@@ -22,7 +22,7 @@ watch(search, (value) => {
   }, 300)
 })
 
-const { data, pending, refresh } = await useFetch<Page<AdminUser>>('/api/admin/users', { query })
+const { data, pending, error, refresh } = await useFetch<Page<AdminUser>>('/api/admin/users', { query })
 
 const headers = computed(() => [
   { title: t('fields.displayName'), key: 'displayName', sortable: false },
@@ -99,7 +99,11 @@ function closeReset() {
       @click:clear="search = ''"
     />
 
+    <!-- Ladefehler statt leerer Tabelle (00-chore/07) -->
+    <LoadError v-if="error" @retry="refresh()" />
+
     <v-data-table-server
+      v-else
       v-model:page="query.page"
       :headers="headers"
       :items="data?.items ?? []"

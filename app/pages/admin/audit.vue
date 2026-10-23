@@ -16,7 +16,7 @@ watch(() => [query.event, query.userId], () => {
   query.page = 1
 })
 
-const { data, pending } = await useFetch<Page<AuditEntry>>('/api/admin/audit', { query })
+const { data, pending, error, refresh } = await useFetch<Page<AuditEntry>>('/api/admin/audit', { query })
 
 // Nutzerfilter: Suche über die Nutzer-API; ein per Link übergebener Nutzer bleibt auswählbar
 const userSearch = ref('')
@@ -99,7 +99,11 @@ function describe(entry: AuditEntry): string {
       </v-col>
     </v-row>
 
+    <!-- Ladefehler statt leerer Tabelle (00-chore/07) -->
+    <LoadError v-if="error" @retry="refresh()" />
+
     <v-data-table-server
+      v-else
       v-model:page="query.page"
       :headers="headers"
       :items="data?.items ?? []"

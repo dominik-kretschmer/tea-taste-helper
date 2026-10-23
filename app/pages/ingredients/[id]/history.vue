@@ -13,7 +13,8 @@ const [{ data: detail, error }, { data: revisions }] = await Promise.all([
 ])
 if (error.value) {
   const statusCode = error.value.statusCode ?? 500
-  throw createError({ statusCode, statusMessage: statusCode === 404 ? t('errors.NOT_FOUND') : error.value.statusMessage, fatal: true })
+  // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
+  throw createError({ statusCode, fatal: true })
 }
 
 const text = useIngredientText(() => detail.value?.ingredient)

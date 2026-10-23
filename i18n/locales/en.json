@@ -94,9 +94,24 @@
     "ALREADY_PUBLIC": "The tea is already public.",
     "TEA_PUBLIC": "Public teas cannot be deleted."
   },
+  "errorPage": {
+    "notFound": {
+      "title": "Page not found",
+      "text": "This address does not exist (anymore)."
+    },
+    "generic": {
+      "title": "Something went wrong",
+      "text": "Please try again later."
+    },
+    "status": "Error {status}",
+    "home": "Go to home page",
+    "ingredients": "Go to ingredients"
+  },
   "common": {
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "loadError": "The data could not be loaded.",
+    "retry": "Try again"
   },
   "roles": {
     "user": "User",

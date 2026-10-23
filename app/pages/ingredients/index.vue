@@ -26,7 +26,7 @@ watch(search, (value) => {
 })
 
 const query = computed(() => ({ q: q.value || undefined, page: page.value, locale: locale.value }))
-const { data, pending } = await useFetch<Page<IngredientListItem>>('/api/ingredients', { query })
+const { data, pending, error, refresh } = await useFetch<Page<IngredientListItem>>('/api/ingredients', { query })
 const pageCount = computed(() => (data.value ? Math.ceil(data.value.total / data.value.pageSize) : 0))
 </script>
 
@@ -60,7 +60,10 @@ const pageCount = computed(() => (data.value ? Math.ceil(data.value.total / data
 
     <v-progress-linear v-if="pending" indeterminate class="mb-2" />
 
-    <p v-if="data && !data.items.length" class="text-body-1 text-medium-emphasis">
+    <!-- Ladefehler nicht als „leer“ ausgeben (00-chore/07) -->
+    <LoadError v-if="error" @retry="refresh()" />
+
+    <p v-else-if="data && !data.items.length" class="text-body-1 text-medium-emphasis">
       {{ t('ingredients.empty') }}
     </p>
 
@@ -88,7 +91,7 @@ const pageCount = computed(() => (data.value ? Math.ceil(data.value.total / data
     </v-list>
 
     <v-pagination
-      v-if="pageCount > 1"
+      v-if="!error && pageCount > 1"
       :model-value="page"
       :length="pageCount"
       :total-visible="5"

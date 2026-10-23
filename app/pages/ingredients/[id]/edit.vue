@@ -13,7 +13,8 @@ const id = computed(() => String(route.params.id))
 const { data, error, refresh } = await useFetch<{ ingredient: IngredientDetail }>(() => `/api/ingredients/${id.value}`)
 if (error.value) {
   const statusCode = error.value.statusCode ?? 500
-  throw createError({ statusCode, statusMessage: statusCode === 404 ? t('errors.NOT_FOUND') : error.value.statusMessage, fatal: true })
+  // Titel und Text übersetzt die Fehlerseite selbst (app/error.vue)
+  throw createError({ statusCode, fatal: true })
 }
 
 const ingredient = computed(() => data.value!.ingredient)

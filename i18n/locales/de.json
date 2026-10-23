@@ -94,9 +94,24 @@
     "ALREADY_PUBLIC": "Der Tee ist bereits öffentlich.",
     "TEA_PUBLIC": "Öffentliche Tees können nicht gelöscht werden."
   },
+  "errorPage": {
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "text": "Diese Adresse gibt es nicht (mehr)."
+    },
+    "generic": {
+      "title": "Etwas ist schiefgelaufen",
+      "text": "Bitte versuche es später noch einmal."
+    },
+    "status": "Fehler {status}",
+    "home": "Zur Startseite",
+    "ingredients": "Zu den Zutaten"
+  },
   "common": {
     "cancel": "Abbrechen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "loadError": "Die Daten konnten nicht geladen werden.",
+    "retry": "Erneut versuchen"
   },
   "roles": {
     "user": "Nutzer",
