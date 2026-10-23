@@ -43,8 +43,8 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
 
       <div class="revisions mb-2" role="list">
         <div v-if="canCompare" class="revision revision-head text-caption text-medium-emphasis">
-          <span>{{ t('ingredients.historyPage.from') }}</span>
-          <span>{{ t('ingredients.historyPage.to') }}</span>
+          <span>{{ t('catalog.historyPage.from') }}</span>
+          <span>{{ t('catalog.historyPage.to') }}</span>
         </div>
         <div v-for="entry in revisions?.items ?? []" :key="entry.version" class="revision" role="listitem">
           <!-- Eigene Zellen: Vuetify setzt an .v-selection-control `grid-area: control` -->
@@ -53,7 +53,7 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
               <v-radio
                 v-model="compareFrom"
                 :value="entry.version"
-                :aria-label="`${t('ingredients.historyPage.from')} ${t('ingredients.historyPage.version', { version: entry.version })}`"
+                :aria-label="`${t('catalog.historyPage.from')} ${t('catalog.historyPage.version', { version: entry.version })}`"
                 density="compact"
               />
             </div>
@@ -61,23 +61,23 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
               <v-radio
                 v-model="compareTo"
                 :value="entry.version"
-                :aria-label="`${t('ingredients.historyPage.to')} ${t('ingredients.historyPage.version', { version: entry.version })}`"
+                :aria-label="`${t('catalog.historyPage.to')} ${t('catalog.historyPage.version', { version: entry.version })}`"
                 density="compact"
               />
             </div>
           </template>
           <div class="py-2">
             <div class="font-weight-medium">
-              {{ t('ingredients.historyPage.version', { version: entry.version }) }}
+              {{ t('catalog.historyPage.version', { version: entry.version }) }}
               <v-chip v-if="entry.isCurrent" size="x-small" color="primary" class="ml-1">
-                {{ t('ingredients.historyPage.current') }}
+                {{ t('catalog.historyPage.current') }}
               </v-chip>
             </div>
             <div class="text-body-2 text-medium-emphasis">
-              {{ formatDateTime(entry.createdAt, locale) }} · {{ entry.author?.displayName ?? t('ingredients.deletedAccount') }}
+              {{ formatDateTime(entry.createdAt, locale) }} · {{ entry.author?.displayName ?? t('catalog.deletedAccount') }}
             </div>
             <div class="text-body-2 text-break">
-              {{ entry.note ?? t('ingredients.historyPage.noNote') }}
+              {{ entry.note ?? t('catalog.historyPage.noNote') }}
             </div>
           </div>
         </div>
@@ -93,12 +93,12 @@ const { data: comparison, pending: comparing } = await useFetch<{ changes: Snaps
 
       <template v-if="canCompare">
         <h2 class="text-h6 mt-6 mb-2">
-          {{ t('ingredients.historyPage.compare', { from: compareFrom, to: compareTo }) }}
+          {{ t('catalog.historyPage.compare', { from: compareFrom, to: compareTo }) }}
         </h2>
         <v-progress-linear v-if="comparing" indeterminate class="mb-2" />
         <CatalogRevisionDiff v-if="comparison?.changes.length" :changes="comparison.changes" />
         <p v-else-if="comparison" class="text-body-1 text-medium-emphasis">
-          {{ t('ingredients.historyPage.noChanges') }}
+          {{ t('catalog.historyPage.noChanges') }}
         </p>
       </template>
     </v-col>

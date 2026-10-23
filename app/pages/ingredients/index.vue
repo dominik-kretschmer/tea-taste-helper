@@ -79,7 +79,7 @@ const pageCount = computed(() => (data.value ? Math.ceil(data.value.total / data
         <template #append>
           <div class="d-flex flex-wrap justify-end ga-2">
             <v-chip v-if="!item.translated" size="small" variant="outlined">
-              {{ t('ingredients.notTranslated') }}
+              {{ t('catalog.notTranslated') }}
             </v-chip>
             <CatalogFactChips :caffeine="item.caffeine" compact />
           </div>

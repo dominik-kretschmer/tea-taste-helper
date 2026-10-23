@@ -207,14 +207,7 @@
       "brand": "Brand",
       "visibility": "Visibility",
       "ingredient": "Ingredient"
-    }
-  },
-  "ingredients": {
-    "title": "Ingredients",
-    "search": "Search ingredients",
-    "create": "Add ingredient",
-    "loginToCreate": "Sign in to add or edit ingredients.",
-    "empty": "No ingredients found.",
+    },
     "notTranslated": "not translated",
     "notTranslatedHint": "No translation yet – showing the original ({language}).",
     "translate": "Translate",
@@ -223,24 +216,14 @@
     "lastChanged": "Last changed on {date} by {name}",
     "deletedAccount": "deleted account",
     "noDescription": "No description yet.",
-    "similar": {
-      "title": "Similar ingredients – does it already exist?"
-    },
-    "new": {
-      "title": "Add ingredient"
-    },
     "editPage": {
-      "title": "Edit {name}",
       "save": "Save",
       "noChanges": "No changes – no new version was created.",
       "conflict": "Someone else has changed this ingredient in the meantime (now version {version}). Load the current version and enter your change again.",
       "reload": "Load current version",
       "reloadConfirm": "Your input will be lost. Continue?"
     },
-    "duplicateLink": "Go to the existing ingredient",
     "historyPage": {
-      "title": "History: {name}",
-      "back": "Back to ingredient",
       "version": "Version {version}",
       "current": "current",
       "from": "from",
@@ -248,6 +231,27 @@
       "compare": "Comparison: version {from} → {to}",
       "noChanges": "No differences.",
       "noNote": "no note"
+    }
+  },
+  "ingredients": {
+    "title": "Ingredients",
+    "search": "Search ingredients",
+    "create": "Add ingredient",
+    "loginToCreate": "Sign in to add or edit ingredients.",
+    "empty": "No ingredients found.",
+    "similar": {
+      "title": "Similar ingredients – does it already exist?"
+    },
+    "new": {
+      "title": "Add ingredient"
+    },
+    "editPage": {
+      "title": "Edit {name}"
+    },
+    "duplicateLink": "Go to the existing ingredient",
+    "historyPage": {
+      "title": "History: {name}",
+      "back": "Back to ingredient"
     }
   },
   "teas": {

@@ -132,7 +132,7 @@ Reihenfolge:
   - Prüfung im Browser: `/tees` und `/en/teas` erreichbar; Sprachumschalter; „Tees“ in App-Bar und Drawer (360 px); bestehende Seiten unverändert.
   - Ergebnis: Per Playwright geprüft: App-Bar „Tees, Zutaten“, Drawer „Start, Tees, Zutaten“, `/tees` ↔ `/en/teas` per Sprachumschalter, Zutaten- und Login-Seiten unverändert, 360 px ohne Überlauf, keine Konsolenfehler. Alle UI-Texte für 04 stehen in den Sprachdateien. Dazu sind `IngredientFacts` und `RevisionDiff` als `CatalogFactChips` und `CatalogRevisionDiff` nach `components/catalog/` umgezogen (Texte unter `catalog.*`), weil Tees sie mitnutzen; die Tee-Seiten sind vorerst Platzhalter.
 
-- [ ] 13. Seiten: Liste und Detail
+- [x] 13. Seiten: Liste und Detail
   - Dateien: `app/pages/teas/index.vue`, `app/pages/teas/[id]/index.vue`, `app/components/tea/TeaIngredientsList.vue`
   - Erfüllt: AK-1.1–AK-1.7 (UI), AK-2.6 (UI), AK-3.6, AK-4.1 (UI), AK-7.1 (UI), AK-10.2, AK-10.3
   - Prüfung im Browser, auf Deutsch und Englisch:
@@ -143,6 +143,14 @@ Reihenfolge:
     - Fremder privater Tee → 404-Seite.
     - `<b>` wörtlich.
     - 360 px ohne Überlauf.
+  - Ergebnis: Per Playwright geprüft (Gast, anderer Nutzer, Ersteller; de/en; 360 px).
+    - Liste: Gast sieht nur öffentliche Tees und keine Tabs; „Meine“ zeigt private und öffentliche mit Chip.
+    - Zutatenfilter mit Chip, entfernbar.
+    - Detail: Marke, Art, Zubereitung, Zutaten mit Anteilen, „ohne Angabe“, „Rest unbekannt: 20 %“, Koffein-Hinweis; `<b>` wörtlich mit Zeilenumbruch.
+    - Fremd-privat und unbekannt → 404; Fallback-Hinweis auf Englisch.
+    - Veröffentlichen und Löschen mit Dialog, danach Chips und Buttons angepasst bzw. zurück zu „Meine“.
+    - Keine CSP- oder Konsolenmeldungen außer dem bekannten zod-Eval.
+    - Allgemeine Seitentexte („nicht übersetzt“, „Zuletzt geändert“, Konflikt, Historie) liegen jetzt unter `catalog.*` und werden von Zutaten und Tees gemeinsam genutzt. `useCatalogText` ersetzt `useIngredientText`, der alte Name bleibt als Alias.
 
 - [ ] 14. Formular: Anlegen und Bearbeiten
   - Dateien: `app/components/tea/TeaIngredientsField.vue`, `app/components/tea/TeaForm.vue`, `app/utils/teaForm.ts`, `app/pages/teas/new.vue`, `app/pages/teas/[id]/edit.vue`, `app/pages/ingredients/new.vue` (`?return=`)

@@ -27,7 +27,7 @@ useHead({ title: () => text.value?.text.name ?? t('ingredients.title') })
       </h1>
 
       <v-alert v-if="!text.translated" type="info" variant="tonal" density="compact" class="mb-4">
-        {{ t('ingredients.notTranslatedHint', { language: t(`language.${text.locale}`) }) }}
+        {{ t('catalog.notTranslatedHint', { language: t(`language.${text.locale}`) }) }}
         <template v-if="loggedIn" #append>
           <v-btn
             variant="text"
@@ -35,7 +35,7 @@ useHead({ title: () => text.value?.text.name ?? t('ingredients.title') })
             :prepend-icon="mdiTranslate"
             :to="localePath({ name: 'ingredients-id-edit', params: { id: ingredient.id }, query: { lang: locale } })"
           >
-            {{ t('ingredients.translate') }}
+            {{ t('catalog.translate') }}
           </v-btn>
         </template>
       </v-alert>
@@ -47,22 +47,22 @@ useHead({ title: () => text.value?.text.name ?? t('ingredients.title') })
         {{ text.text.description }}
       </p>
       <p v-else class="text-body-1 text-medium-emphasis mb-4">
-        {{ t('ingredients.noDescription') }}
+        {{ t('catalog.noDescription') }}
       </p>
 
       <p class="text-body-2 text-medium-emphasis mb-4">
-        {{ t('ingredients.lastChanged', {
+        {{ t('catalog.lastChanged', {
           date: formatDateTime(ingredient.updatedAt, locale),
-          name: ingredient.updatedBy?.displayName ?? t('ingredients.deletedAccount'),
+          name: ingredient.updatedBy?.displayName ?? t('catalog.deletedAccount'),
         }) }}
       </p>
 
       <div class="d-flex flex-wrap ga-2">
         <v-btn v-if="loggedIn" color="primary" :prepend-icon="mdiPencil" :to="localePath({ name: 'ingredients-id-edit', params: { id: ingredient.id } })">
-          {{ t('ingredients.edit') }}
+          {{ t('catalog.edit') }}
         </v-btn>
         <v-btn variant="outlined" :prepend-icon="mdiHistory" :to="localePath({ name: 'ingredients-id-history', params: { id: ingredient.id } })">
-          {{ t('ingredients.history') }}
+          {{ t('catalog.history') }}
         </v-btn>
       </div>
     </v-col>

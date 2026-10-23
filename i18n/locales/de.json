@@ -207,14 +207,7 @@
       "brand": "Marke",
       "visibility": "Sichtbarkeit",
       "ingredient": "Zutat"
-    }
-  },
-  "ingredients": {
-    "title": "Zutaten",
-    "search": "Zutaten suchen",
-    "create": "Zutat anlegen",
-    "loginToCreate": "Melde dich an, um Zutaten anzulegen oder zu bearbeiten.",
-    "empty": "Keine Zutaten gefunden.",
+    },
     "notTranslated": "nicht übersetzt",
     "notTranslatedHint": "Noch keine Übersetzung – angezeigt wird das Original ({language}).",
     "translate": "Übersetzen",
@@ -223,24 +216,14 @@
     "lastChanged": "Zuletzt geändert am {date} von {name}",
     "deletedAccount": "gelöschtes Konto",
     "noDescription": "Noch keine Beschreibung.",
-    "similar": {
-      "title": "Ähnliche Zutaten – gibt es sie schon?"
-    },
-    "new": {
-      "title": "Zutat anlegen"
-    },
     "editPage": {
-      "title": "{name} bearbeiten",
       "save": "Speichern",
       "noChanges": "Keine Änderungen – es wurde keine neue Version angelegt.",
       "conflict": "Jemand anderes hat die Zutat inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein.",
       "reload": "Aktuelle Fassung laden",
       "reloadConfirm": "Deine Eingaben gehen dabei verloren. Fortfahren?"
     },
-    "duplicateLink": "Zur bestehenden Zutat",
     "historyPage": {
-      "title": "Historie: {name}",
-      "back": "Zurück zur Zutat",
       "version": "Version {version}",
       "current": "aktuell",
       "from": "von",
@@ -248,6 +231,27 @@
       "compare": "Vergleich: Version {from} → {to}",
       "noChanges": "Keine Unterschiede.",
       "noNote": "ohne Notiz"
+    }
+  },
+  "ingredients": {
+    "title": "Zutaten",
+    "search": "Zutaten suchen",
+    "create": "Zutat anlegen",
+    "loginToCreate": "Melde dich an, um Zutaten anzulegen oder zu bearbeiten.",
+    "empty": "Keine Zutaten gefunden.",
+    "similar": {
+      "title": "Ähnliche Zutaten – gibt es sie schon?"
+    },
+    "new": {
+      "title": "Zutat anlegen"
+    },
+    "editPage": {
+      "title": "{name} bearbeiten"
+    },
+    "duplicateLink": "Zur bestehenden Zutat",
+    "historyPage": {
+      "title": "Historie: {name}",
+      "back": "Zurück zur Zutat"
     }
   },
   "teas": {

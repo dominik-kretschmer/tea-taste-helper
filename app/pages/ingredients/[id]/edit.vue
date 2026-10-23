@@ -87,10 +87,10 @@ async function reloadCurrent() {
       </h1>
       <v-form @submit.prevent="submit">
         <v-alert v-if="conflict" type="warning" variant="tonal" class="mb-4">
-          {{ conflict.version ? t('ingredients.editPage.conflict', { version: conflict.version }) : t('errors.EDIT_CONFLICT') }}
+          {{ conflict.version ? t('catalog.editPage.conflict', { version: conflict.version }) : t('errors.EDIT_CONFLICT') }}
           <template #append>
             <v-btn variant="text" @click="confirmReload = true">
-              {{ t('ingredients.editPage.reload') }}
+              {{ t('catalog.editPage.reload') }}
             </v-btn>
           </template>
         </v-alert>
@@ -100,7 +100,7 @@ async function reloadCurrent() {
             {{ t('ingredients.duplicateLink') }}
           </NuxtLink>
         </v-alert>
-        <v-alert v-if="noChanges" type="info" variant="tonal" class="mb-4" :text="t('ingredients.editPage.noChanges')" />
+        <v-alert v-if="noChanges" type="info" variant="tonal" class="mb-4" :text="t('catalog.editPage.noChanges')" />
 
         <IngredientForm
           v-model="form"
@@ -112,7 +112,7 @@ async function reloadCurrent() {
 
         <div class="d-flex flex-wrap ga-2 mt-6">
           <v-btn type="submit" color="primary" size="large" :loading="loading">
-            {{ t('ingredients.editPage.save') }}
+            {{ t('catalog.editPage.save') }}
           </v-btn>
           <v-btn size="large" variant="text" :to="localePath({ name: 'ingredients-id', params: { id } })">
             {{ t('common.cancel') }}
@@ -121,14 +121,14 @@ async function reloadCurrent() {
       </v-form>
 
       <v-dialog v-model="confirmReload" max-width="420">
-        <v-card :title="t('ingredients.editPage.reload')" :text="t('ingredients.editPage.reloadConfirm')">
+        <v-card :title="t('catalog.editPage.reload')" :text="t('catalog.editPage.reloadConfirm')">
           <v-card-actions>
             <v-spacer />
             <v-btn @click="confirmReload = false">
               {{ t('common.cancel') }}
             </v-btn>
             <v-btn color="warning" variant="flat" @click="reloadCurrent">
-              {{ t('ingredients.editPage.reload') }}
+              {{ t('catalog.editPage.reload') }}
             </v-btn>
           </v-card-actions>
         </v-card>
