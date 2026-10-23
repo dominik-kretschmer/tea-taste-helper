@@ -129,7 +129,7 @@ Reihenfolge:
     - Der Test mit gleichzeitigem PATCH läuft über 3 Runden: Die Zusammenführung greift immer; die Änderung bleibt erhalten (200) oder wird mit 409 abgelehnt, nie still verloren.
     - Die Transaktion beim Zusammenführen von Zutaten hat 60 s Timeout statt der 5 s von Prisma.
 
-- [ ] 10. API: Sperren, Login, Nutzerliste
+- [x] 10. API: Sperren, Login, Nutzerliste
   - Dateien: `server/api/admin/users/[id]/block.{post,delete}.ts`, `server/api/admin/moderation/users.get.ts`, `server/utils/users.ts` (`assertCanBlock`, `toModerationUser`), `server/utils/session.ts`, `server/api/auth/login.post.ts`, `test/api/block.test.ts`
   - Erfüllt: AK-0.2 (Routen), AK-6.1–AK-6.8, AK-8.1 (`USER_*`)
   - Prüfung (API-Tests):
@@ -139,6 +139,7 @@ Reihenfolge:
     - Rollenregeln: Moderator → Nutzer ok, → Moderator 403; Admin → Moderator ok; Admin nicht sperrbar; selbst 403.
     - Liste: Suche nach Anzeigename, `blocked=1`, `email` nur für Admins, `changes30d`.
     - Gast 401, Nutzer 403.
+  - Ergebnis: 8 API-Tests in `block.test.ts`, gesamt 410 grün. Der bestehende Test aus 02 (`blockedAt` ohne Frist → `ACCOUNT_BLOCKED`) gilt unverändert als unbefristete Sperre. Entsperren unterliegt denselben Rollenregeln wie Sperren.
 
 - [ ] 11. API: Massen-Zurücksetzen
   - Dateien: `server/api/admin/users/[id]/bulk-revert.{get,post}.ts`, `server/utils/moderation.ts` (`planBulkRevert`, `runBulkRevert`), Tests in `revert.test.ts`

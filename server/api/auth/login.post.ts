@@ -23,9 +23,10 @@ export default defineEventHandler(async (event) => {
     throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password')
   }
 
-  if (user.blockedAt) {
+  // Erst nach der Passwortprüfung, damit Sperren ohne Passwort nicht erkennbar sind; ohne Grund (05 AK-6.2)
+  if (isBlocked(user)) {
     await audit(event, { event: 'LOGIN_FAILED', targetId: user.id, details: { email: input.email, reason: 'blocked' } })
-    throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked')
+    throw new AppError(403, 'ACCOUNT_BLOCKED', 'This account is blocked', { until: user.blockedUntil?.toISOString() ?? null })
   }
 
   reset(emailKey)

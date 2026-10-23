@@ -62,7 +62,7 @@ export async function createSession(event: H3Event, user: User, remember: boolea
 
 /**
  * Liest das Session-Cookie und liefert den Nutzer – oder null, wenn die Session fehlt,
- * abgelaufen ist oder der Nutzer gesperrt wurde (AK-2.3, 2.4, 2.7). Verlängert gleitend.
+ * abgelaufen ist oder der Nutzer gesperrt ist (AK-2.3, 2.4, 2.7; befristete Sperren laufen ab, 05 AK-6.3). Verlängert gleitend.
  */
 export async function resolveSession(event: H3Event): Promise<PublicUser | null> {
   const token = getCookie(event, sessionCookieName())
@@ -73,7 +73,7 @@ export async function resolveSession(event: H3Event): Promise<PublicUser | null>
   const session = await prisma.session.findUnique({ where: { id }, include: { user: true } })
   const now = Date.now()
 
-  if (!session || session.expiresAt.getTime() <= now || session.user.blockedAt) {
+  if (!session || session.expiresAt.getTime() <= now || isBlocked(session.user, new Date(now))) {
     if (session) await prisma.session.delete({ where: { id } }).catch(() => {})
     clearSessionCookie(event)
     return null
