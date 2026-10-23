@@ -10,7 +10,11 @@
     "logout": "Abmelden",
     "changePassword": "Passwort ändern",
     "admin": "Verwaltung",
-    "account": "Konto von {name}"
+    "account": "Konto von {name}",
+    "home": "Start",
+    "ingredients": "Zutaten",
+    "menu": "Menü öffnen",
+    "main": "Hauptnavigation"
   },
   "home": {
     "title": "Willkommen",
@@ -56,7 +60,10 @@
     "tooShort": "Mindestens {min} Zeichen",
     "tooLong": "Höchstens {max} Zeichen",
     "email": "Bitte eine gültige E-Mail-Adresse eingeben",
-    "invalid": "Ungültige Eingabe"
+    "invalid": "Ungültige Eingabe",
+    "min": "Mindestens {min}",
+    "max": "Höchstens {max}",
+    "duration": "Bitte als Min:Sek angeben, z.B. 3:30"
   },
   "errors": {
     "INVALID_CREDENTIALS": "E-Mail oder Passwort ist falsch.",
@@ -71,7 +78,9 @@
     "SELF_ROLE_CHANGE": "Du kannst deine eigene Rolle nicht ändern.",
     "LAST_ADMIN": "Der letzte Admin kann nicht herabgestuft werden.",
     "PASSWORD_CHANGE_REQUIRED": "Bitte lege zuerst ein neues Passwort fest.",
-    "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "DUPLICATE_NAME": "In dieser Sprache gibt es schon eine Zutat mit diesem Namen.",
+    "EDIT_CONFLICT": "Jemand anderes hat die Zutat inzwischen geändert."
   },
   "common": {
     "cancel": "Abbrechen",
@@ -137,6 +146,90 @@
       "registration": "bei Registrierung",
       "startup": "beim Serverstart"
     },
-    "blocked": "gesperrt"
+    "blocked": "gesperrt",
+    "version": "Version {version}",
+    "showIngredient": "Zutat anzeigen"
+  },
+  "ingredients": {
+    "title": "Zutaten",
+    "search": "Zutaten suchen",
+    "create": "Zutat anlegen",
+    "loginToCreate": "Melde dich an, um Zutaten anzulegen oder zu bearbeiten.",
+    "empty": "Keine Zutaten gefunden.",
+    "notTranslated": "nicht übersetzt",
+    "notTranslatedHint": "Noch keine Übersetzung – angezeigt wird das Original ({language}).",
+    "translate": "Übersetzen",
+    "edit": "Bearbeiten",
+    "history": "Historie",
+    "lastChanged": "Zuletzt geändert am {date} von {name}",
+    "deletedAccount": "gelöschtes Konto",
+    "noDescription": "Noch keine Beschreibung.",
+    "caffeine": {
+      "yes": "Mit Koffein",
+      "no": "Koffeinfrei",
+      "unknown": "Koffein unbekannt"
+    },
+    "caffeineOptions": {
+      "yes": "Ja",
+      "no": "Nein",
+      "unknown": "Unbekannt"
+    },
+    "brew": {
+      "title": "Zubereitung",
+      "temp": "{temp} °C",
+      "time": "{time} min",
+      "none": "Kein Zubereitungshinweis"
+    },
+    "fields": {
+      "locale": "Sprache",
+      "name": "Name",
+      "description": "Beschreibung",
+      "caffeine": "Koffein",
+      "brewTempC": "Temperatur (°C)",
+      "brewTime": "Ziehzeit (Min:Sek)",
+      "note": "Änderungsnotiz",
+      "noteHint": "Optional, erscheint in der Historie."
+    },
+    "similar": {
+      "title": "Ähnliche Zutaten – gibt es sie schon?"
+    },
+    "new": {
+      "title": "Zutat anlegen"
+    },
+    "editPage": {
+      "title": "{name} bearbeiten",
+      "source": "Original",
+      "missing": "Übersetzung fehlt",
+      "save": "Speichern",
+      "noChanges": "Keine Änderungen – es wurde keine neue Version angelegt.",
+      "conflict": "Jemand anderes hat die Zutat inzwischen geändert (jetzt Version {version}). Lade die aktuelle Fassung und trage deine Änderung erneut ein.",
+      "reload": "Aktuelle Fassung laden",
+      "reloadConfirm": "Deine Eingaben gehen dabei verloren. Fortfahren?"
+    },
+    "duplicateLink": "Zur bestehenden Zutat",
+    "historyPage": {
+      "title": "Historie: {name}",
+      "back": "Zurück zur Zutat",
+      "version": "Version {version}",
+      "current": "aktuell",
+      "from": "von",
+      "to": "bis",
+      "compare": "Vergleich: Version {from} → {to}",
+      "noChanges": "Keine Unterschiede.",
+      "noNote": "ohne Notiz"
+    },
+    "diff": {
+      "field": "Feld",
+      "locale": "Sprache",
+      "before": "vorher",
+      "after": "nachher"
+    },
+    "diffFields": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "caffeine": "Koffein",
+      "brewTempC": "Temperatur",
+      "brewSeconds": "Ziehzeit"
+    }
   }
 }

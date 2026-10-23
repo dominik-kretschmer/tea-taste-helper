@@ -10,7 +10,11 @@
     "logout": "Sign out",
     "changePassword": "Change password",
     "admin": "Administration",
-    "account": "Account of {name}"
+    "account": "Account of {name}",
+    "home": "Home",
+    "ingredients": "Ingredients",
+    "menu": "Open menu",
+    "main": "Main navigation"
   },
   "home": {
     "title": "Welcome",
@@ -56,7 +60,10 @@
     "tooShort": "At least {min} characters",
     "tooLong": "At most {max} characters",
     "email": "Please enter a valid email address",
-    "invalid": "Invalid input"
+    "invalid": "Invalid input",
+    "min": "At least {min}",
+    "max": "At most {max}",
+    "duration": "Please use min:sec, e.g. 3:30"
   },
   "errors": {
     "INVALID_CREDENTIALS": "Email or password is incorrect.",
@@ -71,7 +78,9 @@
     "SELF_ROLE_CHANGE": "You cannot change your own role.",
     "LAST_ADMIN": "The last admin cannot be demoted.",
     "PASSWORD_CHANGE_REQUIRED": "Please choose a new password first.",
-    "UNKNOWN": "Something went wrong. Please try again."
+    "UNKNOWN": "Something went wrong. Please try again.",
+    "DUPLICATE_NAME": "An ingredient with this name already exists in this language.",
+    "EDIT_CONFLICT": "Someone else has changed this ingredient in the meantime."
   },
   "common": {
     "cancel": "Cancel",
@@ -137,6 +146,90 @@
       "registration": "at registration",
       "startup": "at server start"
     },
-    "blocked": "blocked"
+    "blocked": "blocked",
+    "version": "Version {version}",
+    "showIngredient": "Show ingredient"
+  },
+  "ingredients": {
+    "title": "Ingredients",
+    "search": "Search ingredients",
+    "create": "Add ingredient",
+    "loginToCreate": "Sign in to add or edit ingredients.",
+    "empty": "No ingredients found.",
+    "notTranslated": "not translated",
+    "notTranslatedHint": "No translation yet – showing the original ({language}).",
+    "translate": "Translate",
+    "edit": "Edit",
+    "history": "History",
+    "lastChanged": "Last changed on {date} by {name}",
+    "deletedAccount": "deleted account",
+    "noDescription": "No description yet.",
+    "caffeine": {
+      "yes": "Contains caffeine",
+      "no": "Caffeine-free",
+      "unknown": "Caffeine unknown"
+    },
+    "caffeineOptions": {
+      "yes": "Yes",
+      "no": "No",
+      "unknown": "Unknown"
+    },
+    "brew": {
+      "title": "Preparation",
+      "temp": "{temp} °C",
+      "time": "{time} min",
+      "none": "No preparation notes"
+    },
+    "fields": {
+      "locale": "Language",
+      "name": "Name",
+      "description": "Description",
+      "caffeine": "Caffeine",
+      "brewTempC": "Temperature (°C)",
+      "brewTime": "Steeping time (min:sec)",
+      "note": "Change note",
+      "noteHint": "Optional, shown in the history."
+    },
+    "similar": {
+      "title": "Similar ingredients – does it already exist?"
+    },
+    "new": {
+      "title": "Add ingredient"
+    },
+    "editPage": {
+      "title": "Edit {name}",
+      "source": "Original",
+      "missing": "Translation missing",
+      "save": "Save",
+      "noChanges": "No changes – no new version was created.",
+      "conflict": "Someone else has changed this ingredient in the meantime (now version {version}). Load the current version and enter your change again.",
+      "reload": "Load current version",
+      "reloadConfirm": "Your input will be lost. Continue?"
+    },
+    "duplicateLink": "Go to the existing ingredient",
+    "historyPage": {
+      "title": "History: {name}",
+      "back": "Back to ingredient",
+      "version": "Version {version}",
+      "current": "current",
+      "from": "from",
+      "to": "to",
+      "compare": "Comparison: version {from} → {to}",
+      "noChanges": "No differences.",
+      "noNote": "no note"
+    },
+    "diff": {
+      "field": "Field",
+      "locale": "Language",
+      "before": "before",
+      "after": "after"
+    },
+    "diffFields": {
+      "name": "Name",
+      "description": "Description",
+      "caffeine": "Caffeine",
+      "brewTempC": "Temperature",
+      "brewSeconds": "Steeping time"
+    }
   }
 }

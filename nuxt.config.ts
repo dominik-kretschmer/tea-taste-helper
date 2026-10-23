@@ -47,6 +47,15 @@ export default defineNuxtConfig({
       { code: 'de', language: 'de-DE', file: 'de.json' },
       { code: 'en', language: 'en-US', file: 'en.json' },
     ],
+    // Sprachabhängige Pfade zentral hier (Schlüssel = Routenname); Links immer über localePath({ name })
+    customRoutes: 'config',
+    pages: {
+      'ingredients': { de: '/zutaten', en: '/ingredients' },
+      'ingredients-new': { de: '/zutaten/neu', en: '/ingredients/new' },
+      'ingredients-id': { de: '/zutaten/[id]', en: '/ingredients/[id]' },
+      'ingredients-id-edit': { de: '/zutaten/[id]/bearbeiten', en: '/ingredients/[id]/edit' },
+      'ingredients-id-history': { de: '/zutaten/[id]/historie', en: '/ingredients/[id]/history' },
+    },
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',

@@ -81,13 +81,14 @@ Reihenfolge:
     - `PATCH`/`DELETE` auf `/revisions` und `DELETE` auf die Zutat → 404 bzw. 405.
   - Ergebnis: 3 API-Tests grün (30 in der Datei). `PATCH`/`PUT`/`DELETE` auf `/revisions` und `PUT`/`DELETE` auf die Zutat liefern alle 404 aus der Catch-all-Route, nie 405. Die Historie ist wie die Detailseite öffentlich.
 
-- [ ] 8. Sprachpfade und Navigation
+- [x] 8. Sprachpfade und Navigation
   - Dateien: `nuxt.config.ts` (`i18n.customRoutes`, `i18n.pages`), `app/components/AppNav.vue`, `app/layouts/default.vue`, `i18n/locales/*.json`
   - Erfüllt: AK-1.1 (Pfade), AK-7.3 (Navigation)
   - Prüfung im Browser:
     - `/zutaten` und `/en/ingredients` erreichbar (zunächst mit Platzhalterseite); der Sprachumschalter wechselt zwischen beiden.
     - Ab `sm` steht „Zutaten“ in der App-Bar, bei 360 px öffnet das Menü-Icon den Drawer.
     - Bestehende Seiten (Login, Admin) funktionieren weiter.
+  - Ergebnis: Per Playwright geprüft (Dev-Server): App-Bar-Link → `/zutaten`, Sprachumschalter → `/en/ingredients`, `/login` unverändert; bei 360 px nur das Menü-Icon, der Drawer navigiert und schließt, kein horizontales Scrollen, keine Konsolenfehler. Gefunden und behoben: `d-flex` in `AppNav` hob `d-none` auf. Die Schlüssel in `i18n.pages` sind Routennamen. Alle UI-Texte für 03 sind schon in den Sprachdateien.
 
 - [ ] 9. Seiten: Liste und Detail
   - Dateien: `app/pages/ingredients/index.vue`, `app/pages/ingredients/[id]/index.vue`, `app/components/ingredient/IngredientFacts.vue`, `app/composables/useIngredientText.ts`, `i18n/locales/*.json`
