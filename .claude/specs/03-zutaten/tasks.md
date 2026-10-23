@@ -126,10 +126,11 @@ Reihenfolge:
     - Audit-Seite zeigt bei Zutat-Ereignissen „Version n“ und einen Link zur Zutat.
   - Ergebnis: Per Playwright geprüft: Versionsliste neueste zuerst mit Datum, Autor und Notiz; Standard 3 → 4 zeigt „Temperatur 90 °C → 85 °C“; „von Version 1“ zeigt Temperatur sowie englischen Namen und Beschreibung als neu; englische Seite übersetzt; bei nur einer Version kein Vergleich; unbekannte ID → 404; 360 px gestapelt ohne Überlauf; Audit-Zeile „Version 2 · Zutat anzeigen“ führt zur Zutat (Testnutzer dafür in der Dev-DB kurz Admin). Gefunden und behoben: Vuetifys `grid-area: control` legte beide Radios in eine Zelle (jetzt eigene Zellen); `RevisionDiff` muss wegen des Ordnerpräfixes `IngredientRevisionDiff` heißen. Suite 207 Tests.
 
-- [ ] 12. Dokumentation
+- [x] 12. Dokumentation
   - Dateien: `README.md` (Migrationen mit `--create-only`, SQL-Indizes), `.claude/skills/nuxt-dev/SKILL.md` (dasselbe als Hinweis)
   - Erfüllt: Haken aus dem Design (Indizes außerhalb von Prisma)
   - Prüfung: README und Skill erklären, warum neue Migrationen vor dem Anwenden geprüft werden und welche Indizes erhalten bleiben müssen.
+  - Ergebnis: README hat die Abschnitte „Zutaten“ und „Migrationen“ (Tabelle der SQL-Objekte, Ablauf mit `--create-only`, angewendete Migrationen nicht ändern) und die neuen Fehlercodes. Im Skill `nuxt-dev` stehen der Befehl und zwei Hinweise: die SQL-Objekte und das Ordnerpräfix bei Komponenten.
 
 - [ ] 13. Abschluss
   - Erfüllt: alle AKs (Endabnahme)

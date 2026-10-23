@@ -70,6 +70,31 @@ Alle Variablen stehen in [`.env.example`](.env.example). Der Server prüft sie b
 
 In der Verwaltung lassen sich Rollen vergeben (`user`, `moderator`, `admin`). Ohne Mailversand setzt ein Admin vergessene Passwörter zurück: Es entsteht ein Einmal-Passwort, das nur einmal angezeigt wird, und beim nächsten Anmelden muss der Nutzer ein neues Passwort wählen. Sicherheitsrelevante Ereignisse stehen unter `/admin/audit`.
 
+## Zutaten
+
+Den Zutatenkatalog (`/zutaten`, englisch `/en/ingredients`) lesen alle; Anlegen, Bearbeiten und Übersetzen brauchen ein Konto. Jedes Speichern legt eine neue Version an, die Historie mit Vergleich steht unter `/zutaten/<id>/historie`. Die sprachabhängigen Pfade stehen zentral in `nuxt.config.ts` (`i18n.pages`); Links entstehen über `localePath({ name: 'ingredients-id', params: { id } })`.
+
+## Migrationen
+
+Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie nicht abbilden kann:
+
+| Objekt | Migration | Zweck |
+|---|---|---|
+| Erweiterung `pg_trgm` | `0003_ingredients` | Ähnliche Namen und schnelle Teilwortsuche |
+| `IngredientVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0003_ingredients` | Genau eine aktuelle Version pro Zutat |
+
+Der GIN-Index `IngredientVersionTranslation_name_trgm` steht zusätzlich im Schema (`type: Gin`), damit Prisma ihn nicht als Abweichung sieht.
+
+Neue Migrationen deshalb immer in zwei Schritten erzeugen:
+
+```bash
+npx prisma migrate dev --create-only --name <name>   # SQL erzeugen, noch nicht anwenden
+# prisma/migrations/<…>_<name>/migration.sql lesen: kein DROP der Objekte oben?
+npm run db:migrate                                   # anwenden
+```
+
+Will eine neue Migration eines der Objekte löschen, gehört die Zeile aus der SQL-Datei entfernt. Eine schon angewendete Migration nicht mehr ändern – sonst verlangt `prisma migrate dev` ein Zurücksetzen der Datenbank.
+
 ## Projektstruktur
 
 ```
@@ -77,7 +102,7 @@ app/                 Frontend (Seiten, Layouts, Komponenten, Plugins)
 i18n/locales/        UI-Texte (de.json, en.json – gleiche Schlüssel)
 server/api/          API-Routen (Nitro)
 server/middleware/   Session auflösen, Pflicht-Passwortwechsel
-server/utils/        Env, Logger, Prisma, Fehler, Health, Sessions, Rechte, Rate-Limit, Audit
+server/utils/        Env, Logger, Prisma, Fehler, Health, Sessions, Rechte, Rate-Limit, Audit, Zutaten-Abfragen
 server/plugins/      Env-Prüfung, Request-Logging, ADMIN_EMAIL, Session-Aufräumen
 shared/              Typen, Rollen und zod-Schemas für Client und Server
 prisma/              Schema und Migrationen
@@ -94,7 +119,7 @@ Alle Fehler unter `/api/` haben dieses Format; jede Antwort trägt den Header `X
 { "error": { "code": "VALIDATION_ERROR", "message": "Invalid input", "requestId": "…", "details": { } } }
 ```
 
-Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
+Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `DUPLICATE_NAME` (409, mit `ingredientId`), `EDIT_CONFLICT` (409, mit `currentVersion`), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
 
 ## Sicherheit
 

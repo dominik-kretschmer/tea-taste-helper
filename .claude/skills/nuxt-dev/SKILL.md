@@ -23,7 +23,8 @@ Das Projekt ist eine Nuxt-4-App (Vue 3, Vuetify 4, @nuxtjs/i18n) mit Prisma 7 au
 |---|---|
 | Dienste starten | `docker compose up -d` (ohne GPU: `-f compose.yaml -f compose.cpu.yaml`) |
 | Abhängigkeiten | `npm install` |
-| Migrationen | `npm run db:migrate` |
+| Migrationen anwenden | `npm run db:migrate` |
+| Neue Migration erzeugen | `npx prisma migrate dev --create-only --name <name>`, SQL prüfen, dann `npm run db:migrate` |
 | Dev-Server (Port 3000) | `npm run dev` |
 | Lint / Typecheck | `npm run lint` / `npm run typecheck` |
 | Tests | `npm test` |
@@ -53,6 +54,8 @@ Das Projekt ist eine Nuxt-4-App (Vue 3, Vuetify 4, @nuxtjs/i18n) mit Prisma 7 au
 - Geheimnisse gehören in `.env` (in `.gitignore`); Vorlage ist `.env.example`.
 - Logs schreibt pino; im Dev-Modus über `pino-pretty` asynchron – beim Auslesen kurz warten.
 - `npm run db:reset` wird von Prisma für KI-Agenten blockiert und braucht die ausdrückliche Zustimmung des Nutzers.
+- Migrationen enthalten SQL, das Prisma nicht kennt: `pg_trgm` und den partiellen Unique-Index `IngredientVersion_current_key` (siehe README „Migrationen“). Neue Migrationen deshalb immer mit `--create-only` erzeugen und vor dem Anwenden prüfen, dass sie nichts davon löschen. Angewendete Migrationen nicht mehr ändern, auch keine Kommentare – sonst stimmt die Prüfsumme nicht und `migrate dev` verlangt ein Zurücksetzen.
+- Komponenten in Unterordnern bekommen den Ordner als Präfix: `components/ingredient/RevisionDiff.vue` heißt `<IngredientRevisionDiff>`. Ein falscher Name fällt nicht im Typecheck auf, nur als Vue-Warnung im Dev-Log.
 - Läuft bereits ein Dev-Server des Nutzers, keinen zweiten starten (beide schreiben in `.nuxt/`); stattdessen dessen Port nutzen.
 - Neue Dateien unter `app/pages/` übernimmt ein laufender Dev-Server nicht immer zuverlässig. Bei 404 auf eine neue Seite den Dev-Server neu starten.
 - Rate-Limits liegen im Speicher. Viele Test-Registrierungen von `localhost` lösen nach 5 pro Stunde 429 aus, ein Neustart des Dev-Servers setzt die Zähler zurück.
