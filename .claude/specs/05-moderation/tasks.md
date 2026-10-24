@@ -234,10 +234,14 @@ Reihenfolge:
     - **Gefundener Fehler, behoben:** Dialoge, die erst beim Öffnen per `v-if` eingebunden werden, bekamen die Öffnung nicht mit (`watch(open)` ohne `immediate`). Die Vorschau der Massen-Zurücksetzung blieb dadurch leer, und das vorausgewählte Ziel beim Zusammenführen fehlte. Jetzt haben alle Dialoge `immediate: true` (in `MergeDialog` auch der Ziel-Watcher), im Browser nachgeprüft.
     - Die CSP-Prüfung gegen den Production-Build steht mit der Endabnahme (Aufgabe 18) aus.
 
-- [ ] 17. Dokumentation
+- [x] 17. Dokumentation
   - Dateien: `README.md` (Moderation, Rollen, SQL-Objekte `Report_open_key` und CHECK-Constraints, neue Fehlercodes), `.claude/skills/nuxt-dev/SKILL.md`, `.claude/specs/00-chore/README.md` (Beobachtung „Suche öffentlich ohne Rate-Limit“ mit 05 erneut prüfen und Ergebnis eintragen)
   - Erfüllt: Design („SQL-Objekte“)
   - Prüfung: README listet alle SQL-Objekte aus 0003, 0004 und 0006 und beschreibt Moderation und Rollen kurz. Der Skill nennt die Regel, inaktive Einträge nur über `ACTIVE` auszuschließen.
+  - Ergebnis:
+    - README: Abschnitt „Moderation“, die Objekte `Report_open_key` und beide CHECK-Constraints in der Migrations-Tabelle, die neuen Fehlercodes. Die Schema-Dateien aus 00-chore/11 vermerken die Objekte schon am Dateikopf.
+    - Skill `nuxt-dev`: SQL-Objekte, `ENTRY_ACTIVE`/`activeSql`, `save*Version` als einziger Schreibweg, `immediate` bei Dialogen.
+    - 00-chore/README: Die Notiz zur öffentlichen Suche ist mit 05 geprüft. 05 bringt keine neuen öffentlichen Suchrouten, Melden hat ein eigenes Limit; beim Hosting erneut prüfen.
 
 - [ ] 18. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
