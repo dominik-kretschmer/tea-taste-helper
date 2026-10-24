@@ -1,7 +1,7 @@
 # 00 – Chore: Projektanalyse nach Slice 03
 
 > Analyse vom 2026-10-23, Stand `5bc54f9`. Jedes Issue ist ein eigener Ordner und läuft nach dem Skill `spec-driven` (Anforderungen → Design → Aufgaben → Umsetzung), sofern nicht anders vereinbart.
-> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23), 11 umgesetzt (2026-10-24, API-Tests und Build stehen noch aus)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt. 05 (npm audit) ist geschlossen: Die einzige verbliebene Meldung (`node-forge`, nur Dev-Server, kein Patch) wird ignoriert, siehe [Begründung](05-chore-npm-audit/begruendung.md). Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
+> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23), 11 umgesetzt (2026-10-24)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt. 05 (npm audit) ist geschlossen: Die einzige verbliebene Meldung (`node-forge`, nur Dev-Server, kein Patch) wird ignoriert, siehe [Begründung](05-chore-npm-audit/begruendung.md). Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
 
 ## Vorgehen
 

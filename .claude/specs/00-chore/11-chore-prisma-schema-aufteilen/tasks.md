@@ -32,14 +32,15 @@ Reihenfolge:
   - Prüfung: Kurzer Absatz (im Abschnitt „Datenmodell“): Schema liegt in `prisma/schema/`, eine Datei pro Tabelle in kebab-case, Enums in `enums.prisma`, Many-to-many nur als Verbindungstabelle in eigener Datei; nach Schemaänderungen `npm run db:erd`. Projektstruktur: `prisma/` mit `schema/` und `migrations/`. `grep -rn "prisma/schema.prisma" README.md .claude/skills` → keine Treffer.
   - Ergebnis: Regeln im Abschnitt „Datenmodell“, Projektstruktur mit `prisma/schema/` und `prisma/migrations/`. Keine Treffer für `prisma/schema.prisma` in README und `.claude/skills`. Zusätzlich nennt der Kopf von `prisma/schema/schema.prisma` die Regeln.
 
-- [ ] 4. Abnahme
+- [x] 4. Abnahme
   - Erfüllt: alle
   - Prüfung: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` grün (AK-1.3; die API-Tests laufen mit `prisma migrate deploy` über das neue Schema, AK-1.4). Von Hand: `npm run postinstall` (`prisma generate && nuxt prepare`); ~~`npx prisma migrate dev --create-only --name probe` legt keinen Ordner an~~ `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema --exit-code` → 0 (AK-1.2); `npm run db:deploy` → „No pending migrations“; `npm run db:studio` startet (Port prüfen, dann beenden). `db:reset` wird nicht ausgeführt (leert die Dev-DB); stattdessen zeigt `npx prisma migrate status`, dass Konfiguration, Schema und Migrationen gefunden werden und die DB aktuell ist. CI nach dem Push des Nutzers. AKs einzeln vermerken.
-  - Ergebnis (2026-10-24, **teilweise**, auf Wunsch des Nutzers vor den API-Tests committet):
+  - Ergebnis (2026-10-24; auf Wunsch des Nutzers zunächst vor den API-Tests committet, `4f784c3`, Rest danach nachgeholt):
     - AK-1.1, AK-1.5, AK-1.7: siehe Aufgaben 1 und 2; `prisma validate` grün, `test/unit/prisma-schema.test.ts` grün.
     - AK-1.2: `migrate diff` alt → neu leer; `migrate diff --from-config-datasource --to-schema prisma/schema --exit-code` → 0 gegen die Dev-DB.
     - AK-1.3: Lint, Typecheck und 227 Unit-Tests grün (Unit-Tests am 2026-10-24 erneut). Kein Code außerhalb von `prisma/` geändert, abgesehen von Test, `scripts/datenmodell.mjs` und Doku.
     - AK-1.4: `postinstall`, `db:deploy` („No pending migrations“), `migrate status` (6 Migrationen, aktuell) und `db:studio` (HTTP 200) funktionieren. `db:reset` bewusst nicht ausgeführt.
     - AK-1.6: siehe Aufgabe 3. AK-1.8: `datenmodell.test.ts` grün, Inhalt gleich, einmalig umsortiert.
-    - **Offen:** API-Tests und `npm run build` mit dem neuen Schema. Der erste Lauf scheiterte am Speicher (Hook-Timeout beim Bauen), der zweite fand keine Datenbank (`ECONNREFUSED`, Docker Desktop lief nicht). Nachholen, sobald Postgres läuft (`flock .git/tea-test.lock npx vitest run --project api --maxWorkers=1`), danach die CI nach dem Push.
+    - AK-1.3/AK-1.4 nachgeholt (voller Lauf auf HEAD inkl. `4f784c3`, durch die 05-Moderation-Session): Lint und Typecheck grün, `npm test` 420/420 in 29 Dateien (Unit 227/17, API 193/12, API-Setup mit `prisma migrate deploy` über `prisma/schema/`), `npm run build` Exit 0. Zwei frühere API-Läufe scheiterten nicht am Schema: einmal Speicher (Hook-Timeout beim Bauen), einmal keine Datenbank (`ECONNREFUSED`, Docker Desktop lief nicht).
+    - Offen: CI nach dem Push des Nutzers.
     - Hinweis: `839bd68` (05-Moderation) enthielt versehentlich schon die Umbenennung `prisma/schema.prisma` → `prisma/schema/schema.prisma`, ohne die Änderung an `prisma.config.ts`. Erst dieser Commit macht HEAD wieder lauffähig.
