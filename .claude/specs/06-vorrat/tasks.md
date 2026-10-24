@@ -1,6 +1,6 @@
 # Aufgaben: 06 – Vorrat
 
-> Phase 3 zu [design.md](design.md). Status: **freigegeben (2026-10-24)**
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-24)**
 
 Reihenfolge:
 - Datenmodell → Regeln → Server-Bausteine → API → Moderation → UI → Dokumentation → Endabnahme.
@@ -94,7 +94,35 @@ Reihenfolge:
   - Prüfung: Die README-Liste der SQL-Objekte stimmt mit den Migrationen überein.
   - Ergebnis: README mit Abschnitt „Vorrat“ und der Zeile `PantryItem_one_target` (0007, einziges SQL-Objekt der Migration). Overview §6 um Gramm, „aufgebraucht“, Grenzen, private Tees und Verhalten bei der Moderation ergänzt.
 
-- [ ] 10. Endabnahme
+- [x] 10. Endabnahme
   - `npm run build` fehlerfrei, `lint`, `typecheck` und `test` grün.
   - Jedes AK einzeln prüfen und als Tabelle (AK | Ergebnis | Nachweis) hier eintragen.
   - Status in requirements, design und tasks auf **umgesetzt** setzen. Testdaten `pw06` aus der Dev-DB löschen.
+  - Ergebnis: `npm run build`, `lint`, `typecheck` und `npm test` (458 Tests) sind grün. Testdaten `pw06` (10 Konten, Zutaten, Tees, Vorratseinträge, deren Audit-Einträge) sind aus der Dev-DB gelöscht.
+
+    | AK | Ergebnis | Nachweis |
+    |---|---|---|
+    | 0.1 | erfüllt | API-Test „zeigt und ändert keine fremden Einträge“ (404); keine Nutzer-ID im Request |
+    | 0.2 | erfüllt | API-Test „antwortet Gästen auf jeder Route mit 401“; Browser: Gast auf `/vorrat` → Login → zurück (Aufgabe 6) |
+    | 0.3 | erfüllt | Browser: Menü „Vorrat“ führt zu `/vorrat` bzw. `/en/pantry` (Aufgabe 6) |
+    | 1.1 | erfüllt | API-Test „sortiert …, zählt je Art“; Browser: Tabs mit Anzahl, de und en (Aufgabe 7) |
+    | 1.2 | erfüllt | API-Test (Sortierung); Browser: „aufgebraucht“ steht am Ende |
+    | 1.3 | erfüllt | API-Test „lässt ausgeblendete Einträge nur entfernen“; Browser: ohne Link, Menü nur „Entfernen“ |
+    | 1.4 | erfüllt | API-Test „teilt in Seiten zu 24 Einträgen“ und Suche; Browser: `?type`, `?q` überstehen Neuladen |
+    | 1.5 | erfüllt | API-Test (Felder `empty`, `hidden`, `entityType`, `entityId`) |
+    | 2.1 | erfüllt | API-Tests Hinzufügen und `withOwn`; Browser: Zutat ohne Menge, eigener privater Tee mit 50 g |
+    | 2.2 | erfüllt | Browser: Gast ohne Knopf, „In den Vorrat“ → „Im Vorrat: 50 g“ mit Link (Aufgabe 8) |
+    | 2.3 | erfüllt | API-Test (409 `ALREADY_IN_PANTRY` mit `entryId`); Browser: Meldung mit „Menge ändern“ |
+    | 2.4 | erfüllt | API-Test „nimmt eigene private Tees, aber keine fremden, ausgeblendeten oder zusammengeführten Einträge“ |
+    | 2.5 | erfüllt | Unit-Test `pantry.test.ts`, API-Test „prüft die Menge“; Browser: −1 und 100 001 als Fehler am Feld |
+    | 2.6 | erfüllt | API-Test „begrenzt den Vorrat auf 1000 Einträge“ |
+    | 3.1 | erfüllt | API-Test „ändert die Menge, auch auf leer und 0“; Browser: 1 250 g |
+    | 3.2 | erfüllt | Browser: „Aufgebraucht“ setzt 0 und schiebt den Eintrag ans Ende |
+    | 3.3 | erfüllt | API-Test „schreibt kein Audit-Log“; `*_MERGED` unverändert (Moderations-Tests) |
+    | 4.1 | erfüllt | API-Test „entfernt und stellt … wieder her“; Browser: Rückfrage mit Name und Menge, „Rückgängig“ |
+    | 4.2 | erfüllt | API-Test „entfernt einen gelöschten privaten Tee aus dem Vorrat“ |
+    | 5.1 | erfüllt | API-Tests „hängt Einträge um …“ und „Tees: Mengen werden addiert“ (30 + 20, `null`, 0, Deckel 100 000) |
+    | 5.2 | erfüllt | API-Test „Ausblenden: Eintrag bleibt markiert, nach dem Wiederherstellen wieder normal“ |
+    | 5.3 | erfüllt | `hideEntry` und `previewMerge` unverändert; API-Test blendet eine Zutat aus, die nur im Vorrat steckt |
+    | 6.1 | erfüllt | `test/unit/i18n.test.ts` (gleiche Schlüssel); Browser de und en |
+    | 6.2 | erfüllt | Browser 375 px hell und dunkel, kein horizontales Scrollen, keine Konsolenwarnungen |

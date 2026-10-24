@@ -1,7 +1,7 @@
 # 06 – Vorrat
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 06 (§2 Begriffe, §6 Vorrat, §7 Empfehlung). Baut auf [03 – Zutaten](../03-zutaten/requirements.md), [04 – Tees](../04-tees/requirements.md) und [05 – Moderation](../05-moderation/requirements.md) auf. Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-24)**, einschließlich der Vorschläge zur Bestätigung (mit Änderungen an 3–5).
+> Status: **umgesetzt (2026-10-24)**, einschließlich der Vorschläge zur Bestätigung (mit Änderungen an 3–5).
 
 ## Ziel
 

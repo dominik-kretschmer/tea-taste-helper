@@ -1,6 +1,6 @@
 # Design: 06 – Vorrat
 
-> Phase 2 zu [requirements.md](requirements.md). Status: **freigegeben (2026-10-24)**
+> Phase 2 zu [requirements.md](requirements.md). Status: **umgesetzt (2026-10-24)**
 
 ## Überblick
 
