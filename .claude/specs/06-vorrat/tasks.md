@@ -10,7 +10,7 @@ Reihenfolge:
 - Zum Abschluss jeder Aufgabe laufen `npm run lint`, `npm run typecheck` und `npm test` grün.
 - Browserprüfungen mit Testdaten unter der Kennung `pw06`, danach wieder aus der Dev-DB löschen.
 
-- [ ] 1. Datenmodell und Migration
+- [x] 1. Datenmodell und Migration
   - Dateien: `prisma/schema/pantry-item.prisma` (neu), `prisma/schema/user.prisma`, `ingredient.prisma`, `tea.prisma` (Rückrelationen), `prisma/migrations/0007_pantry/` (per `--create-only`, ergänzt um `CHECK "PantryItem_one_target"`), `docs/datenmodell.md` (`npm run db:erd`)
   - Erfüllt: Grundlage für alle AKs, AK-4.2 (Cascade)
   - Prüfung:
@@ -18,6 +18,7 @@ Reihenfolge:
     - `prisma migrate diff` gegen die DB ist leer. Die Migration löscht keines der SQL-Objekte aus 0003–0006.
     - Per SQL: Eine Zeile ohne Verweis und eine mit beiden Verweisen schlagen am `CHECK` fehl, ein doppelter Eintrag am Unique-Index.
     - `test/unit/prisma-schema.test.ts` und `datenmodell.test.ts` bleiben grün.
+  - Ergebnis: Die Migration enthält nur `CREATE`/`ALTER … ADD` und kein `DROP`. Sie ist auf Dev angewendet, `tea_test` migriert das Test-Setup. `migrate diff` meldet „empty migration“. Per SQL schlagen „ohne Verweis“ und „beide Verweise“ am `PantryItem_one_target` fehl, ein doppelter Eintrag am `PantryItem_userId_ingredientId_key`. Lint und Typecheck grün, 420 Tests grün.
 
 - [ ] 2. Konstanten, Typen, zod-Schemas
   - Dateien: `shared/utils/pantry.ts`, `shared/types/pantry.ts`, `shared/schemas/pantry.ts`, `shared/schemas/tea.ts` (`withOwn`), `test/unit/pantry.test.ts`

@@ -21,6 +21,8 @@ model Tea {
   mergedInto   Tea?         @relation("TeaMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
   mergedFrom   Tea[]        @relation("TeaMerge")
   mergedAt     DateTime?
+  // 06 – Vorrat
+  pantryItems  PantryItem[]
 
   @@index([ownerId])
   @@index([mergedIntoId])

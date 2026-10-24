@@ -1,0 +1,24 @@
+// 06 – Vorrat: eine Zutat oder ein Tee im Vorrat eines Nutzers
+// Zusätzlich als SQL in 0007_pantry (Prisma kennt ihn nicht): CHECK-Constraint
+// "PantryItem_one_target" – genau eines von ingredientId und teaId ist gesetzt.
+
+/// Vorratseintrag; höchstens einer je Nutzer und Zutat bzw. Tee (NULL ist in Postgres eindeutig).
+model PantryItem {
+  id           String      @id @default(uuid(7)) @db.Uuid
+  userId       String      @db.Uuid
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredientId String?     @db.Uuid
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  teaId        String?     @db.Uuid
+  /// Cascade: Löscht der Ersteller seinen privaten Tee, verschwindet er aus seinem Vorrat (AK-4.2)
+  tea          Tea?        @relation(fields: [teaId], references: [id], onDelete: Cascade)
+  /// Gramm, 0–100 000 (zod-geprüft); null = ohne Menge, 0 = aufgebraucht
+  grams        Int?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([userId, ingredientId])
+  @@unique([userId, teaId])
+  @@index([ingredientId])
+  @@index([teaId])
+}

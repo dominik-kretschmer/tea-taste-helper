@@ -31,6 +31,7 @@ model User {
   reports               Report[]            @relation("ReportReporter")
   reportsResolved       Report[]            @relation("ReportResolver")
   catalogEvents         CatalogEvent[]      @relation("CatalogEventActor")
+  pantryItems           PantryItem[]
 
   @@index([displayName])
 }

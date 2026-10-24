@@ -22,6 +22,8 @@ model Ingredient {
   mergedAt          DateTime?
   /// Teeversionen, die durch das Zusammenführen dieser Zutat entstanden sind
   teaVersionsMerged TeaVersion[]           @relation("TeaVersionMergedIngredient")
+  // 06 – Vorrat
+  pantryItems       PantryItem[]
 
   @@index([mergedIntoId])
   @@index([hiddenAt])

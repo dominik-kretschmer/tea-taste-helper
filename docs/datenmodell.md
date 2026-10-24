@@ -3,7 +3,7 @@
 > **Automatisch erzeugt** aus dem Prisma-Schema mit `npm run db:erd` – nicht von Hand bearbeiten.
 > Nach jeder Schema-Änderung neu erzeugen; `test/unit/datenmodell.test.ts` schlägt sonst fehl.
 
-12 Tabellen, 23 Beziehungen, 9 Enums.
+13 Tabellen, 26 Beziehungen, 9 Enums.
 
 ## Lesehilfe
 
@@ -66,6 +66,15 @@ erDiagram
     String name "VarChar(80)"
     String nameKey
     String description "optional; VarChar(2000)"
+  }
+  PantryItem {
+    String id PK "Uuid; default uuid(7)"
+    String userId FK "Uuid; unique(userId, ingredientId); unique(userId, teaId)"
+    String ingredientId FK "optional; Uuid; unique(userId, ingredientId)"
+    String teaId FK "optional; Uuid; unique(userId, teaId)"
+    Int grams "optional"
+    DateTime createdAt "default now()"
+    DateTime updatedAt
   }
   Report {
     String id PK "Uuid; default uuid(7)"
@@ -155,6 +164,9 @@ erDiagram
   User |o--o{ IngredientVersion : "authorId"
   User |o--o{ IngredientVersion : "bulkRevertOfId"
   IngredientVersion ||--o{ IngredientVersionTranslation : "versionId"
+  User ||--o{ PantryItem : "userId"
+  Ingredient |o--o{ PantryItem : "ingredientId"
+  Tea |o--o{ PantryItem : "teaId"
   User |o--o{ Report : "reporterId"
   User |o--o{ Report : "resolvedById"
   User ||--o{ Session : "userId"
@@ -184,6 +196,9 @@ erDiagram
 | `IngredientVersion.authorId` | `User` | optional | `SetNull` |
 | `IngredientVersion.bulkRevertOfId` | `User` | optional | `SetNull` |
 | `IngredientVersionTranslation.versionId` | `IngredientVersion` | Pflicht | `Cascade` |
+| `PantryItem.userId` | `User` | Pflicht | `Cascade` |
+| `PantryItem.ingredientId` | `Ingredient` | optional | `Restrict` |
+| `PantryItem.teaId` | `Tea` | optional | `Cascade` |
 | `Report.reporterId` | `User` | optional | `SetNull` |
 | `Report.resolvedById` | `User` | optional | `SetNull` |
 | `Session.userId` | `User` | Pflicht | `Cascade` |
