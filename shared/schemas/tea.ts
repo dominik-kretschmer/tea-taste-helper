@@ -71,7 +71,6 @@ export const teaListQuerySchema = z.object({
 
 export const similarTeaQuerySchema = z.object({
   name: catalogNameSchema,
-  brand: brandSchema,
   locale: contentLocaleSchema,
 })
 

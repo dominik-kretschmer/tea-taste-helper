@@ -81,7 +81,8 @@ export async function resolveSession(event: H3Event): Promise<PublicUser | null>
 
   if (now - session.lastSeenAt.getTime() > TOUCH_INTERVAL_MS) {
     const ttl = session.remember ? REMEMBER_TTL_MS : SESSION_TTL_MS
-    await prisma.session.update({ where: { id }, data: { lastSeenAt: new Date(now), expiresAt: new Date(now + ttl) } })
+    // updateMany: kein P2025, wenn die Session parallel gelöscht wurde
+    await prisma.session.updateMany({ where: { id }, data: { lastSeenAt: new Date(now), expiresAt: new Date(now + ttl) } })
     if (session.remember) setSessionCookie(event, token, true)
   }
 
