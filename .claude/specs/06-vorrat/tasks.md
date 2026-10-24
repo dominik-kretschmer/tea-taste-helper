@@ -48,13 +48,14 @@ Reihenfolge:
     - Pantry-Aktionen erzeugen keine Audit-Einträge.
   - Ergebnis: `test/api/pantry.test.ts` mit 15 Tests grün. `server/api/teas/index.get.ts` brauchte keine Änderung, weil `withOwn` mit der Query an `listTeas` geht und Gäste dort `viewer = null` haben. Lint und Typecheck grün, insgesamt 448 Tests grün.
 
-- [ ] 5. Zusammenführen hängt den Vorrat um
+- [x] 5. Zusammenführen hängt den Vorrat um
   - Dateien: `server/utils/moderation.ts` (`markMerged` → `mergePantry`), `test/api/pantry.test.ts` (bzw. `moderation.test.ts`)
   - Erfüllt: AK-5.1, AK-5.2, AK-5.3, AK-3.3
   - Prüfung (API-Tests):
     - Zutaten und Tees zusammenführen: Nur die Quelle im Vorrat → zeigt danach auf das Ziel. Quelle und Ziel im Vorrat → ein Eintrag bleibt, Mengen 30 + 20 = 50, `null` + 20 = 20, `null` + `null` = `null`, 90 000 + 20 000 = 100 000. Vorräte anderer Nutzer bleiben getrennt.
     - Ausblenden einer Zutat, die nur im Vorrat steckt, gelingt. Der Eintrag erscheint danach mit `hidden: true`, nach dem Wiederherstellen wieder normal.
     - Der Audit-Eintrag `*_MERGED` ist unverändert.
+  - Ergebnis: 9 neue Tests in `test/api/pantry.test.ts`, alle grün. Ergänzt um den Fall 0 + 5 = 5 (eine aufgebrauchte Quelle zählt wie eine Menge). Lint und Typecheck grün, insgesamt 457 Tests grün.
 
 - [ ] 6. Teesuche mit eigenen privaten Tees, Menüeintrag, Route
   - Dateien: `app/components/moderation/EntrySearch.vue` (Prop `withOwn`), `app/components/UserMenu.vue`, `nuxt.config.ts` (`pantry`), `i18n/locales/*.json` (`nav.pantry`)

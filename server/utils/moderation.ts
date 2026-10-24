@@ -284,7 +284,7 @@ async function lockMergePair(db: Db, entityType: CatalogTypeValue, sourceId: str
   if (![...rows.values()].every(row => row && isEntryActive(row))) throw invalidMerge('Hidden or merged entries cannot be merged')
 }
 
-/** Frühere Quellen zeigen auf das neue Ziel, damit Weiterleitungen keine Ketten bilden. */
+/** Frühere Quellen zeigen auf das neue Ziel, damit Weiterleitungen keine Ketten bilden; Vorräte ziehen mit (06 AK-5.1). */
 async function markMerged(db: Db, entityType: CatalogTypeValue, sourceId: string, targetId: string, actorId: string): Promise<void> {
   const mergedAt = new Date()
   if (entityType === 'ingredient') {
@@ -295,6 +295,7 @@ async function markMerged(db: Db, entityType: CatalogTypeValue, sourceId: string
     await db.tea.update({ where: { id: sourceId }, data: { mergedIntoId: targetId, mergedAt } })
     await db.tea.updateMany({ where: { mergedIntoId: sourceId }, data: { mergedIntoId: targetId } })
   }
+  await mergePantry(db, entityType, sourceId, targetId)
   await recordCatalogEvent(db, { entityType, entityId: sourceId, kind: 'merged', actorId, targetId })
   await closeReports(db, { entityType, entityId: sourceId, actorId, status: 'resolved' })
 }

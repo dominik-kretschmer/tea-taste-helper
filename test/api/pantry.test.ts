@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { setup } from '@nuxt/test-utils/e2e'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { createClient, db, insertIngredient, registerUser, rootDir, testServerEnv, type TestClient } from './helpers'
+import { createClient, db, insertIngredient, registerUser, rootDir, setRole, testServerEnv, type TestClient } from './helpers'
 
 const marker = () => randomUUID().slice(0, 8)
 
@@ -13,12 +13,15 @@ describe('Vorrat', async () => {
   let ben: TestClient
   let guest: TestClient
   let base: string
+  let mod: TestClient
 
   beforeAll(async () => {
-    const [a, b] = await Promise.all([registerUser({ displayName: 'Anna' }), registerUser({ displayName: 'Ben' })])
+    const [a, b, m] = await Promise.all([registerUser({ displayName: 'Anna' }), registerUser({ displayName: 'Ben' }), registerUser({ displayName: 'Moni' })])
     anna = a.client
     annaId = a.user.id
     ben = b.client
+    mod = m.client
+    await setRole(m.user.id, 'moderator')
     guest = await createClient()
     base = await insertIngredient(`Grundtee ${marker()}`)
   })
@@ -232,6 +235,73 @@ describe('Vorrat', async () => {
       expect(await ids(anna)).toEqual(expect.arrayContaining([pub.id, own.id]))
       expect(await ids(ben)).toEqual([pub.id])
       expect(await ids(guest)).toEqual([pub.id])
+    })
+  })
+
+  describe('Moderation (AK-5.1–5.3)', () => {
+    const grams = async (userId: string, column: 'ingredientId' | 'teaId', id: string) =>
+      (await db<{ grams: number | null }>(`SELECT grams FROM "PantryItem" WHERE "userId" = $1 AND "${column}" = $2`, [userId, id])).map(row => row.grams)
+    const merge = (type: 'ingredients' | 'teas', source: string, target: string) =>
+      mod.post(`/api/admin/${type}/${source}/merge`, { targetId: target })
+
+    it.each([
+      [30, 20, 50],
+      [null, 20, 20],
+      [20, null, 20],
+      [null, null, null],
+      [90_000, 20_000, 100_000],
+      [0, 5, 5],
+    ])('Zutaten: Quelle %s g + Ziel %s g → %s g', async (sourceGrams, targetGrams, expected) => {
+      const { client, user } = await registerUser()
+      const [source, target] = await Promise.all([insertIngredient(`Quelle ${marker()}`), insertIngredient(`Ziel ${marker()}`)])
+      expect((await add(client, 'ingredient', source, sourceGrams)).status).toBe(201)
+      expect((await add(client, 'ingredient', target, targetGrams)).status).toBe(201)
+
+      expect((await merge('ingredients', source, target)).status).toBe(200)
+      expect(await grams(user.id, 'ingredientId', source)).toEqual([])
+      expect(await grams(user.id, 'ingredientId', target)).toEqual([expected])
+    })
+
+    it('hängt Einträge um und lässt Vorräte anderer getrennt', async () => {
+      const [b1, b2] = await Promise.all([registerUser(), registerUser()])
+      const [source, target] = await Promise.all([insertIngredient(`Quelle ${marker()}`), insertIngredient(`Ziel ${marker()}`)])
+      await add(b1.client, 'ingredient', source, 7)
+      await add(b2.client, 'ingredient', target, 9)
+
+      expect((await merge('ingredients', source, target)).status).toBe(200)
+      expect(await grams(b1.user.id, 'ingredientId', target)).toEqual([7])
+      expect(await grams(b2.user.id, 'ingredientId', target)).toEqual([9])
+      const [entry] = await db(`SELECT details FROM "AuditLog" WHERE event = 'INGREDIENT_MERGED' AND details->>'sourceId' = $1`, [source])
+      expect(entry.details).toEqual({ sourceId: source, targetId: target, teasChanged: 0, privateTeasChanged: 0 })
+    })
+
+    it('Tees: Mengen werden addiert', async () => {
+      const { client, user } = await registerUser()
+      const [source, target] = await Promise.all([
+        createTea(anna, { name: `Quelltee ${marker()}` }),
+        createTea(anna, { name: `Zieltee ${marker()}` }),
+      ])
+      await add(client, 'tea', source.id, 40)
+      await add(client, 'tea', target.id, 60)
+
+      expect((await merge('teas', source.id, target.id)).status).toBe(200)
+      expect(await grams(user.id, 'teaId', target.id)).toEqual([100])
+      expect(await grams(user.id, 'teaId', source.id)).toEqual([])
+    })
+
+    it('Ausblenden: Eintrag bleibt markiert, nach dem Wiederherstellen wieder normal', async () => {
+      const { client } = await registerUser()
+      const id = await insertIngredient(`Nur im Vorrat ${marker()}`)
+      await add(client, 'ingredient', id, 12)
+
+      // Vorratseinträge verhindern das Ausblenden nicht (AK-5.3)
+      expect((await mod.post(`/api/admin/ingredients/${id}/hide`, { reason: 'Spam' })).status).toBe(204)
+      const hidden = await list(client, 'type=ingredient&locale=de')
+      expect(hidden.items).toEqual([expect.objectContaining({ entityId: id, grams: 12, hidden: true })])
+
+      expect((await mod.post(`/api/admin/ingredients/${id}/restore`)).status).toBe(204)
+      const restored = await list(client, 'type=ingredient&locale=de')
+      expect(restored.items).toEqual([expect.objectContaining({ entityId: id, grams: 12, hidden: false })])
     })
   })
 })
