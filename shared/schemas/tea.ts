@@ -67,6 +67,8 @@ export const teaListQuerySchema = z.object({
   locale: contentLocaleSchema,
   ingredient: z.uuid().optional(),
   mine: z.stringbool().optional(),
+  /** zusätzlich eigene private Tees (Vorrat, 06 AK-2.1) */
+  withOwn: z.stringbool().optional(),
 })
 
 export const similarTeaQuerySchema = z.object({
