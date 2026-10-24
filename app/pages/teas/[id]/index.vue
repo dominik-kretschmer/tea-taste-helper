@@ -151,6 +151,7 @@ async function remove() {
       </p>
 
       <div class="d-flex flex-wrap ga-2">
+        <PantryButton v-if="!hidden" entity-type="tea" :entity-id="tea.id" :name="text.text.name" />
         <v-btn v-if="canEdit" color="primary" :prepend-icon="mdiPencil" :to="localePath({ name: 'teas-id-edit', params: { id: tea.id } })">
           {{ t('catalog.edit') }}
         </v-btn>

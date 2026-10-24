@@ -99,6 +99,7 @@ const { data: teas } = await useFetch<Page<TeaListItem>>('/api/teas', {
       </v-list>
 
       <div class="d-flex flex-wrap ga-2">
+        <PantryButton v-if="!hidden" entity-type="ingredient" :entity-id="ingredient.id" :name="text.text.name" />
         <v-btn v-if="loggedIn && !hidden" color="primary" :prepend-icon="mdiPencil" :to="localePath({ name: 'ingredients-id-edit', params: { id: ingredient.id } })">
           {{ t('catalog.edit') }}
         </v-btn>
