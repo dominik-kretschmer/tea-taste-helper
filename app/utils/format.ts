@@ -23,3 +23,9 @@ export function parseDuration(value: string | null | undefined): number | null {
   if (!match) return Number.NaN
   return Number(match[1]) * 60 + Number(match[2] ?? 0)
 }
+
+/** Menge aus dem Eingabefeld: leer → null, sonst als Zahl (unlesbar → NaN, das Schema meldet den Fehler). */
+export function parseGrams(value: string | number | null | undefined): number | null {
+  const text = String(value ?? '').trim()
+  return text ? Number(text) : null
+}

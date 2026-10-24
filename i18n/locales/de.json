@@ -585,5 +585,48 @@
       "nothing": "Im Zeitraum keine Änderungen.",
       "action": "Jetzt zurücksetzen"
     }
+  },
+  "pantry": {
+    "title": "Vorrat",
+    "add": "Hinzufügen",
+    "tabs": {
+      "ingredient": "Zutaten ({count})",
+      "tea": "Tees ({count})"
+    },
+    "search": "Im Vorrat suchen",
+    "empty": "Dein Vorrat ist noch leer. Füge Zutaten und Tees hinzu, die du zu Hause hast.",
+    "noResults": "Keine Treffer.",
+    "amount": {
+      "none": "ohne Menge",
+      "grams": "{grams} g",
+      "empty": "aufgebraucht"
+    },
+    "unavailable": "nicht mehr verfügbar",
+    "actions": {
+      "menu": "Aktionen für {name}",
+      "edit": "Menge ändern",
+      "useUp": "Aufgebraucht",
+      "remove": "Entfernen"
+    },
+    "dialog": {
+      "addTitle": "In den Vorrat",
+      "editTitle": "Menge ändern",
+      "type": "Art",
+      "search": "Zutat oder Tee suchen",
+      "grams": "Menge",
+      "gramsHint": "Leer lassen, wenn du die Menge nicht kennst. 0 = aufgebraucht.",
+      "save": "Speichern",
+      "editExisting": "Menge ändern"
+    },
+    "remove": {
+      "title": "Aus dem Vorrat entfernen?",
+      "text": "„{name}“ ({amount}) wird aus deinem Vorrat entfernt.",
+      "done": "„{name}“ entfernt.",
+      "undo": "Rückgängig"
+    },
+    "button": {
+      "add": "In den Vorrat",
+      "inPantry": "Im Vorrat: {amount}"
+    }
   }
 }

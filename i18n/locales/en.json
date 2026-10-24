@@ -585,5 +585,48 @@
       "nothing": "No changes in this period.",
       "action": "Revert now"
     }
+  },
+  "pantry": {
+    "title": "Pantry",
+    "add": "Add",
+    "tabs": {
+      "ingredient": "Ingredients ({count})",
+      "tea": "Teas ({count})"
+    },
+    "search": "Search pantry",
+    "empty": "Your pantry is still empty. Add the ingredients and teas you have at home.",
+    "noResults": "No matches.",
+    "amount": {
+      "none": "no amount",
+      "grams": "{grams} g",
+      "empty": "used up"
+    },
+    "unavailable": "no longer available",
+    "actions": {
+      "menu": "Actions for {name}",
+      "edit": "Change amount",
+      "useUp": "Used up",
+      "remove": "Remove"
+    },
+    "dialog": {
+      "addTitle": "Add to pantry",
+      "editTitle": "Change amount",
+      "type": "Type",
+      "search": "Search ingredient or tea",
+      "grams": "Amount",
+      "gramsHint": "Leave empty if you don't know the amount. 0 = used up.",
+      "save": "Save",
+      "editExisting": "Change amount"
+    },
+    "remove": {
+      "title": "Remove from pantry?",
+      "text": "“{name}” ({amount}) will be removed from your pantry.",
+      "done": "“{name}” removed.",
+      "undo": "Undo"
+    },
+    "button": {
+      "add": "Add to pantry",
+      "inPantry": "In pantry: {amount}"
+    }
   }
 }

@@ -63,7 +63,7 @@ Reihenfolge:
   - Prüfung im Browser: Der Menüeintrag „Vorrat“ erscheint angemeldet und führt zu `/vorrat` bzw. `/en/pantry`. Als Gast leitet `/vorrat` zum Login und danach zurück. Die bestehenden Suchen (Melden, Zusammenführen) verhalten sich unverändert.
   - Ergebnis: Playwright auf dem Dev-Server bei 375 px. Ein Gast auf `/vorrat` landet auf `/login?redirect=/vorrat`, nach der Registrierung wieder auf `/vorrat`. Das Menü „Vorrat“ führt zu `/vorrat`, auf Englisch „Pantry“ zu `/en/pantry`. Keine Warnungen in der Konsole. `EntrySearch` hängt `withOwn` nur an, wenn die Prop gesetzt ist; die bestehenden Aufrufer setzen sie nicht, Melden und Zusammenführen bleiben also unverändert. Die Seite ist bis Aufgabe 7 ein Platzhalter. Icon `mdiPackageVariantClosed`.
 
-- [ ] 7. Vorratsseite
+- [x] 7. Vorratsseite
   - Dateien: `app/pages/pantry/index.vue`, `app/components/pantry/PantryEntryDialog.vue`, `app/components/pantry/PantryRemoveDialog.vue`, `i18n/locales/*.json` (`pantry.*`)
   - Erfüllt: AK-0.2, AK-1.1–1.4, AK-2.1, AK-2.3, AK-2.5, AK-3.1, AK-3.2, AK-4.1, AK-6.1, AK-6.2
   - Prüfung im Browser (de und en):
@@ -76,6 +76,7 @@ Reihenfolge:
     - Tabs, Suche und Seite stehen in der URL und überstehen ein Neuladen.
     - Entfernen mit Rückfrage, „Rückgängig“ stellt die Menge wieder her.
     - 375 px hell und dunkel ohne horizontales Scrollen. Keine Warnungen in der Konsole, keine CSP-Verstöße.
+  - Ergebnis: Playwright auf dem Dev-Server bei 375 px (de und en), alle Punkte erfüllt. Der leere Vorrat zeigt den Hinweis, Zutat ohne Menge und privater Tee mit 50 g lassen sich hinzufügen (der Tab wechselt zum Tee). Ein zweites Hinzufügen meldet „Das steht schon in deinem Vorrat“ mit „Menge ändern“. −1 und 100 001 zeigen den Fehler am Feld. „Aufgebraucht“ schiebt den Eintrag ans Ende. Ein ausgeblendeter Eintrag hat keinen Link und im Menü nur „Entfernen“. Tab, Suche und Seite überstehen ein Neuladen. Entfernen mit Rückfrage, „Rückgängig“ stellt 1 250 g wieder her. Kein horizontales Scrollen hell und dunkel. In der Konsole steht nur die erwartete 409-Antwort des doppelten Hinzufügens. Hilfsfunktion `parseGrams` in `app/utils/format.ts`, `usePantryAmount` für den Mengentext. Lint, Typecheck und 240 Unit-Tests grün.
 
 - [ ] 8. Knopf auf den Detailseiten
   - Dateien: `app/components/pantry/PantryButton.vue`, `app/pages/ingredients/[id]/index.vue`, `app/pages/teas/[id]/index.vue`
