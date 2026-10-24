@@ -238,7 +238,7 @@ export async function writeTeaVersion(db: Db, input: {
 // --- Liste, Suche, Ähnlichkeit (SQL wie bei Zutaten) ---
 
 /** Anzeigename in `locale`, sonst Originalsprache; `v` ist die aktuelle Version, `t` der Tee. */
-const teaDisplayJoins = (locale: ContentLocale) => Prisma.sql`
+export const teaDisplayJoins = (locale: ContentLocale) => Prisma.sql`
   JOIN "TeaVersionTranslation" src ON src."versionId" = v.id AND src.locale = t."sourceLocale"
   LEFT JOIN "TeaVersionTranslation" own ON own."versionId" = v.id AND own.locale = ${locale}`
 
@@ -248,16 +248,19 @@ export interface TeaListQuery {
   locale: ContentLocale
   ingredient?: string
   mine?: boolean
+  withOwn?: boolean
 }
 
 /**
- * Öffentliche Tees (AK-1.1) bzw. mit `mine` alle eigenen (AK-7.1); Suche über Namen aller Sprachen
+ * Öffentliche Tees (AK-1.1) bzw. mit `mine` alle eigenen (AK-7.1), mit `withOwn` beides (06 AK-2.1); Suche über Namen aller Sprachen
  * und die Marke (AK-1.2), Filter auf eine Zutat (AK-1.3).
  */
 export async function listTeas(db: Db, query: TeaListQuery, viewer: Viewer): Promise<Page<TeaListItem>> {
   const scope = query.mine && viewer
     ? Prisma.sql`t."ownerId" = ${viewer.id}::uuid`
-    : Prisma.sql`v.visibility = 'public'`
+    : query.withOwn && viewer
+      ? Prisma.sql`(v.visibility = 'public' OR t."ownerId" = ${viewer.id}::uuid)`
+      : Prisma.sql`v.visibility = 'public'`
   const pattern = query.q ? `%${escapeLike(query.q)}%` : null
   const search = pattern
     ? Prisma.sql`AND (v.brand ILIKE ${pattern} OR EXISTS (

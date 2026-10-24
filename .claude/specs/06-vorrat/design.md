@@ -96,6 +96,9 @@ export interface PantryEntry {
 export interface PantryPage extends Page<PantryEntry> {
   counts: Record<CatalogTypeValue, number>   // Anzahl je Tab (AK-1.1)
 }
+
+// Antwort von Lookup, Hinzufügen und Ändern: ohne Namen, braucht daher keine Locale (präzisiert in Aufgabe 3)
+export type PantryRef = Pick<PantryEntry, 'id' | 'entityType' | 'entityId' | 'grams'>
 ```
 
 ```ts
@@ -114,9 +117,9 @@ Alle Routen verlangen `requireUser` (401 für Gäste, AK-0.2) und arbeiten nur m
 | Methode | Route | Request | Response | Fehler |
 |---|---|---|---|---|
 | GET | `/api/pantry` | `?type=ingredient\|tea&q&page&locale` | `PantryPage` | 400 |
-| GET | `/api/pantry/lookup` | `?type&entityId` | `{ entry: PantryEntry \| null }` | 400 |
-| POST | `/api/pantry` | `{ entityType, entityId, grams }` | 201 `{ entry }` | 400 `VALIDATION_ERROR`, 400 `PANTRY_FULL`, 404 `NOT_FOUND` (+ `mergedInto`), 409 `ALREADY_IN_PANTRY` (`details: { entryId, grams }`) |
-| PATCH | `/api/pantry/:id` | `{ grams }` | `{ entry }` | 400, 404, 409 `ENTRY_UNAVAILABLE` (ausgeblendet, AK-1.3) |
+| GET | `/api/pantry/lookup` | `?type&entityId` | `{ entry: PantryRef \| null }` | 400 |
+| POST | `/api/pantry` | `{ entityType, entityId, grams }` | 201 `{ entry: PantryRef }` | 400 `VALIDATION_ERROR`, 400 `PANTRY_FULL`, 404 `NOT_FOUND` (+ `mergedInto`), 409 `ALREADY_IN_PANTRY` (`details: { entryId, grams }`) |
+| PATCH | `/api/pantry/:id` | `{ grams }` | `{ entry: PantryRef }` | 400, 404, 409 `ENTRY_UNAVAILABLE` (ausgeblendet, AK-1.3) |
 | DELETE | `/api/pantry/:id` | – | 204 | 404 |
 
 **Liste (`listPantry`):** eine SQL-Abfrage je Typ, dazu dieselben Display-Joins wie `listIngredients` bzw. `listTeas`. Die Suche nutzt ILIKE über die Namen aller Sprachen der aktuellen Version, bei Tees auch über die Marke (wie AK-1.2 aus 04). Sortierung: `ORDER BY hidden, grams = 0, lower(name) COLLATE "de-x-icu", id`, also erst normale, dann aufgebrauchte, dann ausgeblendete Einträge (AK-1.2, AK-1.3). Seitengröße 24 per `LIMIT/OFFSET`. `counts` liefert eine `GROUP BY`-Abfrage ohne Suchfilter.

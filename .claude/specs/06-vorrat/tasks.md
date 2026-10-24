@@ -20,15 +20,17 @@ Reihenfolge:
     - `test/unit/prisma-schema.test.ts` und `datenmodell.test.ts` bleiben grün.
   - Ergebnis: Die Migration enthält nur `CREATE`/`ALTER … ADD` und kein `DROP`. Sie ist auf Dev angewendet, `tea_test` migriert das Test-Setup. `migrate diff` meldet „empty migration“. Per SQL schlagen „ohne Verweis“ und „beide Verweise“ am `PantryItem_one_target` fehl, ein doppelter Eintrag am `PantryItem_userId_ingredientId_key`. Lint und Typecheck grün, 420 Tests grün.
 
-- [ ] 2. Konstanten, Typen, zod-Schemas
+- [x] 2. Konstanten, Typen, zod-Schemas
   - Dateien: `shared/utils/pantry.ts`, `shared/types/pantry.ts`, `shared/schemas/pantry.ts`, `shared/schemas/tea.ts` (`withOwn`), `test/unit/pantry.test.ts`
   - Erfüllt: AK-2.5, Grundlage für AK-1.4, AK-1.5
   - Prüfung: Die Unit-Tests decken diese Grenzfälle ab: `grams` mit `null`, 0, 100 000 gültig, −1, 100 001, 1,5 und `"5"` ungültig. `type` nur `ingredient`/`tea`. `entityId` muss eine UUID sein.
+  - Ergebnis: `test/unit/pantry.test.ts` mit 13 Tests grün. Fehlt die Menge beim Hinzufügen, gilt sie als `null` („ohne Menge“). Lint und Typecheck grün, alle 240 Unit-Tests grün. Die API-Tests laufen erst ab Aufgabe 4 wieder, weil sich bis dahin kein Serververhalten ändert.
 
-- [ ] 3. Server-Bausteine
+- [x] 3. Server-Bausteine
   - Dateien: `server/utils/pantry.ts` (`listPantry`, `countPantry`, `findPantryEntry`, `loadPantryEntry`, `createPantryEntry`, `updatePantryEntry`, `mergePantry`, `pantryNotFound`), `server/utils/teas.ts` (`listTeas` mit `withOwn`)
   - Erfüllt: Grundlage für AK-1.1–1.5, AK-2.3, AK-2.4, AK-2.6, AK-5.1
   - Prüfung: Typecheck grün. Das Verhalten prüfen die API-Tests aus Aufgabe 4 und 5.
+  - Ergebnis: Lint und Typecheck grün. Zusätzlich `deletePantryEntry`. `displayJoins` aus `ingredients.ts` heißt jetzt `ingredientDisplayJoins` und wird wie `teaDisplayJoins` exportiert. Abweichung vom Design: Lookup, POST und PATCH liefern `PantryRef` (`id`, `entityType`, `entityId`, `grams`) statt `PantryEntry`, denn ohne Namen brauchen sie keine Locale (design.md angepasst).
 
 - [ ] 4. Vorrats-API
   - Dateien: `server/api/pantry/index.get.ts`, `index.post.ts`, `lookup.get.ts`, `[id].patch.ts`, `[id].delete.ts`, `server/api/teas/index.get.ts` (falls `withOwn` dort weitergereicht werden muss), `i18n/locales/*.json` (`errors.ALREADY_IN_PANTRY`, `PANTRY_FULL`, `ENTRY_UNAVAILABLE`), `test/api/pantry.test.ts`

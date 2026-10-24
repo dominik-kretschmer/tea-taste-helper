@@ -179,7 +179,7 @@ export async function writeVersion(db: Db, input: {
 // --- Liste, Suche, Ähnlichkeit (SQL, weil Prisma COALESCE über Joins und pg_trgm nicht abbildet) ---
 
 /** Anzeigename in `locale`, sonst Originalsprache (AK-1.3); `v` ist die aktuelle Version, `i` die Zutat. */
-const displayJoins = (locale: ContentLocale) => Prisma.sql`
+export const ingredientDisplayJoins = (locale: ContentLocale) => Prisma.sql`
   JOIN "IngredientVersionTranslation" src ON src."versionId" = v.id AND src.locale = i."sourceLocale"
   LEFT JOIN "IngredientVersionTranslation" own ON own."versionId" = v.id AND own.locale = ${locale}`
 
@@ -195,7 +195,7 @@ export async function listIngredients(db: Db, query: { q?: string, page: number,
       SELECT i.id, COALESCE(own.name, src.name) AS name, own.name IS NOT NULL AS translated, v.caffeine::text AS caffeine
       FROM "Ingredient" i
       JOIN "IngredientVersion" v ON v."ingredientId" = i.id AND v."isCurrent"
-      ${displayJoins(query.locale)}
+      ${ingredientDisplayJoins(query.locale)}
       WHERE ${activeSql('i')} ${search}
       ORDER BY lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu", i.id
       LIMIT ${LIST_PAGE_SIZE} OFFSET ${(query.page - 1) * LIST_PAGE_SIZE}`,
@@ -223,7 +223,7 @@ export async function findSimilar(db: Db, name: string, locale: ContentLocale): 
     FROM hits h
     JOIN "Ingredient" i ON i.id = h.id AND ${activeSql('i')}
     JOIN "IngredientVersion" v ON v."ingredientId" = i.id AND v."isCurrent"
-    ${displayJoins(locale)}
+    ${ingredientDisplayJoins(locale)}
     ORDER BY h.score DESC, lower(COALESCE(own.name, src.name)) COLLATE "de-x-icu"
     LIMIT ${SIMILAR_LIMIT}`
 }
