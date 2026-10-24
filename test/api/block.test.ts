@@ -103,6 +103,29 @@ describe('Sperren', async () => {
     expect((await block(mod, plainUser.id, '7d', ' ')).status).toBe(400)
   })
 
+  it('entsperrt einen inzwischen beförderten Admin (Chore 13 AK-1.1, AK-1.2, AK-1.4, AK-2.2)', async () => {
+    const { email, user } = await registerUser()
+    await setRole(user.id, 'moderator')
+    expect((await block(admin, user.id)).status).toBe(200)
+    expect((await unblock(admin, user.id)).status).toBe(200)
+    expect((await block(admin, user.id)).status).toBe(200)
+
+    const promoted = await admin.patch(`/api/admin/users/${user.id}/role`, { role: 'admin' })
+    expect(promoted.status, promoted.text).toBe(200)
+    expect((await unblock(mod, user.id)).status).toBe(403)
+
+    const response = await unblock(admin, user.id)
+    expect(response.status, response.text).toBe(200)
+    expect(response.body.user.blocked).toBe(false)
+    const [row] = await db(`SELECT "blockedAt", "blockedUntil", "blockReason", "blockedById" FROM "User" WHERE id = $1`, [user.id])
+    expect(row).toEqual({ blockedAt: null, blockedUntil: null, blockReason: null, blockedById: null })
+    expect((await loginAs(email)).response.status).toBe(200)
+    expect((await db(`SELECT 1 FROM "AuditLog" WHERE event = 'USER_UNBLOCKED' AND "targetId" = $1`, [user.id]))).toHaveLength(2)
+
+    // Unbekannte UUID: 404 vor der Body-Prüfung
+    expect((await block(mod, '00000000-0000-7000-8000-000000000000', '1y')).status).toBe(404)
+  })
+
   it('lässt Beiträge gesperrter Nutzer sichtbar (AK-6.7)', async () => {
     const { client, user } = await registerUser()
     const created = await client.post('/api/ingredients', { locale: 'de', name: `Gesperrt ${user.id.slice(0, 8)}` })

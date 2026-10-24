@@ -17,9 +17,17 @@ export function getUserIdParam(event: H3Event): string {
   return parsed.data
 }
 
+/** Ziel-User einer Moderationsroute aus dem Routenparameter `id`; sonst 404. */
+export async function loadModerationTarget(event: H3Event): Promise<User> {
+  const id = getUserIdParam(event)
+  const target = await usePrisma().user.findUnique({ where: { id } })
+  if (!target) throw new AppError(404, 'NOT_FOUND', 'User not found')
+  return target
+}
+
 /**
  * Wer wen sperren darf (05 AK-6.5): Moderatoren nur Nutzer, Admins zusätzlich Moderatoren;
- * Admins sind nicht sperrbar, niemand sperrt sich selbst.
+ * Admins sind nicht sperrbar, niemand sperrt sich selbst. Gilt nicht fürs Entsperren (Chore 13).
  */
 export function assertCanBlock(actor: PublicUser, target: Pick<User, 'id' | 'role'>): void {
   if (target.id === actor.id) throw new AppError(403, 'FORBIDDEN', 'You cannot block yourself')

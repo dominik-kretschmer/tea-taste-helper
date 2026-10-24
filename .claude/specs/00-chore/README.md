@@ -31,8 +31,12 @@ Sortiert nach Dringlichkeit; Aufwand: XS < 1 h, S ≈ halber Tag, M ≈ ein Tag.
 | 09 | [`09-chore-vuetify-dense`](09-chore-vuetify-dense/requirements.md) ✅ erledigt mit 04-tees | Wartung | niedrig | XS | `<v-row dense>` in `IngredientForm` ist in Vuetify 4 veraltet (Konsolenwarnung) |
 | 10 | [`10-ux-registrierung-redirect`](10-ux-registrierung-redirect/requirements.md) | UX | niedrig | XS | Registrieren ignoriert `?redirect`; der Weg „Anmelden → Noch kein Konto?“ verliert das Ziel |
 | 11 | [`11-chore-prisma-schema-aufteilen`](11-chore-prisma-schema-aufteilen/requirements.md) | Wartung | niedrig | S | `schema.prisma` mit allen Tabellen in einer Datei; Aufteilung in `prisma/schema/` mit einer Datei pro Tabelle (nachgetragen am 2026-10-23) |
+| 12 | [`12-chore-lesbarkeit`](12-chore-lesbarkeit/requirements.md) | Wartung | niedrig | S | Verschachtelte Ternaries, versteckte Regeln und wiederholte Aufrufe an 10 Stellen (u.a. `useFormErrors`, Audit-Log-Template); `no-nested-ternary` per ESLint (nachgetragen am 2026-10-23, Anforderungen als Entwurf) |
+| 13 | [`13-fehler-admin-entsperren`](13-fehler-admin-entsperren/requirements.md) ✅ erledigt | Fehler | hoch | XS | Ein gesperrter Nutzer, der danach Admin wird (Beförderung oder `ADMIN_EMAIL`), lässt sich nicht entsperren (403); dazu `loadModerationTarget` für vier Moderationsrouten (Code-Review vom 2026-10-24) |
+| 14 | [`14-chore-publish-save-tea-version`](14-chore-publish-save-tea-version/requirements.md) | Wartung | mittel | XS | `publish.post.ts` baut `saveTeaVersion` nach, ohne P2002-Behandlung (Code-Review vom 2026-10-24, Entwurf) |
+| 15 | [`15-chore-translation-helper`](15-chore-translation-helper/requirements.md) | Wartung | mittel | XS | Umwandlung Übersetzungs-Zeilen ↔ Map sechsmal kopiert; `toTranslations`/`translationRows` in `server/utils/catalog.ts` (Code-Review vom 2026-10-24, Entwurf) |
 
-Empfohlene Reihenfolge: 01 und 02 zuerst (Sicherheit), dann 03–05. 06 und 07 brauchen je eine Entscheidung (siehe „Offene Fragen“ dort). 08–10 lassen sich zusammen in einem Durchgang erledigen.
+Empfohlene Reihenfolge: 01 und 02 zuerst (Sicherheit), dann 03–05. Von den Funden aus dem Code-Review vom 2026-10-24 zuerst 13 (Konto kann dauerhaft gesperrt bleiben), dann 14 und 15. 06 und 07 brauchen je eine Entscheidung (siehe „Offene Fragen“ dort). 08–10 lassen sich zusammen in einem Durchgang erledigen.
 
 ## Korrektur an bestehenden Specs
 

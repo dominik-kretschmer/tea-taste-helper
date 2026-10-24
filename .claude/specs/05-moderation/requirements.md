@@ -82,7 +82,7 @@ Der gemeinsame Katalog bleibt sauber, obwohl jeder angemeldete Nutzer sofort liv
 - **AK-6.2:** WENN ein gesperrter Nutzer das richtige Passwort eingibt, DANN sieht er „Dein Konto ist gesperrt bis <Datum, Uhrzeit>“ bzw. „… ist dauerhaft gesperrt“; bei falschem Passwort bleibt die allgemeine Meldung (02, AK-2.2), damit Sperren nicht ohne Passwort erkennbar sind. Der Grund wird ihm nicht angezeigt.
 - **AK-6.3:** WENN eine befristete Sperre abläuft, DANN kann sich der Nutzer ohne weiteres Zutun wieder anmelden.
 - **AK-6.4:** WENN ein Moderator einen Nutzer entsperrt, DANN gilt das sofort.
-- **AK-6.5:** Moderatoren können nur Nutzer mit Rolle `user` sperren; Admins zusätzlich Moderatoren. Admins sind nicht sperrbar (vorher Rolle ändern), niemand kann sich selbst sperren (jeweils 403).
+- **AK-6.5:** Moderatoren können nur Nutzer mit Rolle `user` sperren; Admins zusätzlich Moderatoren. Admins sind nicht sperrbar (vorher Rolle ändern), niemand kann sich selbst sperren (jeweils 403). Entsperren: Moderatoren nur Nutzer mit Rolle `user`, Admins jeden, auch einen inzwischen beförderten Admin (Nachtrag aus Chore 13, 2026-10-24).
 - **AK-6.6:** WENN ein Moderator `/admin/moderation/users` aufruft, DANN findet er Nutzer per Suche nach Anzeigename (Moderatoren sehen keine E-Mail-Adressen, Admins schon), sieht Sperrstatus, Sperrgrund und Anzahl der Katalogänderungen der letzten 30 Tage und kann sperren, entsperren und US-7 auslösen. Gesperrte Nutzer sind filterbar.
 - **AK-6.7:** Beiträge gesperrter Nutzer bleiben sichtbar, bis sie zurückgesetzt werden (US-7).
 - **AK-6.8:** Eine Verlängerung oder Verkürzung erfolgt durch erneutes Sperren; der neue Zeitpunkt ersetzt den alten.
