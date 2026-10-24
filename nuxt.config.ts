@@ -60,6 +60,7 @@ export default defineNuxtConfig({
       'teas-id': { de: '/tees/[id]', en: '/teas/[id]' },
       'teas-id-edit': { de: '/tees/[id]/bearbeiten', en: '/teas/[id]/edit' },
       'teas-id-history': { de: '/tees/[id]/historie', en: '/teas/[id]/history' },
+      'pantry': { de: '/vorrat', en: '/pantry' },
     },
     detectBrowserLanguage: {
       useCookie: true,

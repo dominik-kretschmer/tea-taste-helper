@@ -9,6 +9,7 @@
     "register": "Sign up",
     "logout": "Sign out",
     "changePassword": "Change password",
+    "pantry": "Pantry",
     "admin": "Administration",
     "account": "Account of {name}",
     "home": "Home",

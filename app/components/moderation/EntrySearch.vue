@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// Suche nach einer Zutat bzw. einem öffentlichen Tee (Duplikat-Original beim Melden, Ziel beim Zusammenführen)
+// Suche nach einer Zutat bzw. einem öffentlichen Tee (Duplikat-Original beim Melden, Ziel beim Zusammenführen, Vorrat)
 const props = defineProps<{
   entityType: CatalogTypeValue
   /** dieser Eintrag erscheint nicht in den Treffern */
   exclude?: string
   label?: string
   errorMessages?: string
+  /** auch eigene private Tees (Vorrat, 06 AK-2.1) */
+  withOwn?: boolean
 }>()
 const model = defineModel<string | null>({ default: null })
 
@@ -23,7 +25,7 @@ watch(search, (value) => {
     loading.value = true
     try {
       const path = props.entityType === 'ingredient' ? '/api/ingredients' : '/api/teas'
-      const page = await $fetch<Page<{ id: string, name: string }>>(path, { query: { q, locale: locale.value } })
+      const page = await $fetch<Page<{ id: string, name: string }>>(path, { query: { q, locale: locale.value, ...(props.withOwn ? { withOwn: 'true' } : {}) } })
       items.value = page.items.filter(item => item.id !== props.exclude)
     }
     finally {

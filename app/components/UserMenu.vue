@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { mdiAccountCircle, mdiAccountCircleOutline, mdiCogOutline, mdiKeyOutline, mdiLogin, mdiLogout, mdiShieldAccountOutline } from '@mdi/js'
+import { mdiAccountCircle, mdiAccountCircleOutline, mdiCogOutline, mdiPackageVariantClosed, mdiKeyOutline, mdiLogin, mdiLogout, mdiShieldAccountOutline } from '@mdi/js'
 
 const { user, isAdmin, isModerator, logout } = useAuth()
 const { count: openReports, refresh: refreshOpenReports } = useOpenReports()
@@ -26,6 +26,7 @@ function onMenu(open: boolean) {
       <v-list density="compact" min-width="220">
         <v-list-item :title="user.displayName" :subtitle="user.email" />
         <v-divider />
+        <v-list-item :prepend-icon="mdiPackageVariantClosed" :title="t('nav.pantry')" :to="localePath({ name: 'pantry' })" />
         <v-list-item :prepend-icon="mdiKeyOutline" :title="t('nav.changePassword')" :to="localePath('/account/password')" />
         <v-list-item v-if="isModerator" :prepend-icon="mdiShieldAccountOutline" :title="t('nav.moderation')" :to="localePath('/admin/reports')">
           <template v-if="openReports" #append>

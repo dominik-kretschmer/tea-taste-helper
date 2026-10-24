@@ -9,6 +9,7 @@
     "register": "Registrieren",
     "logout": "Abmelden",
     "changePassword": "Passwort ändern",
+    "pantry": "Vorrat",
     "admin": "Verwaltung",
     "account": "Konto von {name}",
     "home": "Start",

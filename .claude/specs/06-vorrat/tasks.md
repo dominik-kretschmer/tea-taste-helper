@@ -57,10 +57,11 @@ Reihenfolge:
     - Der Audit-Eintrag `*_MERGED` ist unverändert.
   - Ergebnis: 9 neue Tests in `test/api/pantry.test.ts`, alle grün. Ergänzt um den Fall 0 + 5 = 5 (eine aufgebrauchte Quelle zählt wie eine Menge). Lint und Typecheck grün, insgesamt 457 Tests grün.
 
-- [ ] 6. Teesuche mit eigenen privaten Tees, Menüeintrag, Route
+- [x] 6. Teesuche mit eigenen privaten Tees, Menüeintrag, Route
   - Dateien: `app/components/moderation/EntrySearch.vue` (Prop `withOwn`), `app/components/UserMenu.vue`, `nuxt.config.ts` (`pantry`), `i18n/locales/*.json` (`nav.pantry`)
   - Erfüllt: AK-0.3, Grundlage für AK-2.1
   - Prüfung im Browser: Der Menüeintrag „Vorrat“ erscheint angemeldet und führt zu `/vorrat` bzw. `/en/pantry`. Als Gast leitet `/vorrat` zum Login und danach zurück. Die bestehenden Suchen (Melden, Zusammenführen) verhalten sich unverändert.
+  - Ergebnis: Playwright auf dem Dev-Server bei 375 px. Ein Gast auf `/vorrat` landet auf `/login?redirect=/vorrat`, nach der Registrierung wieder auf `/vorrat`. Das Menü „Vorrat“ führt zu `/vorrat`, auf Englisch „Pantry“ zu `/en/pantry`. Keine Warnungen in der Konsole. `EntrySearch` hängt `withOwn` nur an, wenn die Prop gesetzt ist; die bestehenden Aufrufer setzen sie nicht, Melden und Zusammenführen bleiben also unverändert. Die Seite ist bis Aufgabe 7 ein Platzhalter. Icon `mdiPackageVariantClosed`.
 
 - [ ] 7. Vorratsseite
   - Dateien: `app/pages/pantry/index.vue`, `app/components/pantry/PantryEntryDialog.vue`, `app/components/pantry/PantryRemoveDialog.vue`, `i18n/locales/*.json` (`pantry.*`)
