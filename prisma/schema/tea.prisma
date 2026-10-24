@@ -1,0 +1,28 @@
+// 04 – Tees: Identität eines Tees mit Ersteller; Inhalte stehen in den Versionen
+// Zusätzlich als SQL in 0006_moderation (Prisma kennt ihn nicht): CHECK-Constraint
+// "Tea_merged_not_hidden" – zusammengeführt (mergedIntoId) und ausgeblendet (hiddenAt) schließen sich aus.
+
+/// Identität eines Tees; Inhalte stehen in den Versionen.
+model Tea {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  /// 'de' | 'en' (zod-geprüft), ändert sich nie
+  sourceLocale String       @db.VarChar(5)
+  /// Ersteller; null nach Kontolöschung (Slice 11)
+  ownerId      String?      @db.Uuid
+  owner        User?        @relation("TeaOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+  versions     TeaVersion[]
+  // 05 – Moderation: wie bei Ingredient
+  hiddenAt     DateTime?
+  hiddenById   String?      @db.Uuid
+  hiddenBy     User?        @relation("TeaHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  hiddenReason String?      @db.VarChar(500)
+  mergedIntoId String?      @db.Uuid
+  mergedInto   Tea?         @relation("TeaMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
+  mergedFrom   Tea[]        @relation("TeaMerge")
+  mergedAt     DateTime?
+
+  @@index([ownerId])
+  @@index([mergedIntoId])
+  @@index([hiddenAt])
+}

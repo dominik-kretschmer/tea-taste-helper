@@ -1,0 +1,18 @@
+// 05 – Moderation: Moderationsereignis ohne neue Version (ausblenden, wiederherstellen, zusammenführen)
+
+/// Ereignisse ohne neue Version, für die Historie und die Liste „Ausgeblendet“
+model CatalogEvent {
+  id         BigInt           @id @default(autoincrement())
+  entityType CatalogType
+  entityId   String           @db.Uuid
+  kind       CatalogEventKind
+  actorId    String?          @db.Uuid
+  actor      User?            @relation("CatalogEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  /// Grund beim Ausblenden; nur Moderatoren sehen ihn
+  reason     String?          @db.VarChar(500)
+  /// Ziel beim Zusammenführen
+  targetId   String?          @db.Uuid
+  createdAt  DateTime         @default(now())
+
+  @@index([entityType, entityId, createdAt])
+}

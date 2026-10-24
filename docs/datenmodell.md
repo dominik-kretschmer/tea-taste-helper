@@ -16,28 +16,6 @@
 
 ```mermaid
 erDiagram
-  User {
-    String id PK "Uuid; default uuid(7)"
-    String email UK
-    String displayName "VarChar(40)"
-    String passwordHash
-    Role role "default user"
-    Boolean mustChangePassword "default false"
-    DateTime blockedAt "optional"
-    DateTime blockedUntil "optional"
-    String blockReason "optional; VarChar(500)"
-    String blockedById FK "optional; Uuid"
-    DateTime createdAt "default now()"
-    DateTime lastLoginAt "optional"
-  }
-  Session {
-    String id PK
-    String userId FK "Uuid"
-    Boolean remember
-    DateTime expiresAt
-    DateTime lastSeenAt "default now()"
-    DateTime createdAt "default now()"
-  }
   AuditLog {
     BigInt id PK "default autoincrement()"
     DateTime createdAt "default now()"
@@ -47,6 +25,16 @@ erDiagram
     String ip "optional"
     String requestId "optional"
     Json details "optional"
+  }
+  CatalogEvent {
+    BigInt id PK "default autoincrement()"
+    CatalogType entityType
+    String entityId "Uuid"
+    CatalogEventKind kind
+    String actorId FK "optional; Uuid"
+    String reason "optional; VarChar(500)"
+    String targetId "optional; Uuid"
+    DateTime createdAt "default now()"
   }
   Ingredient {
     String id PK "Uuid; default uuid(7)"
@@ -79,6 +67,28 @@ erDiagram
     String nameKey
     String description "optional; VarChar(2000)"
   }
+  Report {
+    String id PK "Uuid; default uuid(7)"
+    CatalogType entityType
+    String entityId "Uuid"
+    String reporterId FK "optional; Uuid"
+    ReportReason reason
+    String comment "optional; VarChar(500)"
+    String duplicateOfId "optional; Uuid"
+    ReportStatus status "default open"
+    String resolvedById FK "optional; Uuid"
+    DateTime resolvedAt "optional"
+    String resolutionNote "optional; VarChar(500)"
+    DateTime createdAt "default now()"
+  }
+  Session {
+    String id PK
+    String userId FK "Uuid"
+    Boolean remember
+    DateTime expiresAt
+    DateTime lastSeenAt "default now()"
+    DateTime createdAt "default now()"
+  }
   Tea {
     String id PK "Uuid; default uuid(7)"
     String sourceLocale "VarChar(5)"
@@ -109,6 +119,12 @@ erDiagram
     String bulkRevertOfId FK "optional; Uuid"
     String mergedIngredientId FK "optional; Uuid"
   }
+  TeaVersionIngredient {
+    String versionId PK, FK "Uuid; unique(versionId, ingredientId)"
+    Int position PK "SmallInt"
+    String ingredientId FK "Uuid; unique(versionId, ingredientId)"
+    Int percent "optional; SmallInt"
+  }
   TeaVersionTranslation {
     String versionId PK, FK "Uuid"
     String locale PK "VarChar(5)"
@@ -116,46 +132,32 @@ erDiagram
     String nameKey
     String description "optional; VarChar(2000)"
   }
-  TeaVersionIngredient {
-    String versionId PK, FK "Uuid; unique(versionId, ingredientId)"
-    Int position PK "SmallInt"
-    String ingredientId FK "Uuid; unique(versionId, ingredientId)"
-    Int percent "optional; SmallInt"
-  }
-  Report {
+  User {
     String id PK "Uuid; default uuid(7)"
-    CatalogType entityType
-    String entityId "Uuid"
-    String reporterId FK "optional; Uuid"
-    ReportReason reason
-    String comment "optional; VarChar(500)"
-    String duplicateOfId "optional; Uuid"
-    ReportStatus status "default open"
-    String resolvedById FK "optional; Uuid"
-    DateTime resolvedAt "optional"
-    String resolutionNote "optional; VarChar(500)"
+    String email UK
+    String displayName "VarChar(40)"
+    String passwordHash
+    Role role "default user"
+    Boolean mustChangePassword "default false"
+    DateTime blockedAt "optional"
+    DateTime blockedUntil "optional"
+    String blockReason "optional; VarChar(500)"
+    String blockedById FK "optional; Uuid"
     DateTime createdAt "default now()"
+    DateTime lastLoginAt "optional"
   }
-  CatalogEvent {
-    BigInt id PK "default autoincrement()"
-    CatalogType entityType
-    String entityId "Uuid"
-    CatalogEventKind kind
-    String actorId FK "optional; Uuid"
-    String reason "optional; VarChar(500)"
-    String targetId "optional; Uuid"
-    DateTime createdAt "default now()"
-  }
-  User |o--o{ User : "blockedById"
-  User ||--o{ Session : "userId"
   User |o--o{ AuditLog : "actorId"
   User |o--o{ AuditLog : "targetId"
+  User |o--o{ CatalogEvent : "actorId"
   User |o--o{ Ingredient : "hiddenById"
   Ingredient |o--o{ Ingredient : "mergedIntoId"
   Ingredient ||--o{ IngredientVersion : "ingredientId"
   User |o--o{ IngredientVersion : "authorId"
   User |o--o{ IngredientVersion : "bulkRevertOfId"
   IngredientVersion ||--o{ IngredientVersionTranslation : "versionId"
+  User |o--o{ Report : "reporterId"
+  User |o--o{ Report : "resolvedById"
+  User ||--o{ Session : "userId"
   User |o--o{ Tea : "ownerId"
   User |o--o{ Tea : "hiddenById"
   Tea |o--o{ Tea : "mergedIntoId"
@@ -163,28 +165,28 @@ erDiagram
   User |o--o{ TeaVersion : "authorId"
   User |o--o{ TeaVersion : "bulkRevertOfId"
   Ingredient |o--o{ TeaVersion : "mergedIngredientId"
-  TeaVersion ||--o{ TeaVersionTranslation : "versionId"
   TeaVersion ||--o{ TeaVersionIngredient : "versionId"
   Ingredient ||--o{ TeaVersionIngredient : "ingredientId"
-  User |o--o{ Report : "reporterId"
-  User |o--o{ Report : "resolvedById"
-  User |o--o{ CatalogEvent : "actorId"
+  TeaVersion ||--o{ TeaVersionTranslation : "versionId"
+  User |o--o{ User : "blockedById"
 ```
 
 ## Beziehungen
 
 | Fremdschlüssel | zeigt auf | Pflicht/optional | beim Löschen des Ziels |
 |---|---|---|---|
-| `User.blockedById` | `User` | optional | `SetNull` |
-| `Session.userId` | `User` | Pflicht | `Cascade` |
 | `AuditLog.actorId` | `User` | optional | `SetNull` |
 | `AuditLog.targetId` | `User` | optional | `SetNull` |
+| `CatalogEvent.actorId` | `User` | optional | `SetNull` |
 | `Ingredient.hiddenById` | `User` | optional | `SetNull` |
 | `Ingredient.mergedIntoId` | `Ingredient` | optional | `Restrict` |
 | `IngredientVersion.ingredientId` | `Ingredient` | Pflicht | `Cascade` |
 | `IngredientVersion.authorId` | `User` | optional | `SetNull` |
 | `IngredientVersion.bulkRevertOfId` | `User` | optional | `SetNull` |
 | `IngredientVersionTranslation.versionId` | `IngredientVersion` | Pflicht | `Cascade` |
+| `Report.reporterId` | `User` | optional | `SetNull` |
+| `Report.resolvedById` | `User` | optional | `SetNull` |
+| `Session.userId` | `User` | Pflicht | `Cascade` |
 | `Tea.ownerId` | `User` | optional | `SetNull` |
 | `Tea.hiddenById` | `User` | optional | `SetNull` |
 | `Tea.mergedIntoId` | `Tea` | optional | `Restrict` |
@@ -192,12 +194,10 @@ erDiagram
 | `TeaVersion.authorId` | `User` | optional | `SetNull` |
 | `TeaVersion.bulkRevertOfId` | `User` | optional | `SetNull` |
 | `TeaVersion.mergedIngredientId` | `Ingredient` | optional | `Restrict` |
-| `TeaVersionTranslation.versionId` | `TeaVersion` | Pflicht | `Cascade` |
 | `TeaVersionIngredient.versionId` | `TeaVersion` | Pflicht | `Cascade` |
 | `TeaVersionIngredient.ingredientId` | `Ingredient` | Pflicht | `Restrict` |
-| `Report.reporterId` | `User` | optional | `SetNull` |
-| `Report.resolvedById` | `User` | optional | `SetNull` |
-| `CatalogEvent.actorId` | `User` | optional | `SetNull` |
+| `TeaVersionTranslation.versionId` | `TeaVersion` | Pflicht | `Cascade` |
+| `User.blockedById` | `User` | optional | `SetNull` |
 
 `Cascade`: abhängige Zeilen werden mitgelöscht · `SetNull`: Verweis wird geleert · `Restrict`: Löschen ist verboten, solange es Verweise gibt.
 
@@ -216,15 +216,15 @@ Diese Spalten zeigen auf eine Zutat **oder** einen Tee; welche Tabelle, sagt `en
 
 | Enum | Werte |
 |---|---|
-| `Role` | `user`, `moderator`, `admin` |
 | `AuditEvent` | `USER_REGISTERED`, `LOGIN_SUCCEEDED`, `LOGIN_FAILED`, `LOGOUT`, `PASSWORD_CHANGED`, `PASSWORD_RESET_BY_ADMIN`, `ROLE_CHANGED`, `ADMIN_BOOTSTRAPPED`, `INGREDIENT_CREATED`, `INGREDIENT_UPDATED`, `TEA_CREATED`, `TEA_UPDATED`, `TEA_PUBLISHED`, `TEA_DELETED`, `INGREDIENT_REVERTED`, `TEA_REVERTED`, `REPORT_CREATED`, `REPORT_RESOLVED`, `INGREDIENT_MERGED`, `TEA_MERGED`, `INGREDIENT_HIDDEN`, `INGREDIENT_RESTORED`, `TEA_HIDDEN`, `TEA_RESTORED`, `USER_BLOCKED`, `USER_UNBLOCKED`, `BULK_REVERT` |
 | `Caffeine` | `yes`, `no`, `unknown` |
-| `TeaKind` | `bought`, `blended` |
-| `Visibility` | `private`, `public` |
+| `CatalogEventKind` | `hidden`, `restored`, `merged` |
 | `CatalogType` | `ingredient`, `tea` |
 | `ReportReason` | `duplicate`, `wrong_info`, `spam`, `inappropriate`, `other` |
 | `ReportStatus` | `open`, `resolved`, `rejected` |
-| `CatalogEventKind` | `hidden`, `restored`, `merged` |
+| `Role` | `user`, `moderator`, `admin` |
+| `TeaKind` | `bought`, `blended` |
+| `Visibility` | `private`, `public` |
 
 ## Nur in SQL
 

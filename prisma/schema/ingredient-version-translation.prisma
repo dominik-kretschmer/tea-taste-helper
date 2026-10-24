@@ -1,0 +1,17 @@
+// 03 – Zutaten: Name und Beschreibung einer Version je Sprache
+// Die Erweiterung pg_trgm für den GIN-Index unten kommt als SQL aus 0003_ingredients.
+
+model IngredientVersionTranslation {
+  versionId   String            @db.Uuid
+  version     IngredientVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  locale      String            @db.VarChar(5)
+  name        String            @db.VarChar(80)
+  /// normalizeName(name) – für die Duplikatregel; TEXT, weil die Normalisierung bis zu 3× länger werden kann (00-chore/04)
+  nameKey     String
+  description String?           @db.VarChar(2000)
+
+  @@id([versionId, locale])
+  @@index([locale, nameKey])
+  /// Suche und Ähnlichkeit (pg_trgm) über alle Namen; die Abfragen filtern per Join auf aktuelle Versionen
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "IngredientVersionTranslation_name_trgm", type: Gin)
+}

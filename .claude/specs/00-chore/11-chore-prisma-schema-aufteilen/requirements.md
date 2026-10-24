@@ -19,7 +19,7 @@ Ein Blick in `prisma/schema/` zeigt, welche Tabellen es gibt, und wer etwas übe
 ## Akzeptanzkriterien
 
 - **AK-1.1:** Das Schema liegt in `prisma/schema/`. `schema.prisma` enthält nur noch `generator` und `datasource`. Jedes Model steht in einer eigenen Datei, benannt nach dem Model in kebab-case (z.B. `User` → `user.prisma`, `IngredientVersionTranslation` → `ingredient-version-translation.prisma`). Alle Enums stehen in `enums.prisma`. `prisma/schema.prisma` gibt es nicht mehr.
-- **AK-1.2:** WENN das neue Schema mit dem bisherigen verglichen wird (`prisma migrate diff`), DANN gibt es keinen Unterschied, und `prisma migrate dev` erzeugt keine neue Migration.
+- **AK-1.2:** WENN das neue Schema mit dem bisherigen verglichen wird (`prisma migrate diff`), DANN gibt es keinen Unterschied, und die Datenbank braucht keine neue Migration (`prisma migrate diff` zwischen Dev-DB und neuem Schema ist leer). *Präzisiert am 2026-10-23:* `prisma migrate dev --create-only` legt in Prisma 7 auch ohne Änderungen einen leeren Migrationsordner an und ist deshalb kein geeigneter Nachweis.
 - **AK-1.3:** Der erzeugte Prisma-Client ist gleichwertig: `npm run typecheck`, alle Tests und `npm run build` bleiben grün, ohne Änderungen an Code außerhalb von `prisma/`.
 - **AK-1.4:** `prisma.config.ts` zeigt auf den Ordner. `npm install` (postinstall), `npm run db:migrate`, `db:deploy`, `db:reset` und `db:studio` funktionieren wie bisher, ebenso der API-Test-Setup (`prisma migrate deploy`) und die CI.
 - **AK-1.5:** Alle Kommentare (`///` und `//`) bleiben beim jeweiligen Model bzw. Feld erhalten, ebenso die Reihenfolge der Felder innerhalb eines Models.

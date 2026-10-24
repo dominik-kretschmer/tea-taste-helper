@@ -106,6 +106,15 @@ Tees (`/tees`, englisch `/en/teas`) bestehen aus Zutaten des Katalogs, optional 
 
 Alle Tabellen, Spalten, Beziehungen und Enums als Diagramm: [docs/datenmodell.md](docs/datenmodell.md). Die Datei wird aus dem Prisma-Schema erzeugt (`npm run db:erd`) und muss nach jeder Schema-Änderung neu erzeugt werden; ein Unit-Test prüft, dass sie aktuell ist.
 
+Das Prisma-Schema liegt in `prisma/schema/`, aufgeteilt nach festen Regeln (ein Unit-Test prüft sie):
+
+- `schema.prisma` enthält nur `generator` und `datasource`.
+- **Eine Datei pro Tabelle**, benannt nach dem Model in kebab-case: `User` → `user.prisma`, `IngredientVersionTranslation` → `ingredient-version-translation.prisma`.
+- **Alle Enums** stehen in `enums.prisma`.
+- **Many-to-many nur als Verbindungstabelle**, also als eigenes Model mit zwei Fremdschlüsseln in eigener Datei (Beispiel: `tea-version-ingredient.prisma`), nie als Listenfeld auf beiden Seiten.
+- Objekte, die nur als SQL in den Migrationen stehen (siehe „Migrationen“), sind am Kopf der betroffenen Tabellen-Datei vermerkt.
+- Nach jeder Schema-Änderung `npm run db:erd` ausführen.
+
 ## Migrationen
 
 Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie nicht abbilden kann:
@@ -138,7 +147,8 @@ server/middleware/   Session auflösen, Pflicht-Passwortwechsel
 server/utils/        Env, Logger, Prisma, Fehler, Health, Sessions, Rechte, Rate-Limit, Audit, Katalog-, Zutaten- und Tee-Abfragen
 server/plugins/      Env-Prüfung, Request-Logging, ADMIN_EMAIL, Session-Aufräumen
 shared/              Typen, Rollen und zod-Schemas für Client und Server
-prisma/              Schema und Migrationen
+prisma/schema/       Prisma-Schema, eine Datei pro Tabelle (siehe „Datenmodell“)
+prisma/migrations/   Migrationen
 test/                unit/, api/, setup/
 docker/              Init-Skripte für Postgres
 .claude/specs/       Spezifikationen (Spec-Driven Development)

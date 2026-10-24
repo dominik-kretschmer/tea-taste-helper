@@ -1,0 +1,17 @@
+// 04 – Tees: Verbindungstabelle TeaVersion ↔ Ingredient (Zutatenliste einer Version)
+
+/// Zutat einer Version in fester Reihenfolge, optional mit Anteil in Prozent
+model TeaVersionIngredient {
+  versionId    String     @db.Uuid
+  version      TeaVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  /// 0, 1, 2 …
+  position     Int        @db.SmallInt
+  ingredientId String     @db.Uuid
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  /// 1–100; null = ohne Angabe
+  percent      Int?       @db.SmallInt
+
+  @@id([versionId, position])
+  @@unique([versionId, ingredientId])
+  @@index([ingredientId])
+}

@@ -1,0 +1,25 @@
+// 05 – Moderation: Meldung zu einer Zutat oder einem Tee
+// Zusätzlich als SQL in 0006_moderation (Prisma kennt ihn nicht): partieller Unique-Index
+// "Report_open_key" – eine offene Meldung pro Nutzer und Eintrag.
+
+model Report {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  entityType     CatalogType
+  /// Zutat oder öffentlicher Tee; kein FK, weil zwei Tabellen (beide werden nie gelöscht)
+  entityId       String       @db.Uuid
+  reporterId     String?      @db.Uuid
+  reporter       User?        @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  reason         ReportReason
+  comment        String?      @db.VarChar(500)
+  /// nur bei reason = duplicate, gleicher entityType
+  duplicateOfId  String?      @db.Uuid
+  status         ReportStatus @default(open)
+  resolvedById   String?      @db.Uuid
+  resolvedBy     User?        @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt     DateTime?
+  resolutionNote String?      @db.VarChar(500)
+  createdAt      DateTime     @default(now())
+
+  @@index([status, createdAt])
+  @@index([entityType, entityId, status])
+}

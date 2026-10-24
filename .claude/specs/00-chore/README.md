@@ -1,7 +1,7 @@
 # 00 – Chore: Projektanalyse nach Slice 03
 
 > Analyse vom 2026-10-23, Stand `5bc54f9`. Jedes Issue ist ein eigener Ordner und läuft nach dem Skill `spec-driven` (Anforderungen → Design → Aufgaben → Umsetzung), sofern nicht anders vereinbart.
-> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt. 05 (npm audit) ist geschlossen: Die einzige verbliebene Meldung (`node-forge`, nur Dev-Server, kein Patch) wird ignoriert, siehe [Begründung](05-chore-npm-audit/begruendung.md). Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
+> Status: **01–04, 06–08 und 10 umgesetzt (2026-10-23), 11 umgesetzt (2026-10-24, API-Tests und Build stehen noch aus)**, je mit eigenem Commit und Ergebnissen in der `tasks.md`. 09 ist mit 04-Tees erledigt. 05 (npm audit) ist geschlossen: Die einzige verbliebene Meldung (`node-forge`, nur Dev-Server, kein Patch) wird ignoriert, siehe [Begründung](05-chore-npm-audit/begruendung.md). Entscheidungen zu 01, 06 und 07 sind in den jeweiligen Anforderungen nachgetragen.
 
 ## Vorgehen
 
@@ -30,7 +30,7 @@ Sortiert nach Dringlichkeit; Aufwand: XS < 1 h, S ≈ halber Tag, M ≈ ein Tag.
 | 08 | [`08-chore-zod-csp`](08-chore-zod-csp/requirements.md) | Wartung | niedrig | XS | zod testet `new Function` → CSP-Verstoß `script-src eval` auf jeder Seite mit Formular |
 | 09 | [`09-chore-vuetify-dense`](09-chore-vuetify-dense/requirements.md) ✅ erledigt mit 04-tees | Wartung | niedrig | XS | `<v-row dense>` in `IngredientForm` ist in Vuetify 4 veraltet (Konsolenwarnung) |
 | 10 | [`10-ux-registrierung-redirect`](10-ux-registrierung-redirect/requirements.md) | UX | niedrig | XS | Registrieren ignoriert `?redirect`; der Weg „Anmelden → Noch kein Konto?“ verliert das Ziel |
-| 11 | [`11-chore-prisma-schema-aufteilen`](11-chore-prisma-schema-aufteilen/requirements.md) | Wartung | niedrig | S | `schema.prisma` mit allen Tabellen in einer Datei; Aufteilung in `prisma/schema/` mit einer Datei pro Tabelle (nachgetragen am 2026-10-23, Anforderungen als Entwurf) |
+| 11 | [`11-chore-prisma-schema-aufteilen`](11-chore-prisma-schema-aufteilen/requirements.md) | Wartung | niedrig | S | `schema.prisma` mit allen Tabellen in einer Datei; Aufteilung in `prisma/schema/` mit einer Datei pro Tabelle (nachgetragen am 2026-10-23) |
 
 Empfohlene Reihenfolge: 01 und 02 zuerst (Sicherheit), dann 03–05. 06 und 07 brauchen je eine Entscheidung (siehe „Offene Fragen“ dort). 08–10 lassen sich zusammen in einem Durchgang erledigen.
 

@@ -1,19 +1,16 @@
 // Erzeugt docs/datenmodell.md (Mermaid-ER-Diagramm, Beziehungen, Enums) aus dem Prisma-Schema.
 // Aufruf: npm run db:erd   ·   Prüfung, ob die Datei aktuell ist: test/unit/datenmodell.test.ts
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 export const OUTPUT = join(root, 'docs/datenmodell.md')
 
-/** Schema als Text: Ordner prisma/schema (00-chore/11) oder die einzelne Datei prisma/schema.prisma */
+/** Schema als Text: alle Dateien aus prisma/schema/ (eine pro Tabelle, 00-chore/11) */
 export function readSchema() {
   const dir = join(root, 'prisma/schema')
-  if (existsSync(dir) && statSync(dir).isDirectory()) {
-    return readdirSync(dir).filter(f => f.endsWith('.prisma')).sort().map(f => readFileSync(join(dir, f), 'utf8')).join('\n')
-  }
-  return readFileSync(join(root, 'prisma/schema.prisma'), 'utf8')
+  return readdirSync(dir).filter(f => f.endsWith('.prisma')).sort().map(f => readFileSync(join(dir, f), 'utf8')).join('\n')
 }
 
 function parseBlocks(text) {
@@ -41,9 +38,11 @@ function parseFields(body) {
 const listOf = s => s.split(',').map(x => x.trim())
 
 export function generate(schema = readSchema()) {
+  // Alphabetisch, damit die Ausgabe nicht von der Dateiaufteilung abhängt
+  const byName = (a, b) => a.name.localeCompare(b.name, 'en')
   const blocks = parseBlocks(schema)
-  const models = blocks.filter(b => b.kind === 'model')
-  const enums = blocks.filter(b => b.kind === 'enum')
+  const models = blocks.filter(b => b.kind === 'model').sort(byName)
+  const enums = blocks.filter(b => b.kind === 'enum').sort(byName)
   const modelNames = new Set(models.map(m => m.name))
 
   const entities = []

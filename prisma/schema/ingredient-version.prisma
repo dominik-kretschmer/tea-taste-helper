@@ -1,0 +1,30 @@
+// 03 – Zutaten: eine vollständige Version einer Zutat
+// Zusätzlich als SQL in 0003_ingredients (Prisma kennt ihn nicht): partieller Unique-Index
+// "IngredientVersion_current_key" – genau eine aktuelle Version pro Zutat.
+
+/// Eine vollständige Version; genau eine pro Zutat ist aktuell (isCurrent).
+model IngredientVersion {
+  id             String                         @id @default(uuid(7)) @db.Uuid
+  ingredientId   String                         @db.Uuid
+  ingredient     Ingredient                     @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  /// 1, 2, 3 … je Zutat
+  version        Int
+  isCurrent      Boolean                        @default(false)
+  caffeine       Caffeine                       @default(unknown)
+  /// 40–100
+  brewTempC      Int?                           @db.SmallInt
+  /// 10–1800
+  brewSeconds    Int?                           @db.SmallInt
+  authorId       String?                        @db.Uuid
+  author         User?                          @relation("IngredientVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note           String?                        @db.VarChar(200)
+  createdAt      DateTime                       @default(now())
+  translations   IngredientVersionTranslation[]
+  /// Inhalt entspricht dieser früheren Version (Zurücksetzen, 05)
+  revertedTo     Int?                           @db.SmallInt
+  /// Massen-Zurücksetzung der Änderungen dieses Nutzers (05)
+  bulkRevertOfId String?                        @db.Uuid
+  bulkRevertOf   User?                          @relation("IngredientVersionBulkRevert", fields: [bulkRevertOfId], references: [id], onDelete: SetNull)
+
+  @@unique([ingredientId, version])
+}

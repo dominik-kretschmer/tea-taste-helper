@@ -1,0 +1,36 @@
+// 02 – Auth & Rollen: Konto mit Rolle, Anmeldedaten und Sperre (05)
+
+model User {
+  id                    String              @id @default(uuid(7)) @db.Uuid
+  /// immer kleingeschrieben gespeichert
+  email                 String              @unique
+  displayName           String              @db.VarChar(40)
+  passwordHash          String
+  role                  Role                @default(user)
+  mustChangePassword    Boolean             @default(false)
+  /// gesperrt seit (05); gesperrt ist, wer blockedAt hat und dessen blockedUntil fehlt oder in der Zukunft liegt
+  blockedAt             DateTime?
+  /// null bei gesetztem blockedAt = unbefristet
+  blockedUntil          DateTime?
+  blockReason           String?             @db.VarChar(500)
+  blockedById           String?             @db.Uuid
+  blockedBy             User?               @relation("UserBlockedBy", fields: [blockedById], references: [id], onDelete: SetNull)
+  blockedUsers          User[]              @relation("UserBlockedBy")
+  createdAt             DateTime            @default(now())
+  lastLoginAt           DateTime?
+  sessions              Session[]
+  auditAsActor          AuditLog[]          @relation("AuditActor")
+  auditAsTarget         AuditLog[]          @relation("AuditTarget")
+  ingredientVersions    IngredientVersion[] @relation("IngredientVersionAuthor")
+  teasOwned             Tea[]               @relation("TeaOwner")
+  teaVersions           TeaVersion[]        @relation("TeaVersionAuthor")
+  hiddenIngredients     Ingredient[]        @relation("IngredientHiddenBy")
+  hiddenTeas            Tea[]               @relation("TeaHiddenBy")
+  ingredientBulkReverts IngredientVersion[] @relation("IngredientVersionBulkRevert")
+  teaBulkReverts        TeaVersion[]        @relation("TeaVersionBulkRevert")
+  reports               Report[]            @relation("ReportReporter")
+  reportsResolved       Report[]            @relation("ReportResolver")
+  catalogEvents         CatalogEvent[]      @relation("CatalogEventActor")
+
+  @@index([displayName])
+}

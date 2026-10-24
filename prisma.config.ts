@@ -2,7 +2,8 @@ import 'dotenv/config'
 import { defineConfig } from 'prisma/config'
 
 export default defineConfig({
-  schema: 'prisma/schema.prisma',
+  // Ordner: eine Datei pro Tabelle, Enums in enums.prisma (00-chore/11)
+  schema: 'prisma/schema',
   migrations: {
     path: 'prisma/migrations',
   },

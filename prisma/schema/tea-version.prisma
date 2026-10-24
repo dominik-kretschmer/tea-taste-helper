@@ -1,0 +1,38 @@
+// 04 – Tees: eine vollständige Version eines Tees
+// Zusätzlich als SQL in 0004_teas (Prisma kennt ihn nicht): partieller Unique-Index
+// "TeaVersion_current_key" – genau eine aktuelle Version pro Tee.
+
+/// Eine vollständige Version inkl. Zutatenliste; genau eine pro Tee ist aktuell (isCurrent).
+model TeaVersion {
+  id                 String                  @id @default(uuid(7)) @db.Uuid
+  teaId              String                  @db.Uuid
+  tea                Tea                     @relation(fields: [teaId], references: [id], onDelete: Cascade)
+  version            Int
+  isCurrent          Boolean                 @default(false)
+  visibility         Visibility              @default(private)
+  kind               TeaKind
+  /// nur bei kind = bought
+  brand              String?                 @db.VarChar(80)
+  /// normalizeName(brand) bzw. '' – Teil der Duplikatregel
+  brandKey           String                  @default("")
+  caffeine           Caffeine                @default(unknown)
+  /// 40–100
+  brewTempC          Int?                    @db.SmallInt
+  /// 10–1800
+  brewSeconds        Int?                    @db.SmallInt
+  authorId           String?                 @db.Uuid
+  author             User?                   @relation("TeaVersionAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  note               String?                 @db.VarChar(200)
+  createdAt          DateTime                @default(now())
+  translations       TeaVersionTranslation[]
+  ingredients        TeaVersionIngredient[]
+  /// wie bei IngredientVersion (05)
+  revertedTo         Int?                    @db.SmallInt
+  bulkRevertOfId     String?                 @db.Uuid
+  bulkRevertOf       User?                   @relation("TeaVersionBulkRevert", fields: [bulkRevertOfId], references: [id], onDelete: SetNull)
+  /// Version entstand durch Zusammenführen dieser Zutat (Quelle) in eine andere (05)
+  mergedIngredientId String?                 @db.Uuid
+  mergedIngredient   Ingredient?             @relation("TeaVersionMergedIngredient", fields: [mergedIngredientId], references: [id], onDelete: Restrict)
+
+  @@unique([teaId, version])
+}

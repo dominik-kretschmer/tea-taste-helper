@@ -1,0 +1,90 @@
+// Alle Enums (00-chore/11), gegliedert nach Bereich; Werte siehe auch docs/datenmodell.md
+
+// 02 – Auth & Rollen
+
+enum Role {
+  user
+  moderator
+  admin
+}
+
+enum AuditEvent {
+  USER_REGISTERED
+  LOGIN_SUCCEEDED
+  LOGIN_FAILED
+  LOGOUT
+  PASSWORD_CHANGED
+  PASSWORD_RESET_BY_ADMIN
+  ROLE_CHANGED
+  ADMIN_BOOTSTRAPPED
+  INGREDIENT_CREATED
+  INGREDIENT_UPDATED
+  TEA_CREATED
+  TEA_UPDATED
+  TEA_PUBLISHED
+  TEA_DELETED
+  INGREDIENT_REVERTED
+  TEA_REVERTED
+  REPORT_CREATED
+  REPORT_RESOLVED
+  INGREDIENT_MERGED
+  TEA_MERGED
+  INGREDIENT_HIDDEN
+  INGREDIENT_RESTORED
+  TEA_HIDDEN
+  TEA_RESTORED
+  USER_BLOCKED
+  USER_UNBLOCKED
+  BULK_REVERT
+}
+
+// 03 – Zutaten
+
+enum Caffeine {
+  yes
+  no
+  unknown
+}
+
+// 04 – Tees
+
+enum TeaKind {
+  /// gekauft
+  bought
+  /// selbst gemischt
+  blended
+}
+
+enum Visibility {
+  private
+  public
+}
+
+// 05 – Moderation
+
+enum CatalogType {
+  ingredient
+  tea
+}
+
+enum ReportReason {
+  duplicate
+  wrong_info
+  spam
+  inappropriate
+  other
+}
+
+enum ReportStatus {
+  open
+  /// erledigt
+  resolved
+  /// abgelehnt
+  rejected
+}
+
+enum CatalogEventKind {
+  hidden
+  restored
+  merged
+}

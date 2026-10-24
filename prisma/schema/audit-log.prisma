@@ -1,0 +1,19 @@
+// 02 – Auth & Rollen: Audit-Log sicherheitsrelevanter und redaktioneller Ereignisse
+
+model AuditLog {
+  id        BigInt     @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  event     AuditEvent
+  actorId   String?    @db.Uuid
+  actor     User?      @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  targetId  String?    @db.Uuid
+  target    User?      @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  ip        String?
+  requestId String?
+  /// z.B. { from: "user", to: "admin" } oder { email } bei LOGIN_FAILED – nie Geheimnisse
+  details   Json?
+
+  @@index([createdAt])
+  @@index([event, createdAt])
+  @@index([targetId, createdAt])
+}

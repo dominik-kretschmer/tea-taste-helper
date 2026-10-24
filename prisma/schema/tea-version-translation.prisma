@@ -1,0 +1,16 @@
+// 04 – Tees: Name und Beschreibung einer Version je Sprache
+// Die Erweiterung pg_trgm für den GIN-Index unten kommt als SQL aus 0003_ingredients.
+
+model TeaVersionTranslation {
+  versionId   String     @db.Uuid
+  version     TeaVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  locale      String     @db.VarChar(5)
+  name        String     @db.VarChar(80)
+  /// normalizeName(name); TEXT, weil die Normalisierung bis zu 3× länger werden kann (00-chore/04)
+  nameKey     String
+  description String?    @db.VarChar(2000)
+
+  @@id([versionId, locale])
+  @@index([locale, nameKey])
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "TeaVersionTranslation_name_trgm", type: Gin)
+}

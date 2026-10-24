@@ -1,0 +1,28 @@
+// 03 – Zutaten: Identität einer Zutat; Inhalte stehen in den Versionen
+// Zusätzlich als SQL in 0006_moderation (Prisma kennt ihn nicht): CHECK-Constraint
+// "Ingredient_merged_not_hidden" – zusammengeführt (mergedIntoId) und ausgeblendet (hiddenAt) schließen sich aus.
+
+/// Identität einer Zutat; alle Inhalte stehen in den Versionen.
+model Ingredient {
+  id                String                 @id @default(uuid(7)) @db.Uuid
+  /// 'de' | 'en' (zod-geprüft), ändert sich nie
+  sourceLocale      String                 @db.VarChar(5)
+  createdAt         DateTime               @default(now())
+  versions          IngredientVersion[]
+  teaUses           TeaVersionIngredient[]
+  // 05 – Moderation: aktiv ist eine Zutat nur ohne hiddenAt und ohne mergedIntoId (ACTIVE in server/utils/ingredients.ts)
+  hiddenAt          DateTime?
+  hiddenById        String?                @db.Uuid
+  hiddenBy          User?                  @relation("IngredientHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  hiddenReason      String?                @db.VarChar(500)
+  /// gesetzt = in diese Zutat zusammengeführt; endgültig
+  mergedIntoId      String?                @db.Uuid
+  mergedInto        Ingredient?            @relation("IngredientMerge", fields: [mergedIntoId], references: [id], onDelete: Restrict)
+  mergedFrom        Ingredient[]           @relation("IngredientMerge")
+  mergedAt          DateTime?
+  /// Teeversionen, die durch das Zusammenführen dieser Zutat entstanden sind
+  teaVersionsMerged TeaVersion[]           @relation("TeaVersionMergedIngredient")
+
+  @@index([mergedIntoId])
+  @@index([hiddenAt])
+}

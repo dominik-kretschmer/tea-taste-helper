@@ -1,0 +1,15 @@
+// 02 – Auth & Rollen: Anmelde-Session (in der DB nur der Hash des Tokens)
+
+model Session {
+  /// SHA-256 (hex) des Tokens – nie das Token selbst
+  id         String   @id
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  remember   Boolean
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}

@@ -1,6 +1,6 @@
 # Design: 11 – Prisma-Schema auf eine Datei pro Tabelle aufteilen
 
-> Phase 2 zu [requirements.md](requirements.md). Status: **Entwurf – wartet auf Freigabe**
+> Phase 2 zu [requirements.md](requirements.md). Status: **freigegeben (2026-10-23)**
 
 ## Überblick
 
@@ -70,6 +70,8 @@ Jede Model-Datei beginnt mit einer Zeile `// <Bereich>: <Zweck der Tabelle>`, z.
 | `prisma/schema/enums.prisma` | neu | alle Enums |
 | `prisma/schema/<model>.prisma` (12 Dateien) | neu | je ein Model |
 | `prisma.config.ts` | geändert | `schema: 'prisma/schema'` |
+| `scripts/datenmodell.mjs` | geändert | Tabellen und Enums alphabetisch sortieren, damit `docs/datenmodell.md` nicht von der Dateiaufteilung abhängt; nur noch Ordner lesen (*ergänzt in der Umsetzung*) |
+| `docs/datenmodell.md` | geändert | einmalig umsortiert, Inhalt gleich |
 | `test/unit/prisma-schema.test.ts` | neu | prüft die Regeln „eine Datei pro Tabelle“ und „Many-to-many nur als Verbindungstabelle“ (siehe Tests) |
 | `README.md` | geändert | kurzer Absatz zur Ablage im Abschnitt zu den Datenbankobjekten; Projektstruktur `prisma/` |
 
@@ -107,7 +109,7 @@ Der Migrationsordner bleibt `prisma/migrations`; `migrations.path` in `prisma.co
 
 1. **Vorher** das alte Schema sichern: `git show HEAD:prisma/schema.prisma > <scratch>/schema-alt.prisma`.
 2. `npx prisma migrate diff --from-schema <scratch>/schema-alt.prisma --to-schema prisma/schema --exit-code` → Exit-Code 0 (leer). Zusätzlich mit `--script`: nur „empty migration“.
-3. `npx prisma migrate dev --create-only --name probe` meldet „Already in sync“ bzw. legt keinen Ordner an. Ein dennoch angelegter Ordner wird gelöscht und als Fehler gewertet.
+3. `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema --exit-code` → Exit-Code 0: Die Dev-DB entspricht dem neuen Schema, eine Migration ist nicht nötig. *Geändert in der Umsetzung:* Ursprünglich stand hier `migrate dev --create-only`. Das legt in Prisma 7 auch ohne Änderungen eine leere Migration an.
 4. Erzeugten Client vergleichen: `server/generated/prisma` vorher und nachher per `diff -r`. Erwartet: Unterschiede höchstens im eingebetteten Schema-Text bzw. dessen Hash, nicht in Typen oder Modellen.
 5. `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` grün.
 
@@ -140,7 +142,7 @@ Der Test erkennt Blöcke per regulärem Ausdruck (`^(model|enum|generator|dataso
 | AK-1.1 | Zielstruktur `prisma/schema/`; `test/unit/prisma-schema.test.ts` |
 | AK-1.2 | `prisma migrate diff --exit-code` leer, `migrate dev --create-only` ohne neue Migration |
 | AK-1.3 | `output`-Pfad angepasst; Vergleich des erzeugten Clients; lint, typecheck, Tests, build |
-| AK-1.4 | `prisma.config.ts` mit `schema: 'prisma/schema'`; `npm install` (postinstall), `db:migrate`, `db:deploy`, `db:studio` von Hand; `global-api.ts` (`migrate deploy`) über `npm test`; CI nach Push. `db:reset` wird **nicht** ausgeführt (leert die Dev-DB); es nutzt dieselbe Konfiguration wie `db:deploy`, und `prisma migrate reset --help` bzw. `prisma validate` belegen, dass das Schema gefunden wird. |
+| AK-1.4 | `prisma.config.ts` mit `schema: 'prisma/schema'`; `npm install` (postinstall), `db:migrate`, `db:deploy`, `db:studio` von Hand; `global-api.ts` (`migrate deploy`) über `npm test`; CI nach Push. `db:reset` wird **nicht** ausgeführt (leert die Dev-DB); es nutzt dieselbe Konfiguration wie `db:deploy`, und `prisma migrate status` bzw. `prisma validate` belegen, dass Konfiguration und Schema gefunden werden. |
 | AK-1.5 | Blöcke unverändert verschoben; Tabelle „Kommentare“; Sichtprüfung per Diff der zusammengefügten Inhalte (siehe Aufgaben) |
 | AK-1.6 | README-Absatz (Ablage- und Many-to-many-Regel); Regeln per Unit-Test abgesichert |
 | AK-1.8 | `scripts/datenmodell.mjs` liest den Ordner; `npm run db:erd` ergibt dieselbe Datei (`git diff docs/datenmodell.md` leer); `test/unit/datenmodell.test.ts` grün |
