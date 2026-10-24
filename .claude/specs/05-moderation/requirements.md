@@ -1,7 +1,7 @@
 # 05 – Moderation
 
 > Feature-Spec zu [00 – Overview](../00%20–%20Overview:%20tea-taste-helper.md), Slice 05 (§3 Nutzer & Rollen, §4 Katalog, §13 Audit-Log). Baut auf [02 – Auth & Rollen](../02-auth-rollen/requirements.md), [03 – Zutaten](../03-zutaten/requirements.md) und [04 – Tees](../04-tees/requirements.md) auf. Phase 1: Anforderungen.
-> Status: **freigegeben (2026-10-23)**, einschließlich der Vorschläge zur Bestätigung. Mit dem Design präzisiert (2026-10-23): AK-1.1, AK-4.3, AK-7.2 (Kennzeichnung statt Notiztext), AK-7.4 (auch private Tees des Nutzers blockieren das Ausblenden).
+> Status: **umgesetzt (2026-10-24)**, freigegeben am 2026-10-23, einschließlich der Vorschläge zur Bestätigung. Mit dem Design präzisiert (2026-10-23): AK-1.1, AK-4.3, AK-7.2 (Kennzeichnung statt Notiztext), AK-7.4 (auch private Tees des Nutzers blockieren das Ausblenden).
 
 ## Ziel
 

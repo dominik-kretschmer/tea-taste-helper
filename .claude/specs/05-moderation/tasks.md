@@ -1,6 +1,6 @@
 # Aufgaben: 05 – Moderation
 
-> Phase 3 zu [design.md](design.md). Status: **freigegeben (2026-10-23), in Umsetzung**
+> Phase 3 zu [design.md](design.md). Status: **umgesetzt (2026-10-24)**, freigegeben am 2026-10-23
 
 Reihenfolge:
 - Herauslösungen ohne Verhaltensänderung → Datenmodell → Regeln → Server-Bausteine → API → UI → Dokumentation → Endabnahme.
@@ -243,7 +243,7 @@ Reihenfolge:
     - Skill `nuxt-dev`: SQL-Objekte, `ENTRY_ACTIVE`/`activeSql`, `save*Version` als einziger Schreibweg, `immediate` bei Dialogen.
     - 00-chore/README: Die Notiz zur öffentlichen Suche ist mit 05 geprüft. 05 bringt keine neuen öffentlichen Suchrouten, Melden hat ein eigenes Limit; beim Hosting erneut prüfen.
 
-- [ ] 18. Abschluss
+- [x] 18. Abschluss
   - Erfüllt: alle AKs (Endabnahme)
   - Ablauf:
     1. `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei.
@@ -252,3 +252,64 @@ Reihenfolge:
     4. Testdaten (`pw05`) aus der Dev-DB löschen.
     5. Status von `requirements.md`, `design.md` und `tasks.md` auf „umgesetzt“ setzen.
     6. Push nur nach Rücksprache.
+  - Endabnahme (2026-10-24, Stand `HEAD` inkl. 00-chore/11 `4f784c3`):
+    - Lint und Typecheck grün, `npm test` 420 Tests in 29 Dateien grün (Unit 227 in 17 Dateien, API 193 in 12), `npm run build` mit Exit 0.
+    - Production-Server (`.output`, Port 3100): HSTS aktiv, CSP ohne `unsafe-eval`. CSP-Durchlauf mit `securitypolicyviolation`-Listener über 26 Seitenaufrufe (de/en: Detailseiten mit Melden- und Moderationsmenü, Zusammenführen-Vorschau, Ausblenden-Dialog, Historie mit Zurücksetzen-Dialog, Meldungen, Ausgeblendet, Nutzer sperren mit Sperr- und Massen-Dialog, Audit-Log, Login): **keine** Verstöße, keine Konsolenfehler.
+    - Testdaten (`pw05`: 4 Nutzer, 7 Zutaten, 1 Tee, 8 Meldungen, 5 Ereignisse, 86 Audit-Einträge) aus der Dev-DB gelöscht; vorher geprüft, dass keine fremden Daten daran hängen. Die übrigen Daten (1 Nutzer, 4 Zutaten) sind unberührt.
+    - Hinweis: Der Commit `839bd68` enthält versehentlich die gestagte Umbenennung `prisma/schema.prisma → prisma/schema/schema.prisma` aus 00-chore/11 (ohne Inhaltsänderung). Mit `4f784c3` ist `HEAD` wieder konsistent.
+
+    | AK | Ergebnis | Nachweis |
+    |---|---|---|
+    | 0.1 | ✅ | Browser: Menü „Moderation“ mit Badge nur für Moderatoren/Admins; Tabs je Rolle; `/admin/users`, `/admin/audit` leiten Moderatoren um. API: Admin-Routen für Moderatoren 403 (Matrix) |
+    | 0.2 | ✅ | Rechte-Matrix über 17 Moderationsrouten (Gast 401, Nutzer 403) und Einzeltests je Route |
+    | 1.1 | ✅ | API: neue Version mit Inhalt der Zielversion inkl. Übersetzungen, `revertedTo`, eigene Notiz, Audit; Browser: Chip „Zurückgesetzt auf Version n“ (de/en) |
+    | 1.2 | ✅ | API: fremder privater Tee 404, Ersteller ok |
+    | 1.3 | ✅ | API: Konflikt 409 mit `currentVersion`, `changed: false`, Duplikat 409, gemeinsames Rate-Limit (31. → 429); Browser: Konflikt mit zwei Tabs + „Historie neu laden“ |
+    | 1.4 | ✅ | API: Zielversion privat → Tee bleibt öffentlich |
+    | 1.5 | ✅ | API: zusammengeführte Zutat → Ziel mit addiertem Anteil; ausgeblendete → 409 `INGREDIENT_UNAVAILABLE` |
+    | 1.6 | ✅ | API Gast 401; Browser: kein Knopf für Gäste |
+    | 2.1, 2.2 | ✅ | Unit `reportSchema`; API: Kommentar Pflicht bei „Sonstiges“, Original Pflicht/gleiche Art/nicht derselbe; Browser: Pflichtfelder, Duplikat-Suche |
+    | 2.3 | ✅ | Browser: Snackbar, Eintrag unverändert; API: Detail weiter 200 |
+    | 2.4 | ✅ | API: zweite offene Meldung 409 `ALREADY_REPORTED`, nach Abschluss wieder möglich; Browser: Hinweis im Dialog |
+    | 2.5 | ✅ | API: 11. Meldung → 429 mit `Retry-After` |
+    | 2.6 | ✅ | API: privat/ausgeblendet/zusammengeführt/unbekannt 404, Gast 401; Browser: „Zum Melden anmelden“ |
+    | 3.1 | ✅ | API: gruppiert, älteste zuerst, Filter Grund/Art, `lastAuthor`, keine E-Mail; Browser: Karten mit aufklappbaren Meldungen, Filter |
+    | 3.2 | ✅ | Browser: Historie, Zusammenführen mit vorausgewähltem Original, Ausblenden, „Autor sperren“ aus der Karte |
+    | 3.3 | ✅ | API: erledigt/abgelehnt mit Notiz, ohne offene 404, Audit; Browser: Tab „Abgeschlossen“ mit Moderatorin, Datum, Notiz |
+    | 3.4 | ✅ | API: Zusammenführen und Ausblenden schließen offene Meldungen als `resolved` |
+    | 3.5 | ✅ | API `count` zählt Einträge; Browser: Badge 2 → 1 nach Abschluss |
+    | 4.1 | ✅ | API: Vorschau mit Tee-Anzahl öffentlich/privat, ungültige Paare 400; Browser: Vorschau, Knopf erst nach Checkbox |
+    | 4.2 | ✅ | API: Quelle 404 mit `mergedInto`, nicht in Liste/Suche/`similar`, Historie lesbar, Ketten aufgelöst; Browser: Weiterleitung mit Hinweis, Historie der Quelle mit Link |
+    | 4.3 | ✅ | Unit `combineIngredients`; API: öffentliche und private Tees umgestellt, Position, Anteile addiert, Moderatorin als Autorin, `mergedIngredientId` |
+    | 4.4 | ✅ | API: alte Versionen unverändert, Vergleich mit `mergedInto`; Browser: Chip „Zutat zusammengeführt“ |
+    | 4.5 | ✅ | API `missingTranslations`; Browser: Hinweis mit „Ziel erst bearbeiten“ |
+    | 4.6 | ✅ | Keine Rückgängig-Route; erneutes Zusammenführen einer Quelle 400; Bestätigungs-Checkbox |
+    | 4.7 | ✅ | API: gleichzeitiges PATCH über 3 Runden – Zusammenführung greift immer, die Änderung bleibt oder wird mit 409 abgelehnt |
+    | 5.1 | ✅ | API: 404 für Gast/Nutzer überall inkl. Zutatenauswahl und „Enthalten in“; Browser: Gast 404 nach Ausblenden |
+    | 5.2 | ✅ | API: 409 `INGREDIENT_IN_USE` mit Anzahl; Wettlauf mit Tee-Speichern über 3 Runden; Browser: Hinweis mit „Zusammenführen…“ |
+    | 5.3 | ✅ | API: Name nach dem Ausblenden wieder frei (Zutat und Tee) |
+    | 5.4 | ✅ | API: Liste neueste zuerst mit Grund und Moderator, Detail für Moderatoren mit `moderation`; Browser: Seite „Ausgeblendet“, Banner |
+    | 5.5 | ✅ | API: wieder sichtbar und unverändert, neues Duplikat 409, Tee mit ausgeblendeter Zutat 409; Browser: „Wiederherstellen“ |
+    | 5.6 | ✅ | API: `events` in der Historie, Grund nur für Moderatoren; Browser: Ereigniszeilen de/en |
+    | 5.7 | ✅ | API: Löschen eigener privater Tees weiter 204 |
+    | 6.1 | ✅ | API: alle Sessions weg, Frist je Dauer; Browser: Sperrdialog mit Dauer und Pflicht-Grund |
+    | 6.2 | ✅ | API: 403 `ACCOUNT_BLOCKED` mit `until` nur bei richtigem Passwort, ohne Grund; Browser: „Dein Konto ist gesperrt bis …“ |
+    | 6.3 | ✅ | API: abgelaufene Sperre → Login und Session ok |
+    | 6.4 | ✅ | API und Browser: Entsperren sofort, Login wieder 200 |
+    | 6.5 | ✅ | API: Rollenregeln (Moderator→Moderator 403, Admin→Moderator ok, Admin nicht sperrbar, selbst 403) |
+    | 6.6 | ✅ | API: Suche nur nach Anzeigename, E-Mail nur für Admins, `changes30d`, Filter; Browser: Status-Texte inkl. „Sperre abgelaufen“, E-Mail nur als Admin |
+    | 6.7 | ✅ | API: Beiträge Gesperrter bleiben sichtbar |
+    | 6.8 | ✅ | API: erneutes Sperren ersetzt Frist und Grund; Browser: „Sperre ändern“ |
+    | 7.1 | ✅ | API: Vorschau gleich Ergebnis; Browser: Vorschau mit Zielversion |
+    | 7.2 | ✅ | API: Stand vor dem Zeitraum, Moderatorin als Autorin, `bulkRevertOf`; Browser: Name wiederhergestellt |
+    | 7.3 | ✅ | API: `changed_by_others`; Browser: „Übersprungen – bitte einzeln prüfen“ mit Link |
+    | 7.4 | ✅ | API: neu angelegte ausgeblendet (`bulk_revert`), verwendete Zutat (auch in eigenem privatem Tee) übersprungen |
+    | 7.5 | ✅ | API: private Tees unberührt, Zähler im Ergebnis und im Audit |
+    | 7.6 | ✅ | API: 31 Einträge ohne 429 |
+    | 8.1 | ✅ | API: alle 13 Ereignisse mit Details; kein `TEA_UPDATED` je umgestelltem Tee |
+    | 8.2 | ✅ | Browser: Audit-Log zeigt die Ereignisse übersetzt mit Frist, Zählern und Links; private Tees ohne Link |
+    | 9.1 | ✅ | zod-Schemas (Unit-Tests), Feldfehler übersetzt |
+    | 9.2 | ✅ | Ausgabe nur per Text-Interpolation; Kommentare nur über Moderationsrouten |
+    | 9.3 | ✅ | Bestätigung in allen Dialogen (Zusammenführen mit Checkbox) |
+    | 9.4 | ✅ | Sprachdateien-Test; 360 px hell und dunkel ohne Überlauf auf allen neuen Seiten; CSP-Durchlauf ohne Verstöße |
+    | 9.5 | ✅ | `test/unit/moderation.test.ts` (24), `test/api/moderation.test.ts` (33), `revert.test.ts` (14), `block.test.ts` (8) |

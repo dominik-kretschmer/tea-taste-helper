@@ -1,6 +1,6 @@
 # Design: 05 – Moderation
 
-> Phase 2 zu [requirements.md](requirements.md). Status: **freigegeben (2026-10-23)**
+> Phase 2 zu [requirements.md](requirements.md). Status: **umgesetzt (2026-10-24)**, freigegeben am 2026-10-23
 
 ## Überblick
 
