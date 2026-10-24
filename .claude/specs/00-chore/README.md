@@ -45,7 +45,7 @@ Empfohlene Reihenfolge: 01 und 02 zuerst (Sicherheit), dann 03–05. 06 und 07 b
 |---|---|
 | Rate-Limits liegen im Speicher und gelten pro Prozess | So entschieden in 02 („Nicht im Umfang“), reicht für eine Instanz |
 | Fünf Fehlversuche sperren eine E-Mail 15 Minuten, auch für den echten Nutzer | Bewusster Tausch gegen Durchprobieren (02, AK-8.1) |
-| Suche und „ähnliche Namen“ sind öffentlich und ohne Rate-Limit | Bei der aktuellen Datenmenge unkritisch; mit 05-Moderation bzw. Hosting erneut prüfen |
+| Suche und „ähnliche Namen“ sind öffentlich und ohne Rate-Limit | Bei der aktuellen Datenmenge unkritisch. Mit 05-Moderation geprüft (2026-10-24): 05 bringt keine neuen öffentlichen Suchrouten; Melden hat ein eigenes Limit (10/h), die Moderationssuche nutzt die bestehenden Listen. Mit dem Hosting erneut prüfen |
 | Audit-Log ohne Aufbewahrungsfrist, `LOGIN_FAILED` speichert die eingegebene E-Mail | Gehört zu Slice 11 (DSGVO) |
 | Ist die DB weg, rendern Seiten für angemeldete Nutzer einen 500er (Auth-Plugin) | Ohne DB funktioniert die App ohnehin nicht; die Fehlerseite verbessert Issue 07 |
 | `PASSWORD_CHANGE_REQUIRED` sperrt auch öffentliche Lese-Routen für den betroffenen Nutzer | Gewollt, die UI leitet ohnehin auf den Passwortwechsel |

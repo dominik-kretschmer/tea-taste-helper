@@ -102,6 +102,18 @@ Den Zutatenkatalog (`/zutaten`, englisch `/en/ingredients`) lesen alle; Anlegen,
 
 Tees (`/tees`, englisch `/en/teas`) bestehen aus Zutaten des Katalogs, optional mit Anteilen in Prozent; der nicht angegebene Rest wird als „unbekannt“ angezeigt. Neue Tees sind **privat**: Nur der Ersteller sieht und bearbeitet sie, für alle anderen (auch Admins) gibt es sie nicht (404, nicht in Listen). Der Ersteller kann einen privaten Tee löschen oder veröffentlichen; veröffentlichte Tees bearbeiten alle Angemeldeten wie Zutaten (Versionen, Historie, Übersetzungen), zurück auf privat geht nicht. Gleich benannte öffentliche Tees sind nur mit unterschiedlicher Marke erlaubt. Eigene Tees stehen unter „Meine“ (`/tees?mine=1`).
 
+## Moderation
+
+Jede angemeldete Person kann Zutaten und öffentliche Tees in der Historie auf eine ältere Version **zurücksetzen** (neue Version mit Kennzeichnung) und Einträge **melden**. Moderatoren und Admins haben unter „Moderation“ (`/admin/reports`, `/admin/hidden`, `/admin/moderation/users`):
+
+- Meldungen nach Eintrag gruppiert abschließen.
+- Duplikate **zusammenführen**: Tees werden auf die Zielzutat umgestellt, die alte URL leitet weiter; das lässt sich nicht rückgängig machen.
+- Einträge **ausblenden** (weich löschen, wiederherstellbar; Zutaten nur, wenn kein Tee sie enthält).
+- Nutzer befristet oder unbefristet **sperren**.
+- Alle Änderungen einer Person ab einem Zeitpunkt in einem Schritt **zurücksetzen**.
+
+Moderatoren sehen keine E-Mail-Adressen; Nutzerverwaltung und Audit-Log bleiben Admins vorbehalten. Moderatoren sperren nur Nutzer, Admins auch Moderatoren, Admins selbst sind nicht sperrbar. Ausgeblendete und zusammengeführte Einträge gelten überall als nicht vorhanden – Abfragen schließen sie über `ENTRY_ACTIVE` bzw. `activeSql()` aus (`server/utils/catalog.ts`).
+
 ## Datenmodell
 
 Alle Tabellen, Spalten, Beziehungen und Enums als Diagramm: [docs/datenmodell.md](docs/datenmodell.md). Die Datei wird aus dem Prisma-Schema erzeugt (`npm run db:erd`) und muss nach jeder Schema-Änderung neu erzeugt werden; ein Unit-Test prüft, dass sie aktuell ist.
@@ -124,6 +136,8 @@ Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie n
 | Erweiterung `pg_trgm` | `0003_ingredients` | Ähnliche Namen und schnelle Teilwortsuche |
 | `IngredientVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0003_ingredients` | Genau eine aktuelle Version pro Zutat |
 | `TeaVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0004_teas` | Genau eine aktuelle Version pro Tee |
+| `Report_open_key` (partieller Unique-Index `WHERE status = 'open'`) | `0006_moderation` | Höchstens eine offene Meldung je Person und Eintrag |
+| CHECK `Ingredient_merged_not_hidden`, `Tea_merged_not_hidden` | `0006_moderation` | Ein Eintrag ist nie zugleich zusammengeführt und ausgeblendet |
 
 Die GIN-Indizes `IngredientVersionTranslation_name_trgm` und `TeaVersionTranslation_name_trgm` stehen zusätzlich im Schema (`type: Gin`), damit Prisma sie nicht als Abweichung sieht.
 
@@ -162,7 +176,7 @@ Alle Fehler unter `/api/` haben dieses Format; jede Antwort trägt den Header `X
 { "error": { "code": "VALIDATION_ERROR", "message": "Invalid input", "requestId": "…", "details": { } } }
 ```
 
-Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `INGREDIENT_NOT_FOUND` (400, mit `index`), `ALREADY_PUBLIC` (400), `DUPLICATE_NAME` (409, mit `ingredientId` bzw. `teaId`), `EDIT_CONFLICT` (409, mit `currentVersion`), `TEA_PUBLIC` (409), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
+Häufige Codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `INVALID_CREDENTIALS` (401/403), `FORBIDDEN` (403), `CSRF_INVALID` (403), `PASSWORD_CHANGE_REQUIRED` (403), `NOT_FOUND` (404), `REGISTRATION_FAILED` (409), `INGREDIENT_NOT_FOUND` (400, mit `index`), `ALREADY_PUBLIC` (400), `DUPLICATE_NAME` (409, mit `ingredientId` bzw. `teaId`), `EDIT_CONFLICT` (409, mit `currentVersion`), `TEA_PUBLIC` (409), `INVALID_REVERT_TARGET` (400), `INVALID_MERGE` (400), `ALREADY_REPORTED` (409), `INGREDIENT_IN_USE` (409, mit `teas`), `INGREDIENT_UNAVAILABLE` (409, mit `ingredientId`), `ACCOUNT_BLOCKED` (403, mit `until`), `RATE_LIMITED` (429, mit `Retry-After`), `INTERNAL_ERROR` (500).
 
 ## Sicherheit
 
