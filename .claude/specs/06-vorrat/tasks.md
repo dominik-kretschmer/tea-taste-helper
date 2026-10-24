@@ -78,7 +78,7 @@ Reihenfolge:
     - 375 px hell und dunkel ohne horizontales Scrollen. Keine Warnungen in der Konsole, keine CSP-Verstöße.
   - Ergebnis: Playwright auf dem Dev-Server bei 375 px (de und en), alle Punkte erfüllt. Der leere Vorrat zeigt den Hinweis, Zutat ohne Menge und privater Tee mit 50 g lassen sich hinzufügen (der Tab wechselt zum Tee). Ein zweites Hinzufügen meldet „Das steht schon in deinem Vorrat“ mit „Menge ändern“. −1 und 100 001 zeigen den Fehler am Feld. „Aufgebraucht“ schiebt den Eintrag ans Ende. Ein ausgeblendeter Eintrag hat keinen Link und im Menü nur „Entfernen“. Tab, Suche und Seite überstehen ein Neuladen. Entfernen mit Rückfrage, „Rückgängig“ stellt 1 250 g wieder her. Kein horizontales Scrollen hell und dunkel. In der Konsole steht nur die erwartete 409-Antwort des doppelten Hinzufügens. Hilfsfunktion `parseGrams` in `app/utils/format.ts`, `usePantryAmount` für den Mengentext. Lint, Typecheck und 240 Unit-Tests grün.
 
-- [ ] 8. Knopf auf den Detailseiten
+- [x] 8. Knopf auf den Detailseiten
   - Dateien: `app/components/pantry/PantryButton.vue`, `app/pages/ingredients/[id]/index.vue`, `app/pages/teas/[id]/index.vue`
   - Erfüllt: AK-2.2
   - Prüfung im Browser:
@@ -86,11 +86,13 @@ Reihenfolge:
     - Angemeldet: „In den Vorrat“, danach „Im Vorrat: 50 g“ mit Link auf den passenden Tab.
     - Als Moderator auf einem ausgeblendeten Eintrag: kein Knopf.
     - Die Detailseite lädt per SSR ohne Wartezeit auf das Lookup.
+  - Ergebnis: Playwright bei 375 px. Ein Gast sieht keinen Knopf und löst kein Lookup aus. Angemeldet erscheint „In den Vorrat“, nach 50 g steht dort „Im Vorrat: 50 g“ mit Link auf `/vorrat` (bei Tees auf `/vorrat?type=tea`). Ein Moderator sieht auf einer ausgeblendeten Zutat das Banner, aber keinen Knopf. Das Lookup läuft mit `server: false`, die SSR-Seite enthält den Knopf nicht und wartet nicht darauf. Keine Konsolenmeldungen. Lint, Typecheck und 458 Tests grün.
 
-- [ ] 9. Dokumentation
+- [x] 9. Dokumentation
   - Dateien: `README.md` (Abschnitt Vorrat, `PantryItem_one_target` in der Liste der SQL-Objekte), `.claude/specs/00 – Overview: tea-taste-helper.md` (§6 um Gramm, „aufgebraucht“ und Verhalten bei der Moderation ergänzen)
   - Erfüllt: –
   - Prüfung: Die README-Liste der SQL-Objekte stimmt mit den Migrationen überein.
+  - Ergebnis: README mit Abschnitt „Vorrat“ und der Zeile `PantryItem_one_target` (0007, einziges SQL-Objekt der Migration). Overview §6 um Gramm, „aufgebraucht“, Grenzen, private Tees und Verhalten bei der Moderation ergänzt.
 
 - [ ] 10. Endabnahme
   - `npm run build` fehlerfrei, `lint`, `typecheck` und `test` grün.

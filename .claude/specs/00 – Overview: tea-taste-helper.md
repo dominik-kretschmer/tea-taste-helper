@@ -48,7 +48,10 @@ Hintergrund: Zutaten allein sagen den Geschmack nur grob voraus (Anteile, Wechse
 ## 6. Vorrat
 
 - Enthält **Zutaten und fertige Tees**.
-- Menge (z.B. Gramm) optional.
+- Menge in Gramm (0–100 000) optional: leer = „ohne Menge“, 0 = „aufgebraucht“.
+- Je Nutzer höchstens ein Eintrag pro Zutat bzw. Tee, höchstens 1 000 Einträge; privat, ohne Audit-Log.
+- Auch eigene private Tees. Löscht der Ersteller den Tee, verschwindet er aus dem Vorrat.
+- Moderation: Zusammenführen hängt Vorratseinträge um (Mengen addiert, gedeckelt); ausgeblendete Einträge bleiben sichtbar, sind aber nur entfernbar.
 
 ## 7. Empfehlung
 

@@ -114,6 +114,12 @@ Jede angemeldete Person kann Zutaten und öffentliche Tees in der Historie auf e
 
 Moderatoren sehen keine E-Mail-Adressen; Nutzerverwaltung und Audit-Log bleiben Admins vorbehalten. Moderatoren sperren nur Nutzer, Admins auch Moderatoren, Admins selbst sind nicht sperrbar. Ausgeblendete und zusammengeführte Einträge gelten überall als nicht vorhanden – Abfragen schließen sie über `ENTRY_ACTIVE` bzw. `activeSql()` aus (`server/utils/catalog.ts`).
 
+## Vorrat
+
+Jede angemeldete Person hat einen privaten Vorrat (`/vorrat`, englisch `/en/pantry`, Menü „Vorrat“) mit **Zutaten** und **Tees**, getrennt in zwei Tabs mit Suche und Seiten (`?type`, `?q`, `?page`). Die Menge in Gramm (0–100 000) ist optional: leer heißt „ohne Menge“, 0 „aufgebraucht“ (steht dann am Ende der Liste). Hinzufügen geht über die Vorratsseite oder den Knopf „In den Vorrat“ auf den Detailseiten; auch eigene private Tees sind möglich. Je Zutat bzw. Tee gibt es höchstens einen Eintrag, insgesamt höchstens 1 000. Entfernen fragt nach und lässt sich über „Rückgängig“ zurücknehmen. Löscht jemand seinen privaten Tee, verschwindet er auch aus dem Vorrat.
+
+Der Vorrat ist nur für die Person selbst sichtbar (die API kennt keine Nutzer-ID im Request, fremde Einträge ergeben 404) und erzeugt keine Audit-Einträge. Moderation: Beim **Zusammenführen** wandern Vorratseinträge der Quelle auf das Ziel (Mengen werden addiert, auf 100 000 g gedeckelt). **Ausgeblendete** Einträge bleiben sichtbar („nicht mehr verfügbar“), lassen sich aber nur noch entfernen.
+
 ## Datenmodell
 
 Alle Tabellen, Spalten, Beziehungen und Enums als Diagramm: [docs/datenmodell.md](docs/datenmodell.md). Die Datei wird aus dem Prisma-Schema erzeugt (`npm run db:erd`) und muss nach jeder Schema-Änderung neu erzeugt werden; ein Unit-Test prüft, dass sie aktuell ist.
@@ -138,6 +144,7 @@ Einige Datenbankobjekte stehen nur als SQL in den Migrationen, weil Prisma sie n
 | `TeaVersion_current_key` (partieller Unique-Index `WHERE "isCurrent"`) | `0004_teas` | Genau eine aktuelle Version pro Tee |
 | `Report_open_key` (partieller Unique-Index `WHERE status = 'open'`) | `0006_moderation` | Höchstens eine offene Meldung je Person und Eintrag |
 | CHECK `Ingredient_merged_not_hidden`, `Tea_merged_not_hidden` | `0006_moderation` | Ein Eintrag ist nie zugleich zusammengeführt und ausgeblendet |
+| CHECK `PantryItem_one_target` | `0007_pantry` | Ein Vorratseintrag verweist auf genau eines von Zutat und Tee |
 
 Die GIN-Indizes `IngredientVersionTranslation_name_trgm` und `TeaVersionTranslation_name_trgm` stehen zusätzlich im Schema (`type: Gin`), damit Prisma sie nicht als Abweichung sieht.
 
