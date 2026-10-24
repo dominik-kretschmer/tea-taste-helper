@@ -102,7 +102,10 @@
     "INGREDIENT_IN_USE": "The ingredient is still used in teas and cannot be hidden.",
     "INGREDIENT_UNAVAILABLE": "One of the ingredients has been hidden or merged in the meantime.",
     "INVALID_MERGE": "These two entries cannot be merged.",
-    "INVALID_REVERT_TARGET": "Please choose an older version."
+    "INVALID_REVERT_TARGET": "Please choose an older version.",
+    "ALREADY_IN_PANTRY": "This is already in your pantry.",
+    "PANTRY_FULL": "Your pantry is full (at most 1000 entries).",
+    "ENTRY_UNAVAILABLE": "This entry is no longer available and can only be removed."
   },
   "errorPage": {
     "notFound": {

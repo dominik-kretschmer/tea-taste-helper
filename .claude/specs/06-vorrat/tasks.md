@@ -32,7 +32,7 @@ Reihenfolge:
   - Prüfung: Typecheck grün. Das Verhalten prüfen die API-Tests aus Aufgabe 4 und 5.
   - Ergebnis: Lint und Typecheck grün. Zusätzlich `deletePantryEntry`. `displayJoins` aus `ingredients.ts` heißt jetzt `ingredientDisplayJoins` und wird wie `teaDisplayJoins` exportiert. Abweichung vom Design: Lookup, POST und PATCH liefern `PantryRef` (`id`, `entityType`, `entityId`, `grams`) statt `PantryEntry`, denn ohne Namen brauchen sie keine Locale (design.md angepasst).
 
-- [ ] 4. Vorrats-API
+- [x] 4. Vorrats-API
   - Dateien: `server/api/pantry/index.get.ts`, `index.post.ts`, `lookup.get.ts`, `[id].patch.ts`, `[id].delete.ts`, `server/api/teas/index.get.ts` (falls `withOwn` dort weitergereicht werden muss), `i18n/locales/*.json` (`errors.ALREADY_IN_PANTRY`, `PANTRY_FULL`, `ENTRY_UNAVAILABLE`), `test/api/pantry.test.ts`
   - Erfüllt: AK-0.1, AK-0.2, AK-1.1–1.5, AK-2.1, AK-2.3–2.6, AK-3.1, AK-3.3, AK-4.2
   - Prüfung (API-Tests):
@@ -46,6 +46,7 @@ Reihenfolge:
     - Löscht der Ersteller seinen privaten Tee, verschwindet er aus dem Vorrat.
     - `GET /api/teas?withOwn=1` liefert öffentliche und eigene private Tees, für Gäste nur öffentliche.
     - Pantry-Aktionen erzeugen keine Audit-Einträge.
+  - Ergebnis: `test/api/pantry.test.ts` mit 15 Tests grün. `server/api/teas/index.get.ts` brauchte keine Änderung, weil `withOwn` mit der Query an `listTeas` geht und Gäste dort `viewer = null` haben. Lint und Typecheck grün, insgesamt 448 Tests grün.
 
 - [ ] 5. Zusammenführen hängt den Vorrat um
   - Dateien: `server/utils/moderation.ts` (`markMerged` → `mergePantry`), `test/api/pantry.test.ts` (bzw. `moderation.test.ts`)

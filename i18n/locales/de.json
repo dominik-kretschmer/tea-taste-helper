@@ -102,7 +102,10 @@
     "INGREDIENT_IN_USE": "Die Zutat steckt noch in Tees und kann nicht ausgeblendet werden.",
     "INGREDIENT_UNAVAILABLE": "Eine der Zutaten ist inzwischen ausgeblendet oder zusammengeführt.",
     "INVALID_MERGE": "Diese beiden Einträge lassen sich nicht zusammenführen.",
-    "INVALID_REVERT_TARGET": "Bitte wähle eine ältere Version."
+    "INVALID_REVERT_TARGET": "Bitte wähle eine ältere Version.",
+    "ALREADY_IN_PANTRY": "Das steht schon in deinem Vorrat.",
+    "PANTRY_FULL": "Dein Vorrat ist voll (höchstens 1000 Einträge).",
+    "ENTRY_UNAVAILABLE": "Dieser Eintrag ist nicht mehr verfügbar und kann nur entfernt werden."
   },
   "errorPage": {
     "notFound": {
