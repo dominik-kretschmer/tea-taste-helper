@@ -20,7 +20,7 @@ services:
       retries: 10
 
   ollama:
-    image: ollama/ollama:0.40.8
+    image: ollama/ollama:0.40.11
     restart: unless-stopped
     ports:
       # Ollama hat keine Authentifizierung – nur lokal
@@ -37,7 +37,7 @@ services:
               capabilities: [gpu]
 
   ollama-pull:
-    image: ollama/ollama:0.40.8
+    image: ollama/ollama:0.40.11
     environment:
       OLLAMA_HOST: ollama:11434
     entrypoint: ["/bin/sh", "-c", "sleep 5 && ollama pull nomic-embed-text"]
