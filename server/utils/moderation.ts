@@ -31,8 +31,7 @@ export async function loadEntryInfos(db: Db, entries: { entityType: CatalogTypeV
   const add = (entityType: CatalogTypeValue, row: (typeof ingredients)[number] | (typeof teas)[number]) => {
     const version = row.versions[0]
     if (!version) return
-    const translations: CatalogTranslations = {}
-    for (const text of version.translations) translations[text.locale as ContentLocale] = { name: text.name, description: text.description }
+    const translations = toTranslations(version.translations)
     const state: EntryState = row.mergedIntoId ? 'merged' : row.hiddenAt ? 'hidden' : 'active'
     result.set(entryKey(entityType, row.id), {
       name: pickTranslation({ sourceLocale: row.sourceLocale as ContentLocale, translations }, locale).text.name,

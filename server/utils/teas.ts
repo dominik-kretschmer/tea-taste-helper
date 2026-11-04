@@ -76,10 +76,6 @@ export async function loadTeaVersion(db: Db, teaId: string, version: number): Pr
 }
 
 export function toTeaSnapshot(tea: Pick<Tea, 'sourceLocale'>, version: LoadedTeaVersion): TeaSnapshot {
-  const translations: CatalogTranslations = {}
-  for (const row of version.translations) {
-    translations[row.locale as ContentLocale] = { name: row.name, description: row.description }
-  }
   return {
     sourceLocale: tea.sourceLocale as ContentLocale,
     visibility: version.visibility,
@@ -88,7 +84,7 @@ export function toTeaSnapshot(tea: Pick<Tea, 'sourceLocale'>, version: LoadedTea
     caffeine: version.caffeine,
     brewTempC: version.brewTempC,
     brewSeconds: version.brewSeconds,
-    translations,
+    translations: toTranslations(version.translations),
     ingredients: version.ingredients.map(row => ({ ingredientId: row.ingredientId, percent: row.percent })),
   }
 }
@@ -222,10 +218,7 @@ export async function writeTeaVersion(db: Db, input: {
       authorId: input.authorId,
       note: input.note,
       translations: {
-        create: CONTENT_LOCALES.flatMap((locale) => {
-          const text = snapshot.translations[locale]
-          return text ? [{ locale, name: text.name, nameKey: normalizeName(text.name), description: text.description }] : []
-        }),
+        create: translationRows(snapshot.translations),
       },
       ingredients: {
         create: snapshot.ingredients.map((item, position) => ({ position, ingredientId: item.ingredientId, percent: item.percent })),

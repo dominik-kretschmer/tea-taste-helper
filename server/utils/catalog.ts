@@ -34,6 +34,21 @@ export async function lockName(db: Db, key: string): Promise<void> {
   await db.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtext(${key}))`
 }
 
+/** Übersetzungs-Zeilen einer Version als Map je Sprache. */
+export function toTranslations(rows: { locale: string, name: string, description: string | null }[]): CatalogTranslations {
+  const translations: CatalogTranslations = {}
+  for (const row of rows) translations[row.locale as ContentLocale] = { name: row.name, description: row.description }
+  return translations
+}
+
+/** Umkehrung für `translations.create`: eine Zeile je vorhandener Sprache, mit Vergleichsschlüssel. */
+export function translationRows(translations: CatalogTranslations) {
+  return CONTENT_LOCALES.flatMap((locale) => {
+    const text = translations[locale]
+    return text ? [{ locale, name: text.name, nameKey: normalizeName(text.name), description: text.description }] : []
+  })
+}
+
 // --- 05 – Moderation: Zustand eines Katalog-Eintrags ---
 
 /** Kennzeichnungen einer neuen Version: Zurücksetzen, Massen-Zurücksetzung, Zusammenführen (05). */

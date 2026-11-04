@@ -31,16 +31,12 @@ export function getIngredientIdParam(event: H3Event): string {
 export const notFound = (details?: unknown) => new AppError(404, 'NOT_FOUND', 'Ingredient not found', details)
 
 export function toSnapshot(sourceLocale: string, version: LoadedVersion): IngredientSnapshot {
-  const translations: IngredientSnapshot['translations'] = {}
-  for (const row of version.translations) {
-    translations[row.locale as ContentLocale] = { name: row.name, description: row.description }
-  }
   return {
     sourceLocale: sourceLocale as ContentLocale,
     caffeine: version.caffeine,
     brewTempC: version.brewTempC,
     brewSeconds: version.brewSeconds,
-    translations,
+    translations: toTranslations(version.translations),
   }
 }
 
@@ -166,10 +162,7 @@ export async function writeVersion(db: Db, input: {
       authorId: input.authorId,
       note: input.note,
       translations: {
-        create: CONTENT_LOCALES.flatMap((locale) => {
-          const text = snapshot.translations[locale]
-          return text ? [{ locale, name: text.name, nameKey: normalizeName(text.name), description: text.description }] : []
-        }),
+        create: translationRows(snapshot.translations),
       },
     },
     include: versionInclude,
@@ -241,8 +234,7 @@ export async function loadIngredientViews(db: Db, ids: string[]): Promise<Map<st
   return new Map(rows.flatMap((row) => {
     const version = row.versions[0]
     if (!version) return []
-    const translations: CatalogTranslations = {}
-    for (const text of version.translations) translations[text.locale as ContentLocale] = { name: text.name, description: text.description }
+    const translations = toTranslations(version.translations)
     return [[row.id, { sourceLocale: row.sourceLocale as ContentLocale, translations, caffeine: version.caffeine }]]
   }))
 }
