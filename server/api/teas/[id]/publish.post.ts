@@ -14,20 +14,19 @@ export default defineEventHandler(async (event) => {
       throw new AppError(400, 'ALREADY_PUBLIC', 'The tea is already public')
     }
 
-    const deactivated = await tx.$executeRaw`
-      UPDATE "TeaVersion" SET "isCurrent" = false
-      WHERE "teaId" = ${id}::uuid AND "isCurrent" AND version = ${input.version}`
-    if (deactivated === 0) {
-      throw new AppError(409, 'EDIT_CONFLICT', 'The tea was changed in the meantime', {
-        currentVersion: current.version.version,
-      })
-    }
-
+    const before = toTeaSnapshot(current.tea, current.version)
     // Ab jetzt gilt die Duplikatregel für alle Sprachen (AK-4.2)
-    const snapshot: TeaSnapshot = { ...toTeaSnapshot(current.tea, current.version), visibility: 'public' }
-    await assertTeaNamesAvailable(tx, snapshot, { teaId: id })
-    const version = await writeTeaVersion(tx, { teaId: id, version: input.version + 1, snapshot, authorId: user.id, note: input.note })
-    return toTeaDetail(tx, current.tea, version, user)
+    const saved = await saveTeaVersion(tx, {
+      teaId: id,
+      expectedVersion: input.version,
+      before,
+      after: { ...before, visibility: 'public' },
+      authorId: user.id,
+      note: input.note,
+    })
+    // Kann nicht eintreten: Die Sichtbarkeit ändert sich immer (ALREADY_PUBLIC ist oben geprüft)
+    if (!saved.changed) throw new AppError(400, 'ALREADY_PUBLIC', 'The tea is already public')
+    return toTeaDetail(tx, current.tea, saved.version, user)
   })
 
   await audit(event, { event: 'TEA_PUBLISHED', actorId: user.id, details: { teaId: id, version: tea.version, private: false } })
